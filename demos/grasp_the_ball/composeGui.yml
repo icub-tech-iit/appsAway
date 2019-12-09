@@ -1,0 +1,72 @@
+version: "3.7"
+
+x-yarp-base: &yarp-base
+  image: valegagge/superbuildmesa:light
+  environment:
+    - DISPLAY=${DISPLAY}
+    - XAUTHORITY=/root/.Xauthority
+    - YARP_FORWARD_LOG_ENABLE=1
+  volumes:
+    - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
+    - "${XAUTHORITY}:/root/.Xauthority:rw"
+    - type: volume
+      source: mystack_yarp-config
+      target: /root/.config/yarp
+      volume:
+        nocopy: true
+  network_mode: "host"
+  privileged: true
+  #ipc: host
+
+
+services:
+
+  ylogger:
+    <<: *yarp-base
+    container_name: ylogger
+    command: yarplogger --start
+
+#following services are configured in ./icub-main/app/default/scripts/cameras_calib.xml.template
+  yview_l:
+    <<: *yarp-base
+    container_name: yview_l
+    command: yarpview --name /icub/view/left --x 0 --y 0 --p 50 --w 320 --h 240
+
+  yview_r:
+    <<: *yarp-base
+    container_name: yview_r
+    command: yarpview --name /icub/view/right --x 320 --y 0 --p 50 --w 320 --h 240
+
+  yconnect_l:
+    <<: *yarp-base
+    container_name: yconnect_l
+    depends_on:
+      - yview
+    command: sh -c "yarp wait /icub/camcalib/left/out; yarp wait /icub/view/left; yarp connect /icub/camcalib/left/out /icub/view/left udp"
+
+  yconnect_r:
+    <<: *yarp-base
+    container_name: yconnect_r
+    depends_on:
+      - yview
+    command: sh -c "yarp wait /icub/camcalib/right/out; yarp wait /icub/view/right; yarp connect /icub/camcalib/right/out /icub/view/right udp"
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------------
+#Following services are configured in icub-basic-demos/demoRedBall/app/scripts/demoRedBall.xml.template
+  yview:
+    <<: *yarp-base
+    container_name: yview_demo
+    command: yarpview --name /PF3DTracker_viewer --x 320 --y 0 --p 50 --compact
+
+  yconnect_demo:
+    <<: *yarp-base
+    container_name: yconnect_demo
+    depends_on:
+      - yview
+    command: sh -c "yarp wait /pf3dTracker/video:o; yarp wait /PF3DTracker_viewer; yarp connect /pf3dTracker/video:o /PF3DTracker_viewer udp"
+
+
+
+volumes:
+  mystack_yarp-config:
+    external: true

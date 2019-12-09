@@ -1,0 +1,224 @@
+version: "3.7"
+
+x-yarp-base: &yarp-base
+  image: valegagge/redballdemo
+  environment:
+    - YARP_FORWARD_LOG_ENABLE=1
+  volumes:
+    - type: volume
+      source: yarp-config
+      target: /root/.config/yarp
+      volume:
+        nocopy: true
+  networks:
+    - hostnet
+
+
+
+x-yarp-head: &yarp-head
+  image: valegagge/superbuildmesaicubhead:devel
+  environment:
+    - YARP_FORWARD_LOG_ENABLE=1
+    - YARP_ROBOT_NAME
+  volumes:
+    - type: volume
+      source: yarp-config
+      target: /root/.config/yarp
+      volume:
+        nocopy: true
+  network_mode: "host"
+
+#note: following services that need yarpRobotinterface is running, I write yarp wait /yarpRobotInterface;
+#just to remember us to solve thi issue. Such yarp port doesn't exist.
+
+services:
+#following service are configured in icub-main/app/iCubStartup/scripts/iCubStartup.xml.template
+  yserver:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+    command: yarpserver --write
+
+  yCartisianSolver_r:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "checkRobotInterface; iKinCartesianSolver --part right_arm"
+    #<port timeout="60.0" request="is_ready" reply="[ok]">/icub/yarprobotinterface</port>
+
+  yCartisianSolver_l:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "checkRobotInterface; iKinCartesianSolver --part left_arm"
+    #<port timeout="60.0" request="is_ready" reply="[ok]">/icub/yarprobotinterface</port>
+
+  yGazeCtrl:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "checkRobotInterface; yarp wait /imuFilter/measures:o; iKinGazeCtrl --from config_imu_filter.ini"
+    #note: in our issue we used this configuration file config_no_imu_filter.ini,, but I could not find it.
+    #<port timeout="60.0" request="is_ready" reply="[ok]">/icub/yarprobotinterface</port>
+
+  yWBD:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "checkRobotInterface; wholeBodyDynamics --autoconnect --no_legs"
+    #note: Do I add --headV2 option??.
+    #note: We need to check if WBD is already running, because some yarprobotinterface configuration files already contain it.
+    # <port timeout="60.0" request="is_ready" reply="[ok]">/icub/yarprobotinterface</port>
+
+  yGravityCompensator:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "gravityCompensator --autoconnect --no_legs"
+    #note: Do I add --headV2 option??.
+
+#------------------------------------------------------------------------------------------------
+#Following services are configured in ./icub-main/app/default/scripts/cameras_calib.xml.template
+  yGrabberCameras:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type == head]
+        #command: sh -c "yarpdev --from camera/ServerGrabberDualDragon.ini --split true"
+    command: sh -c "yarpdev --device usbCamera --d /dev/video0 --camModel leopard_python --name /icub/cam/left"
+
+  yCamCalib_l:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "camCalib --context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_LEFT --name /icub/camcalib/left"
+
+  yCamCalib_r:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "camCalib --context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_RIGHT --name /icub/camcalib/right"
+
+  yConnectCam_l:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "yarp wait /icub/cam/left; yarp wait /icub/camcalib/left/in; yarp connect /icub/cam/left /icub/camcalib/left/in udp"
+
+  yConnectCam_r:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "yarp wait /icub/cam/right; yarp wait /icub/camcalib/right/in; yarp connect /icub/cam/right /icub/camcalib/right/in udp"
+
+#------------------------------------------------------------------------------------------------
+#Following services are configured in icub-main/app/faceExpressions/scripts/faceExpressions.xml.template
+  yserialDevice4Emotions:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type == head]
+    command: sh -c "yarpdev --name /icub/face/raw --device serial --subdevice serialport --context faceExpressions --from serialport.ini"
+
+  yEmotions:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type == head]
+    command: sh -c "emotionInterface --name /icub/face/emotions --context faceExpressions --from emotions.ini"
+
+  yConnectEmotions:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "yarp wait /icub/face/emotions/out; yarp wait /icub/face/raw/in ; yarp connect /icub/face/emotions/out /icub/face/raw/in tcp"
+
+
+#------------------------------------------------------------------------------------------------
+#Following services are configured in icub-basic-demos/demoRedBall/app/scripts/demoRedBall.xml.template
+ #we need to verify following depencencies:
+#<port>/icub/camcalib/left/out</port>
+#<port>/iKinGazeCtrl/rpc</port>
+#<port>/icub/cartesianController/right_arm/state:o</port>
+#<port>/icub/cartesianController/left_arm/state:o</port>
+#<port>/wholeBodyDynamics/right_arm/FT:i</port>
+#<port>/wholeBodyDynamics/left_arm/FT:i</port>
+
+  yTracker:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "yarp wait /icub/camcalib/left/out; yarp wait /iKinGazeCtrl/rpc; yarp wait /icub/cartesianController/right_arm/state:o; yarp wait /icub/cartesianController/left_arm/state:o; yarp wait /wholeBodyDynamics/right_arm/FT:i; yarp wait /wholeBodyDynamics/left_arm/FT:i; pf3dTracker"
+
+  yDemoRedBall:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "yarp wait /icub/camcalib/left/out; yarp wait /iKinGazeCtrl/rpc; yarp wait /icub/cartesianController/right_arm/state:o; yarp wait /icub/cartesianController/left_arm/state:o; yarp wait /wholeBodyDynamics/right_arm/FT:i; yarp wait /wholeBodyDynamics/left_arm/FT:i; demoRedBall"
+
+  yConnectCam2Traker:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "yarp wait /icub/camcalib/left/out; yarp wait /pf3dTracker/video:i; yarp connect /icub/camcalib/left/out /pf3dTracker/video:i udp"
+
+
+  yConnectTraker2Demo:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "yarp wait /pf3dTracker/data:o; yarp wait /demoRedBall/trackTarget:i; yarp connect /pf3dTracker/data:o /demoRedBall/trackTarget:i udp"
+
+
+  yConnectDemo2Emotions:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "yarp wait /demoRedBall/cmdFace:rpc; yarp wait /icub/face/emotions/in; yarp connect /demoRedBall/cmdFace:rpc /icub/face/emotions/in tcp"
+
+
+#------------------------------------------------------------------------------------------------
+
+
+
+  #use network.peer ip address and port 8080 to see the containers status in browser
+  visualizer:
+    image: dockersamples/visualizer:stable
+    ports:
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+
+networks:
+  hostnet:
+    external: true
+    name: host
+
+volumes:
+  yarp-config:
+    driver: vieux/sshfs
+    driver_opts:
+      sshcmd: icub@10.240.11.13:/home/icub/appsAway/test/config_yarp
+      password: icubAdmin
+      #sshcmd: ${USER_NAME}@${MASTER_ADDR}:${YARP_CONF_PATH}
+      #password: $USER_PASSWORD
