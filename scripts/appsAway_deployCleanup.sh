@@ -117,29 +117,51 @@ EOF
 
 # #####################################################
 
+function dockerRemoveVolumes(){
+ssh -T icub@$1<<EOF
+
+   
+    dockerVolumes=\$(docker volume ls --format "{{.Name}}")
+    if [ "\$dockerVolumes" != "" ]; then
+        docker volume rm \$dockerVolumes # To remove (what is called) dangling volumes
+        docker volume ls -qf dangling=true | xargs -r docker volume rm #command to make sure the cleanup is complete
+    fi
+
+EOF
+}
+
+# #####################################################
+
 function dockerCleanupStack(){
 ssh -T icub@$1<<EOF
-    echo "path to apps = \$APPSAWAY_APP_PATH"
-    docker-compose -f \$APPSAWAY_APP_PATH\*.yml kill -s SIGINT
+
+    appsPath=\$(echo $APPSAWAY_APP_PATH)
+    
+    docker-compose -f \$appsPath/*.yml kill -s SIGINT
     docker container prune --force
 
     dockerPS=\$(docker ps -a -q)
     dockerStack=\$(docker stack ls --format "{{json .Name}}" |& grep -v Error | grep -v NAME)
     dockerPS=\$(docker ps -a -q)
-    dockerVolumes=\$(docker volume ls -qf dangling=true)
-
-    if [ "\$dockerStack" != "" ]; then
-        docker stack rm \$dockerStack
-    fi
+    #dockerVolumes=\$(docker volume ls -qf dangling=true)
+    dockerVolumes=\$(docker volume ls --format "{{.Name}}")
 
     if [ "\$dockerPS" != "" ]; then
         docker stop \$dockerPS # stop all containers
     fi
 
-    if [ "\$dockerVolumes" != "" ]; then
-        docker volume rm \$dockerVolumes # To remove (what is called) dangling volumes
-        docker volume ls -qf dangling=true | xargs -r docker volume rm #command to make sure the cleanup is complete
+    #sleep 1.0
+
+    if [ "\$dockerStack" != "" ]; then
+        docker stack rm \$dockerStack
     fi
+
+    #sleep 2.0
+
+    #if [ "\$dockerVolumes" != "" ]; then
+    #    docker volume rm \$dockerVolumes # To remove (what is called) dangling volumes
+    #    docker volume ls -qf dangling=true | xargs -r docker volume rm #command to make sure the cleanup is complete
+    #fi
 
     docker swarm leave --force |& grep -v Error #remove swarm
 EOF
@@ -247,7 +269,7 @@ do
         echo -e "|----------------- ${BLUE}Running Docker Cleanup${NC} ------------------|"
         echo  ""
 
-echo -e "running in mode ${PURPLE} $1 ${NC}"
+    echo -e "running in mode ${PURPLE} $1 ${NC}"
 
 	if [ "$total_cleanup" = true ] ; then
         echo -e "starting ${PURPLE}cleaning ${NC}of the${PURPLE} images${NC} and ${PURPLE}stack${NC}"
@@ -282,6 +304,23 @@ echo -e "running in mode ${PURPLE} $1 ${NC}"
         echo -e "${RED}node is empty or unreachable please check the cluster list ${NC}"
     fi
 
+done
+
+for p in ${APPSAWAY_NODES_ADDR_LIST}
+do
+    echo ""
+    echo '|---------------------------------------------------------- |'
+    echo -ne "|--- Started Cleanup Script on the${NC}"
+    echo -e "${LGRAY} $(date +%d-%m-%Y)${PURPLE} @ ${LGRAY}$(date +%H:%M:%S)${NC} ---|"
+
+    echo -ne "|                 on node  | "
+    printf "${GREEN} %s${NC}                  |\n" "$p"
+    echo -e '|---------------------------------------------------------- |'
+
+
+    echo -e "|----------------- ${BLUE}Running System Cleanup${NC} ------------------|"
+    echo ""
+    dockerRemoveVolumes $p
 done
 
 end=`date +%s`
