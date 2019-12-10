@@ -217,7 +217,7 @@ create_env_file()
   else
     log "creating YARP docker environment file ${APPSAWAY_APP_PATH}/${_DOCKER_ENV_FILE}"
   fi
-  echo "USER_NAME=$APPSAWAY_USER_NAME" > ${APPSAWAY_APP_PATH}/${_DOCKER_ENV_FILE}
+  echo "USER_NAME=$APPSAWAY_USER_NAME" >> ${APPSAWAY_APP_PATH}/${_DOCKER_ENV_FILE}
   echo "USER_PASSWORD=$APPSAWAY_USER_PASSWORD" >> ${APPSAWAY_APP_PATH}/${_DOCKER_ENV_FILE}
   echo "MASTER_ADDR=$APPSAWAY_CONSOLENODE_ADDR" >> ${APPSAWAY_APP_PATH}/${_DOCKER_ENV_FILE}
   echo "YARP_CONF_PATH=${APPSAWAY_APP_PATH}/${_YARP_CONFIG_FILES_PATH}" >> ${APPSAWAY_APP_PATH}/${_DOCKER_ENV_FILE}
@@ -230,8 +230,8 @@ copy_yaml_files()
   mkdir -p ${APPSAWAY_APP_PATH}
   for file in ${APPSAWAY_DEPLOY_YAML_FILE_LIST}
   do
-    log "copying yaml file $file tp master node (this)"
-    cp ${file} ${APPSAWAY_APP_PATH}/
+    log "copying yaml file $file to master node (this)"
+    cp ../demos/${APPSAWAY_APP_NAME}/${file} ${APPSAWAY_APP_PATH}/
   done
   if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
     log "creating path ${APPSAWAY_APP_PATH} on node with IP $APPSAWAY_ICUBHEADNODE_ADDR"
@@ -239,7 +239,7 @@ copy_yaml_files()
     for file in ${APPSAWAY_HEAD_YAML_FILE_LIST}
     do
       log "copying yaml file $file to node with IP $APPSAWAY_ICUBHEADNODE_ADDR"
-      ${_SCP_BIN} ${_SCP_PARAMS} ${file} ${APPSAWAY_USER_NAME}@${APPSAWAY_ICUBHEADNODE_ADDR}:${APPSAWAY_APP_PATH}/
+      ${_SCP_BIN} ${_SCP_PARAMS} ../demos/${APPSAWAY_APP_NAME}/${file} ${APPSAWAY_USER_NAME}@${APPSAWAY_ICUBHEADNODE_ADDR}:${APPSAWAY_APP_PATH}/
     done
   fi
   if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
@@ -248,7 +248,7 @@ copy_yaml_files()
     for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
     do
       log "copying yaml file $file to node with IP $APPSAWAY_GUINODE_ADDR"
-      ${_SCP_BIN} ${_SCP_PARAMS} ${file} ${APPSAWAY_USER_NAME}@${APPSAWAY_GUINODE_ADDR}:${APPSAWAY_APP_PATH}/
+      ${_SCP_BIN} ${_SCP_PARAMS} ../demos/${APPSAWAY_APP_NAME}/${file} ${APPSAWAY_USER_NAME}@${APPSAWAY_GUINODE_ADDR}:${APPSAWAY_APP_PATH}/
     done
   fi
 }
@@ -258,9 +258,9 @@ main()
   fill_hostname_list
   swarm_start
   set_hardware_labels
-  create_env_file
-  create_yarp_config_files
   copy_yaml_files
+  create_yarp_config_files
+  create_env_file
 }
 
 parse_opt "$@"
