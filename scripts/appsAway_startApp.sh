@@ -1,5 +1,5 @@
 #!/bin/bash -e
-#set -x
+set -x
 # ##############################################################################
 # SCRIPT NAME: appsAway_startApp.sh
 #
@@ -130,8 +130,9 @@ init()
  source ${_APPSAWAY_ENVFILE}
  for _deploy_file in ${APPSAWAY_DEPLOY_YAML_FILE_LIST}
  do
-    if [ ! -f "${_deploy_file}" ]; then
+    if [ ! -f "../demos/${APPSAWAY_APP_NAME}/${_deploy_file}" ]; then
       exit_err "deployments file ${_deploy_file} does not exists"
+    else echo "found ../demos/${APPSAWAY_APP_NAME}/${_deploy_file}"
     fi
  done
  _SSH_CMD_PREFIX="cd ${APPSAWAY_APP_PATH} "

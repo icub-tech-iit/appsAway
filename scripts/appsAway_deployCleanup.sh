@@ -119,7 +119,7 @@ EOF
 
 function dockerCleanupStack(){
 ssh -T icub@$1<<EOF
-
+    echo "path to apps = \$APPSAWAY_APP_PATH"
     docker-compose -f \$APPSAWAY_APP_PATH\*.yml kill -s SIGINT
     docker container prune --force
 

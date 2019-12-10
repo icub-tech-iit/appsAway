@@ -218,7 +218,7 @@ volumes:
   yarp-config:
     driver: vieux/sshfs
     driver_opts:
-      sshcmd: icub@10.240.11.13:/home/icub/appsAway/test/config_yarp
+      sshcmd: icub@10.0.0.158:/home/icub/iCubApps/grasp_the_ball/config_yarp
       password: icubAdmin
       #sshcmd: ${USER_NAME}@${MASTER_ADDR}:${YARP_CONF_PATH}
       #password: $USER_PASSWORD
