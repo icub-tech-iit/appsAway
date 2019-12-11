@@ -1,7 +1,7 @@
 #!/bin/bash -e
 set -x
 # ##############################################################################
-# SCRIPT NAME: appsAway_startApp.sh
+# SCRIPT NAME: appsAway_stopApp.sh
 #
 # DESCRIPTION: start the application by ssh
 #
@@ -9,7 +9,7 @@ set -x
 #
 # AUTHOR : Valentina Gaggero / Matteo Brunettini
 #
-# LATEST MODIFICATION DATE (YYYY-MM-DD) : 2019-12-06
+# LATEST MODIFICATION DATE (YYYY-MM-DD) : 2019-12-11
 #
 _SCRIPT_VERSION="1.0"          # Sets version variable
 #
@@ -162,55 +162,10 @@ run_via_ssh_nowait()
   fi
 }
 
-is_this_node_swarm_master()
-{
-  _SWARM_MASTER=$(${_DOCKER_BIN} ${_DOCKER_PARAMS} info 2> /dev/null | grep "Is Manager" || true)
-  if [ -z "$_SWARM_MASTER" ]; then
-    exit_err "cluster has not been initialized, please run setupCluster script"
-  fi
-  if [ "$_SWARM_MASTER" != "  Is Manager: true" ]; then
-	  exit_err "this node is not the master"
-  fi
-}
-
-run_deploy()
-{
-
-  log "executing docker stack deploy"
-  export $(cat .env)
-  cd $APPSAWAY_APP_PATH
-  for _file2deploy in ${APPSAWAY_DEPLOY_YAML_FILE_LIST}
-  do
-    ${_DOCKER_BIN} ${_DOCKER_PARAMS} stack deploy -c ${_file2deploy} ${APPSAWAY_STACK_NAME}
-  done
-}
-
-run_hardware_steps_via_ssh()
-{
-  log "running hardware-dependant steps to nodes"
-
-  if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
-    for file in ${APPSAWAY_HEAD_YAML_FILE_LIST}
-    do
-      log "running docker-compose with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_ICUBHEADNODE_ADDR"
-      #run_via_ssh_nowait $APPSAWAY_ICUBHEADNODE_ADDR "docker-compose -f ${file} up" "log.txt"
-      run_via_ssh $APPSAWAY_ICUBHEADNODE_ADDR "docker-compose -f ${file} up --detach"
-    done
-  fi
-  #sleep 3
-  if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
-    for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
-    do
-      log "running docker-compose with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_GUINODE_ADDR"
-      #run_via_ssh_nowait $APPSAWAY_GUINODE_ADDR "docker-compose -f ${file} up" "log.txt"
-      run_via_ssh $APPSAWAY_GUINODE_ADDR "export DISPLAY=:1 ; export XAUTHORITY=/root/.Xauthority; docker-compose -f ${file} up --detach"
-    done
-  fi
-}
 
 stop_hardware_steps_via_ssh()
 {
-  read -n 1 -s -r -p "Press any key to stop the App"
+  #read -n 1 -s -r -p "Press any key to stop the App"
   echo
   if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_HEAD_YAML_FILE_LIST}
@@ -230,10 +185,7 @@ stop_hardware_steps_via_ssh()
 
 main()
 {
-  is_this_node_swarm_master
-  run_deploy
-  run_hardware_steps_via_ssh
-#  stop_hardware_steps_via_ssh
+  stop_hardware_steps_via_ssh
 }
 
 parse_opt "$@"
