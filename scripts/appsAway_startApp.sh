@@ -177,6 +177,7 @@ run_deploy()
 {
 
   log "executing docker stack deploy"
+  export $(cat .env)
   cd $APPSAWAY_APP_PATH
   for _file2deploy in ${APPSAWAY_DEPLOY_YAML_FILE_LIST}
   do
