@@ -16,7 +16,7 @@ x-yarp-base: &yarp-base
 
 
 x-yarp-head: &yarp-head
-  image: valegagge/superbuildmesaicubhead:devel
+  image: valegagge/superbuildmesaicubhead
   environment:
     - YARP_FORWARD_LOG_ENABLE=1
     - YARP_ROBOT_NAME
