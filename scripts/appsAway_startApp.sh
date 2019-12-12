@@ -177,8 +177,8 @@ run_deploy()
 {
 
   log "executing docker stack deploy"
-  export $(cat .env)
   cd $APPSAWAY_APP_PATH
+  export $(cat .env)
   for _file2deploy in ${APPSAWAY_DEPLOY_YAML_FILE_LIST}
   do
     ${_DOCKER_BIN} ${_DOCKER_PARAMS} stack deploy -c ${_file2deploy} ${APPSAWAY_STACK_NAME}
@@ -203,7 +203,7 @@ run_hardware_steps_via_ssh()
     do
       log "running docker-compose with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_GUINODE_ADDR"
       #run_via_ssh_nowait $APPSAWAY_GUINODE_ADDR "docker-compose -f ${file} up" "log.txt"
-      run_via_ssh $APPSAWAY_GUINODE_ADDR "export DISPLAY=:1 ; export XAUTHORITY=/root/.Xauthority; docker-compose -f ${file} up --detach"
+      run_via_ssh $APPSAWAY_GUINODE_ADDR "export DISPLAY=:1 ; export XAUTHORITY=/run/user/1000/gdm/Xauthority; docker-compose -f ${file} up --detach"
     done
   fi
 }
@@ -223,7 +223,7 @@ stop_hardware_steps_via_ssh()
     for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
     do
       log "stopping docker-compose with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_GUINODE_ADDR"
-      run_via_ssh $APPSAWAY_GUINODE_ADDR "export DISPLAY=:1 ; export XAUTHORITY=/root/.Xauthority; docker-compose -f ${file} down"
+      run_via_ssh $APPSAWAY_GUINODE_ADDR "export DISPLAY=:1 ; export XAUTHORITY=/run/user/1000/gdm/Xauthority; docker-compose -f ${file} down"
     done
  fi
 }
