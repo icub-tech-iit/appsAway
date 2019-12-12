@@ -42,14 +42,14 @@ services:
     container_name: yconnect_l
     depends_on:
       - yview
-    command: sh -c "yarp wait /icub/camcalib/left/out; yarp wait /icub/view/left; yarp connect /icub/camcalib/left/out /icub/view/left udp"
+    command: sh -c "yarp wait /icub/camcalib/left/out; yarp wait /icub/view/left; yarp connect /icub/camcalib/left/out /icub/view/left tcp"
 
   yconnect_r:
     <<: *yarp-base
     container_name: yconnect_r
     depends_on:
       - yview
-    command: sh -c "yarp wait /icub/camcalib/right/out; yarp wait /icub/view/right; yarp connect /icub/camcalib/right/out /icub/view/right udp"
+    command: sh -c "yarp wait /icub/camcalib/right/out; yarp wait /icub/view/right; yarp connect /icub/camcalib/right/out /icub/view/right tcp"
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------
 #Following services are configured in icub-basic-demos/demoRedBall/app/scripts/demoRedBall.xml.template
@@ -63,7 +63,7 @@ services:
     container_name: yconnect_demo
     depends_on:
       - yview
-    command: sh -c "yarp wait /pf3dTracker/video:o; yarp wait /PF3DTracker_viewer; yarp connect /pf3dTracker/video:o /PF3DTracker_viewer udp"
+    command: sh -c "yarp wait /pf3dTracker/video:o; yarp wait /PF3DTracker_viewer; yarp connect /pf3dTracker/video:o /PF3DTracker_viewer tcp"
 
 
 
