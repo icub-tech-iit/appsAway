@@ -61,7 +61,7 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "checkRobotInterface; yarp wait /imuFilter/measures:o; iKinGazeCtrl --from config_imu_filter.ini"
+    command: sh -c "checkRobotInterface;  iKinGazeCtrl --from config_no_imu.ini"
     #note: in our issue we used this configuration file config_no_imu_filter.ini,, but I could not find it.
     #<port timeout="60.0" request="is_ready" reply="[ok]">/icub/yarprobotinterface</port>
 
@@ -90,22 +90,22 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type == head]
-        #command: sh -c "yarpdev --from camera/ServerGrabberDualDragon.ini --split true"
-    command: sh -c "yarpdev --device usbCamera --d /dev/video0 --camModel leopard_python --name /icub/cam/left"
+    command: sh -c "checkRobotInterface; yarpdev --from camera/ServerGrabberDualDragon.ini --split true"
+    # command: sh -c "yarpdev --device usbCamera --d /dev/video0 --camModel leopard_python --name /icub/cam/left"
 
   yCamCalib_l:
     <<: *yarp-base
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "camCalib --context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_LEFT --name /icub/camcalib/left"
+    command: sh -c "checkRobotInterface; camCalib --context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_LEFT --name /icub/camcalib/left"
 
   yCamCalib_r:
     <<: *yarp-base
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "camCalib --context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_RIGHT --name /icub/camcalib/right"
+    command: sh -c "checkRobotInterface; camCalib --context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_RIGHT --name /icub/camcalib/right"
 
   yConnectCam_l:
     <<: *yarp-base
@@ -160,14 +160,14 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "yarp wait /icub/camcalib/left/out; yarp wait /iKinGazeCtrl/rpc; yarp wait /icub/cartesianController/right_arm/state:o; yarp wait /icub/cartesianController/left_arm/state:o; yarp wait /wholeBodyDynamics/right_arm/FT:i; yarp wait /wholeBodyDynamics/left_arm/FT:i; pf3dTracker"
+    command: sh -c "yarp wait /icub/camcalib/left/out; yarp wait /iKinGazeCtrl/rpc; yarp wait /icub/cartesianController/right_arm/state:o; yarp wait /icub/cartesianController/left_arm/state:o; pf3dTracker"
 
   yDemoRedBall:
     <<: *yarp-base
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "yarp wait /icub/camcalib/left/out; yarp wait /iKinGazeCtrl/rpc; yarp wait /icub/cartesianController/right_arm/state:o; yarp wait /icub/cartesianController/left_arm/state:o; yarp wait /wholeBodyDynamics/right_arm/FT:i; yarp wait /wholeBodyDynamics/left_arm/FT:i; demoRedBall"
+    command: sh -c "yarp wait /icub/camcalib/left/out; yarp wait /iKinGazeCtrl/rpc; yarp wait /icub/cartesianController/right_arm/state:o; yarp wait /icub/cartesianController/left_arm/state:o; demoRedBall"
 
   yConnectCam2Traker:
     <<: *yarp-base
