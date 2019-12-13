@@ -4,6 +4,7 @@ x-yarp-base: &yarp-base
   image: valegagge/redballdemo
   environment:
     - YARP_FORWARD_LOG_ENABLE=1
+    - YARP_ROBOT_NAME
   volumes:
     - type: volume
       source: yarp-config
@@ -136,7 +137,7 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "yarp wait /icub/camcalib/left/out; yarp wait /iKinGazeCtrl/rpc; yarp wait /icub/cartesianController/right_arm/state:o; yarp wait /icub/cartesianController/left_arm/state:o; pf3dTracker"
+    command: sh -c "yarp wait /icub/camcalib/left/out; yarp wait /iKinGazeCtrl/rpc; yarp wait /icub/cartesianController/right_arm/state:o; yarp wait /icub/cartesianController/left_arm/state:o; pf3dTracker --from pf3dTracker_icub3.ini"
 
   yDemoRedBall:
     <<: *yarp-base

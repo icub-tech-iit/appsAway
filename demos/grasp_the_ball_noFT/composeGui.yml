@@ -6,6 +6,7 @@ x-yarp-base: &yarp-base
     - DISPLAY=${DISPLAY}
     - XAUTHORITY=/root/.Xauthority
     - YARP_FORWARD_LOG_ENABLE=1
+    - YARP_ROBOT_NAME
   volumes:
     - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
     - "${XAUTHORITY}:/root/.Xauthority:rw"
