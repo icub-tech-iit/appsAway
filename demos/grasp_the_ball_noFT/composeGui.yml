@@ -30,12 +30,12 @@ services:
   yview_l:
     <<: *yarp-base
     container_name: yview_l
-    command: yarpview --name /icub/view/left --x 0 --y 0 --p 50 --w 320 --h 240
+    command: sh -c "yarpview --name /icub/view/left --x 0 --y 0 --p 50"
 
   yview_r:
     <<: *yarp-base
     container_name: yview_r
-    command: yarpview --name /icub/view/right --x 320 --y 0 --p 50 --w 320 --h 240
+    command: sh -c "yarpview --name /icub/view/right --x 450 --y 0 --p 50"
 
   yconnect_l:
     <<: *yarp-base
@@ -51,12 +51,20 @@ services:
       - yview
     command: sh -c "yarp wait /icub/camcalib/right/out; yarp wait /icub/view/right; yarp connect /icub/camcalib/right/out /icub/view/right tcp"
 
+  yframeGrabberGui_l:
+    <<: *yarp-base
+    container_name: yframeGrabberGui_l
+    command: sh -c "yarp wait /icub/cam/left; frameGrabberGui2 --local /icub/fggui/left --remote /icub/cam/left --x 800 --y 0 --width 350 --height 500"
+
+
+    
+    
 #-----------------------------------------------------------------------------------------------------------------------------------------------------
 #Following services are configured in icub-basic-demos/demoRedBall/app/scripts/demoRedBall.xml.template
   yview:
     <<: *yarp-base
     container_name: yview_demo
-    command: yarpview --name /PF3DTracker_viewer --x 320 --y 0 --p 50 --compact
+    command: sh -c "yarpview --name /PF3DTracker_viewer --x 450 --y 400 --p 50 --compact"
 
   yconnect_demo:
     <<: *yarp-base

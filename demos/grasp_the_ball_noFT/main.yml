@@ -143,7 +143,7 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "yarp wait /icub/camcalib/left/out; yarp wait /iKinGazeCtrl/rpc; yarp wait /icub/cartesianController/right_arm/state:o; yarp wait /icub/cartesianController/left_arm/state:o; demoRedBall"
+    command: sh -c "yarp wait /icub/camcalib/left/out; yarp wait /iKinGazeCtrl/rpc; yarp wait /icub/cartesianController/right_arm/state:o; yarp wait /icub/cartesianController/left_arm/state:o; demoRedBall --from config_icub3.ini"
 
   yConnectCam2Traker:
     <<: *yarp-base
