@@ -17,7 +17,7 @@ x-yarp-base: &yarp-base
 
 
 x-yarp-head: &yarp-head
-  image: valegagge/superbuild-icubhead
+  image: valegagge/superbuild-icubhead:latest
   environment:
     - YARP_FORWARD_LOG_ENABLE=1
     - YARP_ROBOT_NAME
@@ -87,7 +87,7 @@ services:
 #------------------------------------------------------------------------------------------------
 #Following services are configured in ./icub-main/app/default/scripts/cameras_calib.xml.template
   yGrabberCameras:
-    <<: *yarp-base
+    <<: *yarp-head
     deploy:
       placement:
         constraints: [node.labels.type == head]
