@@ -62,7 +62,7 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "checkRobotInterface;  iKinGazeCtrl --from config_no_imu.ini"
+    command: sh -c "checkRobotInterface;  iKinGazeCtrl --from iKinGazeCtrl.ini"
     #note: in our issue we used this configuration file config_no_imu_filter.ini,, but I could not find it.
     #<port timeout="60.0" request="is_ready" reply="[ok]">/icub/yarprobotinterface</port>
 
@@ -137,14 +137,14 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "yarp wait /icub/camcalib/left/out; yarp wait /iKinGazeCtrl/rpc; yarp wait /icub/cartesianController/right_arm/state:o; yarp wait /icub/cartesianController/left_arm/state:o; pf3dTracker --from pf3dTracker_icub3.ini"
+    command: sh -c "yarp wait /icub/camcalib/left/out; yarp wait /iKinGazeCtrl/rpc; yarp wait /icub/cartesianController/right_arm/state:o; yarp wait /icub/cartesianController/left_arm/state:o; pf3dTracker --from graspTheBall_pf3dTracker.ini"
 
   yDemoRedBall:
     <<: *yarp-base
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "yarp wait /icub/camcalib/left/out; yarp wait /iKinGazeCtrl/rpc; yarp wait /icub/cartesianController/right_arm/state:o; yarp wait /icub/cartesianController/left_arm/state:o; demoRedBall --from config_icub3.ini"
+    command: sh -c "yarp wait /icub/camcalib/left/out; yarp wait /iKinGazeCtrl/rpc; yarp wait /icub/cartesianController/right_arm/state:o; yarp wait /icub/cartesianController/left_arm/state:o; demoRedBall --from graspTheBall_demoRedBall.ini"
 
   yConnectCam2Traker:
     <<: *yarp-base
