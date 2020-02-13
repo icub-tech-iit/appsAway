@@ -86,13 +86,6 @@ services:
 
 #------------------------------------------------------------------------------------------------
 #Following services are configured in ./icub-main/app/default/scripts/cameras_calib.xml.template
-  yGrabberCameras:
-    <<: *yarp-head
-    deploy:
-      placement:
-        constraints: [node.labels.type == head]
-    command: sh -c "checkRobotInterface; yarpdev --from camera/ServerGrabberDualDragon.ini --split true"
-    # command: sh -c "yarpdev --device usbCamera --d /dev/video0 --camModel leopard_python --name /icub/cam/left"
 
   yCamCalib_l:
     <<: *yarp-base
@@ -112,14 +105,14 @@ services:
     <<: *yarp-base
     deploy:
       placement:
-        constraints: [node.labels.type != head]
+        constraints: [node.labels.type == head]
     command: sh -c "yarp wait /icub/cam/left; yarp wait /icub/camcalib/left/in; yarp connect /icub/cam/left /icub/camcalib/left/in tcp"
 
   yConnectCam_r:
     <<: *yarp-base
     deploy:
       placement:
-        constraints: [node.labels.type != head]
+        constraints: [node.labels.type == head]
     command: sh -c "yarp wait /icub/cam/right; yarp wait /icub/camcalib/right/in; yarp connect /icub/cam/right /icub/camcalib/right/in tcp"
 
 #------------------------------------------------------------------------------------------------
