@@ -1,7 +1,7 @@
 version: "3.7"
 
 x-yarp-base: &yarp-base
-  image: valegagge/grasptheball:latest
+  image: icubteamcode/grasptheball:devel_full
   environment:
     - YARP_FORWARD_LOG_ENABLE=1
     - YARP_ROBOT_NAME
@@ -160,17 +160,17 @@ services:
 
 
 
-  #use network.peer ip address and port 8080 to see the containers status in browser
-  visualizer:
-    image: dockersamples/visualizer:stable
-    ports:
-      - "8080:8080"
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock"
-    deploy:
-      placement:
-        constraints: [node.role == manager]
-
+    #  #use network.peer ip address and port 8080 to see the containers status in browser
+    #  visualizer:
+    #    image: dockersamples/visualizer:stable
+    #    ports:
+    #      - "8080:8080"
+    #    volumes:
+    #      - "/var/run/docker.sock:/var/run/docker.sock"
+    #    deploy:
+    #      placement:
+    #        constraints: [node.role == manager]
+    #
 
 networks:
   hostnet:
