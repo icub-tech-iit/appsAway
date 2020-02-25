@@ -18,4 +18,4 @@ jobs:
             token: ${{ secrets.CODE_REPO_ACCSS_TOKEN }}
             repository: icub-tech-iit/code
             event-type: AppsAway_update
-            client-payload: '{"version": "${{ steps.get_version.outputs.VERSION }}"}'
+            client-payload: '{"version": "${{ steps.get_version.outputs.VERSION }}", "type": "AppsAway_update"}'
