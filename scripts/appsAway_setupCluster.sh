@@ -155,7 +155,7 @@ run_via_ssh()
 
 swarm_start()
 {
-  _SWARM_INIT_COMMAND=$( ${_DOCKER_BIN} ${_DOCKER_PARAMS} swarm init | egrep -i '^\s{4}')
+  _SWARM_INIT_COMMAND=$( ${_DOCKER_BIN} ${_DOCKER_PARAMS} swarm init --advertise-addr ${APPSAWAY_CONSOLENODE_ADDR} | egrep -i '^\s{4}')
   if [ "$_SWARM_INIT_COMMAND" == "" ]; then
     error "swarm init command string is empty (failed swarm initialization?)"
   fi
