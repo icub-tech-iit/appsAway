@@ -1,0 +1,29 @@
+version: "3.7"
+
+x-yarp-base: &yarp-base
+  image: icubteamcode/superbuild:devel_prod
+  environment:
+    - DISPLAY=${DISPLAY}
+    - XAUTHORITY=/root/.Xauthority
+    - YARP_FORWARD_LOG_ENABLE=1
+    - YARP_ROBOT_NAME
+  volumes:
+    - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
+    - "${XAUTHORITY}:/root/.Xauthority:rw"
+    - type: volume
+      source: mystack_yarp-config
+      target: /root/.config/yarp
+      volume:
+        nocopy: true
+  network_mode: "host"
+  privileged: true
+  #ipc: host
+
+  #for yarprobotinterface_only application there aren't any service with GUI
+  #services:
+
+
+
+        #volumes:
+        #  mystack_yarp-config:
+        #    external: true
