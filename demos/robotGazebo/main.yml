@@ -1,7 +1,8 @@
 version: "3.7"
 
 x-yarp-base: &yarp-base
-  image: icubteamcode/superbuild-gazebo
+  image: icubteamcode/superbuild-gazebo:latest_unstable_source
+  
   environment:
     - DISPLAY=${DISPLAY}
     - QT_X11_NO_MITSHM=1
