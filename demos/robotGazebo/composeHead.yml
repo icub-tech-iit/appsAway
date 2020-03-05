@@ -1,0 +1,23 @@
+version: "3.7"
+
+x-yarp-head: &yarp-head
+  image: icubteamcode/superbuild-icubhead:devel_prod
+  environment:
+    - YARP_FORWARD_LOG_ENABLE=1
+    - YARP_ROBOT_NAME
+  volumes:
+    - type: volume
+      source: mystack_yarp-config
+      target: /root/.config/yarp
+      volume:
+        nocopy: true
+    - "/dev:/dev"
+  network_mode: "host"
+  privileged: true
+
+
+#services:
+
+#volumes:
+#  mystack_yarp-config:
+#    external: true
