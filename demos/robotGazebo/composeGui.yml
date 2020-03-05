@@ -23,9 +23,6 @@ services:
   #following service are configured in icub-main/app/iCubStartup/scripts/iCubStartup.xml.template
   gazebo:
     <<: *yarp-base
-    deploy:
-      placement:
-        constraints: [node.role == manager]
     command: gazebo
 
 
