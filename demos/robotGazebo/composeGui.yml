@@ -1,9 +1,10 @@
 version: "3.7"
 
 x-yarp-base: &yarp-base
-  image: icubteamcode/superbuild:devel_prod
+  image: icubteamcode/superbuild-gazebo:latest_unstable_source
   environment:
     - DISPLAY=${DISPLAY}
+    - QT_X11_NO_MITSHM=1
     - XAUTHORITY=/root/.Xauthority
     - YARP_FORWARD_LOG_ENABLE=1
     - YARP_ROBOT_NAME
@@ -24,7 +25,6 @@ services:
   gazebo:
     <<: *yarp-base
     command: gazebo
-
 
 volumes:
   mystack_yarp-config:
