@@ -19,11 +19,16 @@ x-yarp-base: &yarp-base
   privileged: true
   #ipc: host
 
-  #for yarprobotinterface_only application there aren't any service with GUI
-  #services:
+services:
+  #following service are configured in icub-main/app/iCubStartup/scripts/iCubStartup.xml.template
+  gazebo:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+    command: gazebo
 
 
-
-        #volumes:
-        #  mystack_yarp-config:
-        #    external: true
+volumes:
+  mystack_yarp-config:
+    external: true

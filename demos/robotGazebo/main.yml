@@ -29,13 +29,6 @@ services:
         constraints: [node.role == manager]
     command: yarpserver --write
 
-  gazebo:
-    <<: *yarp-base
-    deploy:
-      placement:
-        constraints: [node.role == manager]
-    command: gazebo
-
 #------------------------------------------------------------------------------------------------
 
   #use network.peer ip address and port 8080 to see the containers status in browser (http://localhost:8080/)
