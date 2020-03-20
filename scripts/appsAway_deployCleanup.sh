@@ -33,12 +33,12 @@ total_cleanup=false
 
 function checkSuperbuild(){
 
-has_icubBuild=$(ssh -n -T icub@$1 echo "\${ICUB_DIR}")
+has_icubBuild=$(ssh -n -T ${APPSAWAY_USER_NAME}@$1 echo "\${ICUB_DIR}")
 
     if [ "$has_icubBuild" == "" ];
        then echo -e "${BLUE}ICUB_DIR ${NC} is ${RED} unset ${NC}"; else echo -e "variable is set to ${GREEN} '$has_icubBuild' ${NC}"; fi
 
-has_superBuild=$(ssh -n -T icub@$1 echo "\${ROBOTOLOGY_SUPERBUILD_INSTALL_PREFIX}")
+has_superBuild=$(ssh -n -T ${APPSAWAY_USER_NAME}@$1 echo "\${ROBOTOLOGY_SUPERBUILD_INSTALL_PREFIX}")
     if [ "$has_superBuild" == "" ];
         then echo -e "${BLUE}SUPERBUILD ${NC} is ${RED} unset ${NC}"; else echo -e "variable is set to ${GREEN} '$has_superBuild' ${NC}"; fi
 
@@ -50,7 +50,7 @@ echo ""
 
 function checkFunc(){
 
-ssh -T icub@$1<<EOF
+ssh -T ${APPSAWAY_USER_NAME}@$1<<EOF
 
     echo "The path I should look is is $2"
 
@@ -70,7 +70,7 @@ EOF
 
 function checkAndKillFunc(){
 
-ssh -T icub@$1<<EOF
+ssh -T ${APPSAWAY_USER_NAME}@$1<<EOF
 
     echo "The path I should look is is $2"
 
@@ -99,7 +99,7 @@ EOF
 
 function killFunc(){
 
-ssh -T icub@$1<<EOF
+ssh -T ${APPSAWAY_USER_NAME}@$1<<EOF
 
     cd `echo "\${ENV_VAR}"`/bin
 
@@ -118,7 +118,7 @@ EOF
 # #####################################################
 
 function dockerRemoveVolumes(){
-ssh -T icub@$1<<EOF
+ssh -T ${APPSAWAY_USER_NAME}@$1<<EOF
 
    
     dockerVolumes=\$(docker volume ls --format "{{.Name}}")
@@ -133,7 +133,7 @@ EOF
 # #####################################################
 
 function dockerCleanupStack(){
-ssh -T icub@$1<<EOF
+ssh -T ${APPSAWAY_USER_NAME}@$1<<EOF
 
     appsPath=\$(echo $APPSAWAY_APP_PATH)
     
@@ -171,7 +171,7 @@ EOF
 
 function dockerCleanupImages(){
 
-ssh -T icub@$1<<END
+ssh -T ${APPSAWAY_USER_NAME}@$1<<END
 
     dockerPS=\$(docker ps -a -q)
     dockerImages=\$(docker images -a -q)
