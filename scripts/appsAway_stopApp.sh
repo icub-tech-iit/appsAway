@@ -162,11 +162,21 @@ run_via_ssh_nowait()
   fi
 }
 
+getdisplay()
+{  ps -u $(id -u) -o pid= | \
+    while read pid; do
+        cat /proc/$pid/environ 2>/dev/null | tr '\0' '\n' | grep '^DISPLAY=:'
+    done | grep -o ':[0-9]*' | sort -u
+}
+
 
 stop_hardware_steps_via_ssh()
 {
   #read -n 1 -s -r -p "Press any key to stop the App"
   echo
+  
+  mydisplay=$(getdisplay)
+
   if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_HEAD_YAML_FILE_LIST}
     do
@@ -178,7 +188,7 @@ stop_hardware_steps_via_ssh()
     for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
     do
       log "stopping docker-compose with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_GUINODE_ADDR"
-      run_via_ssh $APPSAWAY_GUINODE_ADDR "export DISPLAY=:1 ; export XAUTHORITY=/root/.Xauthority; docker-compose -f ${file} down"
+      run_via_ssh $APPSAWAY_GUINODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=/root/.Xauthority; docker-compose -f ${file} down"
     done
  fi
 }
