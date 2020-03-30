@@ -1,0 +1,51 @@
+- name: Uninstall old versions
+  hosts: nodes
+  become: yes
+  tasks:
+    - name: Uninstall docker old versions
+      apt:
+        name: docker docker-engine docker.io containerd runc
+        state: absent
+        update_cache: false
+
+    - name: Install packages to use a repository over HTTPS
+      apt: name={{ item }} state=latest
+      with_items:
+       - apt-transport-https
+       - ca-certificates
+       - curl
+       - gnupg-agent
+       - software-properties-common
+
+    - name: Add Docker’s official GPG key
+      shell: curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+        
+    - name: Add Docker.io repository
+      shell: add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs)  stable"
+      ignore_errors: yes
+
+    - name: Install the latest version of Docker Engine - Community
+      apt: name={{ item }} state=latest
+      with_items:
+       - docker-ce
+       - docker-ce-cli
+       - containerd.io
+
+    - name: Install docker plugin
+      shell: docker plugin install --grant-all-permissions vieux/sshfs
+      ignore_errors: yes
+
+    - name: Install docker-compose
+      shell: curl -L https://github.com/docker/compose/releases/download/1.25.0-rc2/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
+    
+    - name: Install docker-compose
+      shell: chmod +x /usr/local/bin/docker-compose
+
+    - name: Finishing up with needed packages 
+      apt: name={{ item }} state=latest
+      with_items:
+       - openssh-client
+       - openssh-server
+
+
+     

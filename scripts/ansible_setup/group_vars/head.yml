@@ -1,0 +1,4 @@
+kubernetes_taints:
+  - effect: PreferNoSchedule
+    key: icub-head
+    value: "icub-head"

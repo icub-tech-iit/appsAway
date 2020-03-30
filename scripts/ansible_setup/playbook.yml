@@ -1,0 +1,41 @@
+- name: Gather facts
+  hosts: nodes
+  tags:
+    - gather-facts
+
+- name: Install base Kubernetes utilities
+  hosts: nodes
+  gather_facts: no
+  become: yes
+  roles:
+    - on-premise/kube-node-common
+  tags:
+    - kube-node-common
+
+- name: Bootstrap Kubernetes control plane
+  hosts: k8smaster
+  become: yes
+  roles:
+    - on-premise/kube-control-plane
+  vars:
+    kubernetes_api_SAN: []
+    kubernetes_cluster_name: "iit-demo"
+    kubernetes_control_plane_address: "{{ ansible_default_ipv4.address }}:6443"
+    kubernetes_pod_cidr: "172.16.0.0/16"
+    kubernetes_svc_cidr: "172.20.0.0/16"
+    kubernetes_version: "1.15.5"
+  tags:
+    - kube-control-plane
+
+- name: Join worker nodes to Kubernetes cluster
+  hosts: k8sworker
+  become: yes
+  roles:
+    - on-premise/kube-worker
+  vars:
+    kubernetes_control_plane_address: "{{ hostvars[groups.k8smaster[0]].ansible_default_ipv4.address }}:6443"
+    kubernetes_bootstrap_token: "{{ hostvars[groups.k8smaster[0]].kubernetes_bootstrap_token.stdout }}"
+    kubernetes_ca_hash: "{{ hostvars[groups.k8smaster[0]].kubernetes_ca_hash.stdout }}"
+    kubernetes_cloud_provider: ""
+  tags:
+    - kube-worker
