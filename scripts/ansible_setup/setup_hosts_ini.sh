@@ -1,5 +1,7 @@
 #! /bin/bash
 
+source ../appsAway_setEnvironment.local.sh
+
 if [ -f "hosts.ini" ]
 then
     rm hosts.ini
