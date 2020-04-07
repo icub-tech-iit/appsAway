@@ -18,11 +18,30 @@ class WidgetGallery(QDialog):
         super(WidgetGallery, self).__init__(parent)
         self.label = QLabel(self)
 
+        self.title = "" #"Grasp the Ball Application"
+        self.image = "" #'src/main/images/redball.jpg'
+
+        self.button_list = []
+
+        # read from .ini file here
+        self.button_name_list = []
+        conf_file = open("gui_conf.ini", "r")
+        for line in conf_file:
+          if line.find("title") != -1:
+            self.title = line.split('"')[1]
+          if line.find("ImageName") != -1:
+            self.image = line.split('"')[1]
+          if line.find("radioButton") != -1:
+            self.button_name_list = self.button_name_list + [line.split('"')[1]]
+        
+
+
+        # try to make a list of buttons so we can have multiple
         self.pushStartButton = QPushButton("Start the Application")
         self.pushStopButton = QPushButton("Stop the Application")
-        self.radioButton1 = QRadioButton("Red Ball Selection")
-        self.radioButton2 = QRadioButton("Green Ball Selection")
-        self.radioButton3 = QRadioButton("Blue Ball Selection")
+
+        for button_name in self.button_name_list:
+          self.button_list = self.button_list + [QRadioButton(button_name)]
 
         self.timer = QTimer(self)
         
@@ -43,7 +62,9 @@ class WidgetGallery(QDialog):
         self.setLayout(mainLayout)
         self.setWindowTitle("iCub-Tech Application Deployment")
         self.changeStyle('Fusion')
-        self.bottomLeftGroupBox.setDisabled  
+        self.bottomLeftGroupBox.setDisabled 
+
+        os.chdir("../appsAway/scripts/") 
         
     def changeStyle(self, styleName):
         QApplication.setStyle(QStyleFactory.create(styleName))
@@ -55,31 +76,39 @@ class WidgetGallery(QDialog):
         self.progressBar.setValue(curVal + (maxVal - curVal) / 100)
 
     def createTopGroupBox(self):
-        self.topGroupBox = QGroupBox("Grasp the Ball Application")
+        self.topGroupBox = QGroupBox(self.title)
+
+        self.topGroupBox.setAlignment(Qt.AlignHCenter) 
+
         layout = QVBoxLayout()
         
-        pixmap = QPixmap('src/main/images/redball.jpg')
+        pixmap = QPixmap(self.image)
         self.label.setPixmap(pixmap)
         #self.resize(pixmap.width(),pixmap.height())
         #self.show()
         layout.addWidget(self.label)
         layout.addStretch(1)
+        layout.setAlignment(Qt.AlignCenter)
         self.topGroupBox.setLayout(layout)
     
     def createBottomRightGroupBox(self):
         self.bottomRightGroupBox = QGroupBox("Application Options")
-        self.radioButton1.setChecked(True)
+
+        self.bottomRightGroupBox.setAlignment(Qt.AlignHCenter)
+
+        self.button_list[1].setChecked(True)
 
         layout = QVBoxLayout()
-        layout.addWidget(self.radioButton1)
-        layout.addWidget(self.radioButton2)
-        layout.addWidget(self.radioButton3)
+        for button in self.button_list:
+          layout.addWidget(button)
 
         layout.addStretch(1)
         self.bottomRightGroupBox.setLayout(layout)    
 
     def createBottomLeftGroupBox(self):
         self.bottomLeftGroupBox = QGroupBox("Application")
+
+        self.bottomLeftGroupBox.setAlignment(Qt.AlignHCenter)
         
         self.pushStartButton.setDefault(True)
         self.pushStopButton.setDefault(True)
@@ -103,9 +132,8 @@ class WidgetGallery(QDialog):
     def startProgressBar(self):
         self.pushStartButton.setEnabled(False)
 
-        self.radioButton1.setEnabled(False)
-        self.radioButton2.setEnabled(False)
-        self.radioButton3.setEnabled(False)
+        for button in self.button_list:
+          button.setEnabled(False)
 
         #self.bottomRightGroupBox.setEnabled(False)
         
@@ -129,12 +157,7 @@ class WidgetGallery(QDialog):
 
     def startApplication(self):
         print("starting application")
-        print ("Current working dir : %s" % os.getcwd())
-        str1 = os.getcwd()
-        str2 = "/test.sh"
-        path = str1 + str2
-        print ("THE SCRIPT will run : %s" % path)
-        rc = call("./test.sh")
+        rc = call("./appsAway_startApp.sh")
     
     def stopApplication(self):
         print("stopping application\n\n")
@@ -142,9 +165,12 @@ class WidgetGallery(QDialog):
         self.pushStopButton.setEnabled(False)
         self.timer.stop()  
         self.progressBar.setValue(0)
-        self.radioButton1.setEnabled(True)
-        self.radioButton2.setEnabled(True)
-        self.radioButton3.setEnabled(True)
+
+        for button in self.button_list:
+          button.setEnabled(True)
+
+        rc = call("./appsAway_stopApp.sh")
+    
 
 if __name__ == '__main__':
     appctxt = ApplicationContext()
