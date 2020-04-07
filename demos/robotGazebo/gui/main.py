@@ -96,7 +96,8 @@ class WidgetGallery(QDialog):
 
         self.bottomRightGroupBox.setAlignment(Qt.AlignHCenter)
 
-        self.button_list[1].setChecked(True)
+        if len(self.button_list) >= 1:
+          self.button_list[0].setChecked(True)
 
         layout = QVBoxLayout()
         for button in self.button_list:
