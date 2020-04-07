@@ -190,6 +190,12 @@ stop_hardware_steps_via_ssh()
       log "stopping docker-compose with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_GUINODE_ADDR"
       run_via_ssh $APPSAWAY_GUINODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=/root/.Xauthority; docker-compose -f ${file} down"
     done
+  elif [ "$APPSAWAY_GUINODE_ADDR" == "" ] && [ "$APPSAWAY_CONSOLENODE_ADDR" != "" ]; then
+    for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
+    do
+      log "stopping docker-compose with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_CONSOLENODE_ADDR"
+      run_via_ssh $APPSAWAY_CONSOLENODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=/root/.Xauthority; docker-compose -f ${file} down"
+    done
  fi
 }
 

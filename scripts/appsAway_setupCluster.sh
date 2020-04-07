@@ -242,6 +242,7 @@ copy_yaml_files()
       ${_SCP_BIN} ${_SCP_PARAMS} ../demos/${APPSAWAY_APP_NAME}/${file} ${APPSAWAY_USER_NAME}@${APPSAWAY_ICUBHEADNODE_ADDR}:${APPSAWAY_APP_PATH}/
     done
   fi
+
   if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
     log "creating path ${APPSAWAY_APP_PATH} on node with IP $APPSAWAY_GUINODE_ADDR"
     ${_SSH_BIN} ${_SSH_PARAMS} ${APPSAWAY_USER_NAME}@${APPSAWAY_GUINODE_ADDR} "mkdir -p ${APPSAWAY_APP_PATH}"
@@ -249,6 +250,14 @@ copy_yaml_files()
     do
       log "copying yaml file $file to node with IP $APPSAWAY_GUINODE_ADDR"
       ${_SCP_BIN} ${_SCP_PARAMS} ../demos/${APPSAWAY_APP_NAME}/${file} ${APPSAWAY_USER_NAME}@${APPSAWAY_GUINODE_ADDR}:${APPSAWAY_APP_PATH}/
+    done
+  elif [ "$APPSAWAY_GUINODE_ADDR" == "" ] && [ "$APPSAWAY_CONSOLENODE_ADDR" != "" ]; then
+    log "creating path ${APPSAWAY_APP_PATH} on node with IP $APPSAWAY_CONSOLENODE_ADDR"
+    ${_SSH_BIN} ${_SSH_PARAMS} ${APPSAWAY_USER_NAME}@${APPSAWAY_CONSOLENODE_ADDR} "mkdir -p ${APPSAWAY_APP_PATH}"
+    for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
+    do
+      log "copying yaml file $file to node with IP $APPSAWAY_CONSOLENODE_ADDR"
+      ${_SCP_BIN} ${_SCP_PARAMS} ../demos/${APPSAWAY_APP_NAME}/${file} ${APPSAWAY_USER_NAME}@${APPSAWAY_CONSOLENODE_ADDR}:${APPSAWAY_APP_PATH}/
     done
   fi
 }
