@@ -86,6 +86,4 @@ fi
 
 echo "[all:vars]
 ansible_ssh_user=\"${APPSAWAY_USER_NAME}\"
-
-[head:vars]
-ansible_become_pass=\"icub\"" >> ./hosts.ini
+ansible_become_pass=\"${APPSAWAY_USER_PASSWORD}\" " >> ./hosts.ini
