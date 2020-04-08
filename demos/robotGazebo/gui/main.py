@@ -206,6 +206,13 @@ class WidgetGallery(QDialog):
 
     def startApplication(self):
         print("starting application")
+        for button in self.button_list:
+            if (button.isChecked()):
+              print(button.text()+" is selected")
+              print("Robot model is " + button.text().split(" ")[0])
+              os.environ['APPSAWAY_ROBOT_MODEL'] = button.text().split(" ")[0]
+
+
         rc = call("./appsAway_startApp.sh")
         #self.rc = subprocess.Popen("./appsAway_startApp.sh", stdout=subprocess.PIPE, shell=True)
     
