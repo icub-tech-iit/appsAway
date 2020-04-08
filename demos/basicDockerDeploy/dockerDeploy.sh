@@ -1,3 +1,3 @@
 #! /bin/bash
 
-docker run --name cleandocker -it --network host valegagge/superbuildmesa:latest bash
+docker run  -it --network host icubteamcode/superbuild:master-unstable_sources bash
