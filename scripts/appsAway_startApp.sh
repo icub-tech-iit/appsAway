@@ -7,7 +7,7 @@
 #
 # NOTE: this script must be executed on master node
 #
-# AUTHOR : Valentina Gaggero / Matteo Brunettini
+# AUTHOR : valentina Gaggero / Matteo Brunettini
 #
 # LATEST MODIFICATION DATE (YYYY-MM-DD) : 2019-12-06
 #
@@ -37,6 +37,10 @@ _SSH_PARAMS="-T"
 _DOCKER_BIN=$(which docker || true)
 _DOCKER_PARAMS=""
 _SSH_CMD_PREFIX=""
+
+val1=$((0))
+
+echo $val1 >| /home/${APPSAWAY_USER_NAME}/teamcode/appsAway/scripts/PIPE
 
 print_defs ()
 {
@@ -181,6 +185,8 @@ run_deploy()
   export $(cat .env)
   for _file2deploy in ${APPSAWAY_DEPLOY_YAML_FILE_LIST}
   do
+    val1=$(( $val1 + 10 ))
+    echo $val1 >| /home/${APPSAWAY_USER_NAME}/teamcode/appsAway/scripts/PIPE
     ${_DOCKER_BIN} ${_DOCKER_PARAMS} stack deploy -c ${_file2deploy} ${APPSAWAY_STACK_NAME}
   done
 }
@@ -205,6 +211,8 @@ run_hardware_steps_via_ssh()
       #run_via_ssh_nowait $APPSAWAY_ICUBHEADNODE_ADDR "docker-compose -f ${file} up" "log.txt"
       run_via_ssh $APPSAWAY_ICUBHEADNODE_ADDR "docker-compose -f ${file} up --detach"
     done
+    val1=$(( $val1 + 5 ))
+    echo $val1 >| /home/${APPSAWAY_USER_NAME}/teamcode/appsAway/scripts/PIPE
   fi
   #sleep 3
   if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
@@ -214,6 +222,8 @@ run_hardware_steps_via_ssh()
       #run_via_ssh_nowait $APPSAWAY_GUINODE_ADDR "docker-compose -f ${file} up" "log.txt"
       run_via_ssh $APPSAWAY_GUINODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=/run/user/1000/gdm/Xauthority; docker-compose -f ${file} up --detach"
     done
+    val1=$(( $val1 + 5 ))
+    echo $val1 >| /home/${APPSAWAY_USER_NAME}/teamcode/appsAway/scripts/PIPE
   elif [ "$APPSAWAY_GUINODE_ADDR" == "" ] && [ "$APPSAWAY_CONSOLENODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
     do
@@ -221,6 +231,8 @@ run_hardware_steps_via_ssh()
       #run_via_ssh_nowait $APPSAWAY_GUINODE_ADDR "docker-compose -f ${file} up" "log.txt"
       run_via_ssh $APPSAWAY_CONSOLENODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=/run/user/1000/gdm/Xauthority; docker-compose -f ${file} up --detach"
     done
+    val1=$(( $val1 + 5 ))
+    echo $val1 >| /home/${APPSAWAY_USER_NAME}/teamcode/appsAway/scripts/PIPE
   fi
 
 }
@@ -256,8 +268,14 @@ stop_hardware_steps_via_ssh()
 main()
 {
   is_this_node_swarm_master
+  val1=$(( 30 ))
+  echo $val1 >| /home/${APPSAWAY_USER_NAME}/teamcode/appsAway/scripts/PIPE
   run_deploy
+  val1=$(( 70 ))
+  echo $val1 >| /home/${APPSAWAY_USER_NAME}/teamcode/appsAway/scripts/PIPE
   run_hardware_steps_via_ssh
+  val1=$(( 90 ))
+  echo $val1 >| /home/${APPSAWAY_USER_NAME}/teamcode/appsAway/scripts/PIPE
 #  stop_hardware_steps_via_ssh
 }
 
@@ -265,4 +283,6 @@ parse_opt "$@"
 init
 main
 fini
+val1=$(( 100 ))
+echo $val1 >| /home/${APPSAWAY_USER_NAME}/teamcode/appsAway/scripts/PIPE
 exit 0

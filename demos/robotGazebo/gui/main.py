@@ -13,6 +13,28 @@ import time
 from subprocess import call
 import os
 
+
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
+
+global PAUSED
+PAUSED = True
+
+class MyHandler(FileSystemEventHandler):
+    def __init__(self, progressBar):
+        self.progressBar = progressBar
+    def on_modified(self, event):
+        global PAUSED
+        if PAUSED:
+          return
+        if os.path.isfile("PIPE"):
+          pipe_file = open("PIPE", "r")
+          line = pipe_file.readline()
+          curVal = int(line)
+          maxVal = self.progressBar.maximum()
+          self.progressBar.setValue(curVal + (maxVal - curVal) / 100)
+          pipe_file.close()
+
 class WidgetGallery(QDialog):
     def __init__(self, parent=None):
         super(WidgetGallery, self).__init__(parent)
@@ -20,6 +42,8 @@ class WidgetGallery(QDialog):
 
         self.title = "" #"Grasp the Ball Application"
         self.image = "" #'src/main/images/redball.jpg'
+
+        self.rc = None #inits the subprocess
 
         self.button_list = []
 
@@ -43,12 +67,28 @@ class WidgetGallery(QDialog):
         for button_name in self.button_name_list:
           self.button_list = self.button_list + [QRadioButton(button_name)]
 
+        #for button in self.button_list:
+        #  if button.isSelected():
+        #    self.button_list[1].label.split(" ")[0]
+
+
         self.timer = QTimer(self)
-        
+
         self.createTopGroupBox()
         self.createBottomLeftGroupBox()
         self.createBottomRightGroupBox()
+
+
+        os.chdir("../appsAway/scripts/") 
+        if os.path.isfile("PIPE"):
+          os.remove("PIPE")
+
         self.createProgressBar()
+        self.event_handler = MyHandler(self.progressBar)
+        self.observer = Observer()
+        self.observer.schedule(self.event_handler, path=os.getcwd(), recursive=False)
+        self.observer.start()
+        
 
         mainLayout = QGridLayout()
         mainLayout.addWidget(self.topGroupBox, 0, 0, 1, 2)
@@ -64,16 +104,21 @@ class WidgetGallery(QDialog):
         self.changeStyle('Fusion')
         self.bottomLeftGroupBox.setDisabled 
 
-        os.chdir("../appsAway/scripts/") 
         
     def changeStyle(self, styleName):
         QApplication.setStyle(QStyleFactory.create(styleName))
         QApplication.setPalette(QApplication.style().standardPalette())
 
-    def advanceProgressBar(self):
-        curVal = self.progressBar.value()
-        maxVal = self.progressBar.maximum()
-        self.progressBar.setValue(curVal + (maxVal - curVal) / 100)
+    #def advanceProgressBar(self):
+#
+#        print("Trying")
+#        if os.path.isfile("PIPE"):
+#          pipe_file = open("PIPE", "r")
+#          line = pipe_file.readline()
+#          curVal = int(line)
+#          maxVal = self.progressBar.maximum()
+#          self.progressBar.setValue(curVal + (maxVal - curVal) / 100)
+#          pipe_file.close()
 
     def createTopGroupBox(self):
         self.topGroupBox = QGroupBox(self.title)
@@ -126,20 +171,23 @@ class WidgetGallery(QDialog):
 
     def createProgressBar(self):
         self.progressBar = QProgressBar()
-        self.progressBar.setRange(0, 10000)
+        self.progressBar.setRange(0, 100)
         self.progressBar.setValue(0)
        
 
     def startProgressBar(self):
+        global PAUSED
         self.pushStartButton.setEnabled(False)
 
         for button in self.button_list:
           button.setEnabled(False)
 
         #self.bottomRightGroupBox.setEnabled(False)
+
+        PAUSED = False
         
-        self.timer.timeout.connect(self.advanceProgressBar)
-        self.timer.start(1000)  
+        #self.timer.timeout.connect(self.advanceProgressBar)
+        #self.timer.start(100)  
 
         elapsedTime = QElapsedTimer()
         elapsedTime.start()
@@ -159,18 +207,27 @@ class WidgetGallery(QDialog):
     def startApplication(self):
         print("starting application")
         rc = call("./appsAway_startApp.sh")
+        #self.rc = subprocess.Popen("./appsAway_startApp.sh", stdout=subprocess.PIPE, shell=True)
     
     def stopApplication(self):
+        global PAUSED
         print("stopping application\n\n")
         self.pushStartButton.setEnabled(True)
         self.pushStopButton.setEnabled(False)
         self.timer.stop()  
         self.progressBar.setValue(0)
+        PAUSED = True
 
         for button in self.button_list:
           button.setEnabled(True)
 
         rc = call("./appsAway_stopApp.sh")
+        #self.rc = subprocess.Popen("./appsAway_stopApp.sh")
+
+    # overload the closing function to close the watchdog
+    def exec_(self):
+        self.observer.stop()
+        self.observer.join()
     
 
 if __name__ == '__main__':
