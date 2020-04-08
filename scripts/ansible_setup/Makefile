@@ -1,6 +1,6 @@
 .PHONY: prepare
 prepare:
-	ansible-playbook -K prepare.yml
+	ansible-playbook prepare.yml
 
 .PHONY: cluster
 cluster:
