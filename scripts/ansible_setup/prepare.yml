@@ -7,6 +7,7 @@
         name: docker docker-engine docker.io containerd runc
         state: absent
         update_cache: false
+      when: ansible_distribution != 'MacOSX'
 
     - name: Install packages to use a repository over HTTPS
       apt: name={{ item }} state=latest
@@ -19,10 +20,12 @@
 
     - name: Add Docker’s official GPG key
       shell: curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+      when: ansible_distribution != 'MacOSX'
         
     - name: Add Docker.io repository
       shell: add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs)  stable"
       ignore_errors: yes
+      when: ansible_distribution != 'MacOSX'
 
     - name: Install the latest version of Docker Engine - Community
       apt: name={{ item }} state=latest
@@ -30,16 +33,20 @@
        - docker-ce
        - docker-ce-cli
        - containerd.io
+      when: ansible_distribution != 'MacOSX'
 
     - name: Install docker plugin
       shell: docker plugin install --grant-all-permissions vieux/sshfs
       ignore_errors: yes
+      when: ansible_distribution != 'MacOSX'
 
     - name: Install docker-compose
       shell: curl -L https://github.com/docker/compose/releases/download/1.25.0-rc2/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
+      when: ansible_distribution != 'MacOSX'
     
     - name: Install docker-compose
       shell: chmod +x /usr/local/bin/docker-compose
+      when: ansible_distribution != 'MacOSX'
 
     - name: Finishing up with needed packages 
       apt: name={{ item }} state=latest
