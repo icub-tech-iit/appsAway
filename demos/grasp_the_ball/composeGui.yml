@@ -1,7 +1,7 @@
 version: "3.7"
 
 x-yarp-base: &yarp-base
-  image: valegagge/superbuildmesa:light
+  image: icubteamcode/superbuild:master-unstable_binaries
   environment:
     - DISPLAY=${DISPLAY}
     - XAUTHORITY=/root/.Xauthority

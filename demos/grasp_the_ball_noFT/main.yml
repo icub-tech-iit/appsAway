@@ -17,7 +17,7 @@ x-yarp-base: &yarp-base
 
 
 x-yarp-head: &yarp-head
-  image: valegagge/superbuild-icubhead:latest
+  image: icubteamcode/superbuild-icubhead:master-unstable_binaries
   environment:
     - YARP_FORWARD_LOG_ENABLE=1
     - YARP_ROBOT_NAME

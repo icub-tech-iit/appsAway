@@ -1,7 +1,7 @@
 version: "3.7"
 
 x-yarp-base: &yarp-base
-  image: valegagge/redballdemo
+  image: icubteamcode/grasptheball:devel_prod
   environment:
     - YARP_FORWARD_LOG_ENABLE=1
   volumes:
@@ -16,7 +16,7 @@ x-yarp-base: &yarp-base
 
 
 x-yarp-head: &yarp-head
-  image: valegagge/superbuildmesaicubhead
+  image: icubteamcode/superbuild-icubhead:master-unstable_binaries
   environment:
     - YARP_FORWARD_LOG_ENABLE=1
     - YARP_ROBOT_NAME
