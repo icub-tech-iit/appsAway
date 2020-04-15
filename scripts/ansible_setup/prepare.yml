@@ -17,7 +17,7 @@
           - curl
           - gnupg-agent
           - software-properties-common
-        state: present
+        state: latest
         autoclean: yes
       when: ansible_distribution != 'MacOSX'
 
@@ -38,7 +38,7 @@
           - docker-ce
           - docker-ce-cli
           - containerd.io
-        state: present
+        state: latest
         autoclean: yes
       when: ansible_distribution != 'MacOSX'
 
@@ -67,6 +67,6 @@
           - curl
           - gnupg-agent
           - software-properties-common
-        state: present
+        state: latest
         autoclean: yes
       when: ansible_distribution != 'MacOSX'
