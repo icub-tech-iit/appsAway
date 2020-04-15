@@ -137,7 +137,22 @@ ssh -T ${APPSAWAY_USER_NAME}@$1<<EOF
 
     appsPath=\$(echo $APPSAWAY_APP_PATH)
     
-    docker-compose -f \$appsPath/*.yml kill -s SIGINT
+    #docker-compose -f \$appsPath/*.yml kill -s SIGINT
+
+    if [ -f "\$(echo $APPSAWAY_APP_PATH)/main.yml" ]
+    then
+        docker-compose -f \$(echo $APPSAWAY_APP_PATH)/main.yml kill -s SIGINT
+    fi
+    if [ -f "\$(echo $APPSAWAY_APP_PATH)/composeGui.yml" ]
+    then 
+        docker-compose -f \$(echo $APPSAWAY_APP_PATH)/composeGui.yml kill -s SIGINT 
+    fi 
+    if [ -f "\$(echo $APPSAWAY_APP_PATH)/composeHead.yml" ] 
+    then 
+        docker-compose -f \$(echo $APPSAWAY_APP_PATH)/composeHead.yml kill -s SIGINT 
+    fi
+
+
     docker container prune --force
 
     dockerPS=\$(docker ps -a -q)
