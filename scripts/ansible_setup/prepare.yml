@@ -10,16 +10,21 @@
       when: ansible_distribution != 'MacOSX'
 
     - name: Install packages to use a repository over HTTPS
-      apt: name={{ item }} state=latest
-      with_items:
-       - apt-transport-https
-       - ca-certificates
-       - curl
-       - gnupg-agent
-       - software-properties-common
+      apt: 
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg-agent
+          - software-properties-common
+        state: present
+        autoclean: yes
+      when: ansible_distribution != 'MacOSX'
 
     - name: Add Docker’s official GPG key
       shell: curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+      args:
+        warn: no
       when: ansible_distribution != 'MacOSX'
         
     - name: Add Docker.io repository
@@ -28,11 +33,13 @@
       when: ansible_distribution != 'MacOSX'
 
     - name: Install the latest version of Docker Engine - Community
-      apt: name={{ item }} state=latest
-      with_items:
-       - docker-ce
-       - docker-ce-cli
-       - containerd.io
+      apt: 
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+        state: present
+        autoclean: yes
       when: ansible_distribution != 'MacOSX'
 
     - name: Install docker plugin
@@ -42,17 +49,24 @@
 
     - name: Install docker-compose
       shell: curl -L https://github.com/docker/compose/releases/download/1.25.0-rc2/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
+      args:
+        warn: no
       when: ansible_distribution != 'MacOSX'
     
     - name: Install docker-compose
       shell: chmod +x /usr/local/bin/docker-compose
+      args:
+        warn: no
       when: ansible_distribution != 'MacOSX'
 
     - name: Finishing up with needed packages 
-      apt: name={{ item }} state=latest
-      with_items:
-       - openssh-client
-       - openssh-server
-
-
-     
+      apt: 
+        name:
+          - openssh-client
+          - openssh-server
+          - curl
+          - gnupg-agent
+          - software-properties-common
+        state: present
+        autoclean: yes
+      when: ansible_distribution != 'MacOSX'
