@@ -81,7 +81,7 @@ class WidgetGallery(QDialog):
         self.createBottomRightGroupBox()
 
 
-        os.chdir("../appsAway/scripts/") 
+        os.chdir("../../../scripts/") 
         if os.path.isfile("PIPE"):
           os.remove("PIPE")
 
