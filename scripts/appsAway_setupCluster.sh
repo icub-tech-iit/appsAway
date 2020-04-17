@@ -123,7 +123,13 @@ init()
    exit_err "enviroment file ${_APPSAWAY_ENV_FILE} does not exists"
  fi
  source ${_APPSAWAY_ENV_FILE}
- _ALL_LOCAL_IP_ADDRESSES=$(arp -a | awk -F'[()]' '{print $2}')
+ os=`uname -s`
+ if [ "$os" = "Darwin" ]
+ then
+  _ALL_LOCAL_IP_ADDRESSES=$(arp -a | awk -F'[()]' '{print $2}')
+ else
+  _ALL_LOCAL_IP_ADDRESSES=$(hostname --all-ip-address)
+ fi
  if [ "$_ALL_LOCAL_IP_ADDRESSES" == "" ]; then
    exit_err "unable to read local IP addresses"
  fi
