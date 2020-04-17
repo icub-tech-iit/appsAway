@@ -35,6 +35,7 @@ _SCP_PARAMS="-q -B"
 _SSH_BIN=$(which ssh || true)
 _SSH_PARAMS="-T"
 _DOCKER_BIN=$(which docker || true)
+_DOCKER_COMPOSE_BIN=$(which docker-compose || true)
 _DOCKER_PARAMS=""
 _SSH_CMD_PREFIX=""
 
@@ -49,6 +50,7 @@ print_defs ()
   echo " _SSH_BIN is $_SSH_BIN"
   echo " _SSH_PARAMS is $_SSH_PARAMS"
   echo " _DOCKER_BIN is $_DOCKER_BIN"
+  echo "_DOCKER_COMPOSE_BIN is $_DOCKER_COMPOSE_BIN"
   echo " _DOCKER_PARAMS is $_DOCKER_PARAMS"
 }
 
@@ -169,32 +171,39 @@ getdisplay()
     done | grep -o ':[0-9]*' | sort -u
 }
 
-
 stop_hardware_steps_via_ssh()
 {
   #read -n 1 -s -r -p "Press any key to stop the App"
-  echo
   
   mydisplay=$(getdisplay)
+
+  myXauth="" 
+  os=`uname -s`
+  if [ "$os" = "Darwin" ]
+  then
+     myXauth=${XAUTHORITY}
+  else
+    myXauth="/run/user/1000/gdm/Xauthority"
+  fi
 
   if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_HEAD_YAML_FILE_LIST}
     do
       log "stopping docker-compose with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_ICUBHEADNODE_ADDR"
-      run_via_ssh $APPSAWAY_ICUBHEADNODE_ADDR "docker-compose -f ${file} down"
+      run_via_ssh $APPSAWAY_ICUBHEADNODE_ADDR "${_DOCKER_COMPOSE_BIN} -f ${file} down"
     done
   fi
   if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
     do
       log "stopping docker-compose with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_GUINODE_ADDR"
-      run_via_ssh $APPSAWAY_GUINODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=/root/.Xauthority; docker-compose -f ${file} down"
+      run_via_ssh $APPSAWAY_GUINODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; ${_DOCKER_COMPOSE_BIN} -f ${file} down"
     done
   elif [ "$APPSAWAY_GUINODE_ADDR" == "" ] && [ "$APPSAWAY_CONSOLENODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
     do
       log "stopping docker-compose with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_CONSOLENODE_ADDR"
-      run_via_ssh $APPSAWAY_CONSOLENODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=/root/.Xauthority; docker-compose -f ${file} down"
+      run_via_ssh $APPSAWAY_CONSOLENODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; ${_DOCKER_COMPOSE_BIN} -f ${file} down"
     done
  fi
 }
