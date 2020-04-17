@@ -35,12 +35,13 @@ _SCP_PARAMS="-q -B"
 _SSH_BIN=$(which ssh || true)
 _SSH_PARAMS="-T"
 _DOCKER_BIN=$(which docker || true)
+_DOCKER_COMPOSE_BIN=$(which docker-compose || true)
 _DOCKER_PARAMS=""
 _SSH_CMD_PREFIX=""
 
 val1=$((0))
 
-echo $val1 >| /home/${APPSAWAY_USER_NAME}/teamcode/appsAway/scripts/PIPE
+echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE
 
 print_defs ()
 {
@@ -116,18 +117,22 @@ parse_opt() {
 init()
 {
  log "$0 STARTED"
- _SCP_BIN=$(which scp)
+ #_SCP_BIN=$(which scp)
  if [ "${_SCP_BIN}" == "" ]; then
    exit_err "scp binary not found"
  fi
- _SSH_BIN=$(which ssh)
+ #_SSH_BIN=$(which ssh)
  if [ "${_SSH_BIN}" == "" ]; then
    exit_err "ssh binary not found"
  fi
- _DOCKER_BIN=$(which docker)
+ #_DOCKER_BIN=$(which docker)
  if [ "${_DOCKER_BIN}" == "" ]; then
    exit_err "docker binary not found"
  fi
+ if [ "${_DOCKER_COMPOSE_BIN}" == "" ]; then
+   exit_err "docker-compose binary not found"
+ fi
+
  if [ ! -f "${_APPSAWAY_ENVFILE}" ]; then
    exit_err "enviroment file ${_APPSAWAY_ENVFILE} does not exists"
  fi
@@ -186,7 +191,7 @@ run_deploy()
   for _file2deploy in ${APPSAWAY_DEPLOY_YAML_FILE_LIST}
   do
     val1=$(( $val1 + 10 ))
-    echo $val1 >| /home/${APPSAWAY_USER_NAME}/teamcode/appsAway/scripts/PIPE
+    echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE
     ${_DOCKER_BIN} ${_DOCKER_PARAMS} stack deploy -c ${_file2deploy} ${APPSAWAY_STACK_NAME}
   done
 }
@@ -207,32 +212,32 @@ run_hardware_steps_via_ssh()
   if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_HEAD_YAML_FILE_LIST}
     do
-      log "running docker-compose with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_ICUBHEADNODE_ADDR"
-      #run_via_ssh_nowait $APPSAWAY_ICUBHEADNODE_ADDR "docker-compose -f ${file} up" "log.txt"
-      run_via_ssh $APPSAWAY_ICUBHEADNODE_ADDR "docker-compose -f ${file} up --detach"
+      log "running ${_DOCKER_COMPOSE_BIN} with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_ICUBHEADNODE_ADDR"
+      #run_via_ssh_nowait $APPSAWAY_ICUBHEADNODE_ADDR "${_DOCKER_COMPOSE_BIN} -f ${file} up" "log.txt"
+      run_via_ssh $APPSAWAY_ICUBHEADNODE_ADDR "${_DOCKER_COMPOSE_BIN} -f ${file} up --detach"
     done
     val1=$(( $val1 + 5 ))
-    echo $val1 >| /home/${APPSAWAY_USER_NAME}/teamcode/appsAway/scripts/PIPE
+    echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE
   fi
   #sleep 3
   if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
     do
-      log "running docker-compose with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_GUINODE_ADDR"
-      #run_via_ssh_nowait $APPSAWAY_GUINODE_ADDR "docker-compose -f ${file} up" "log.txt"
-      run_via_ssh $APPSAWAY_GUINODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=/run/user/1000/gdm/Xauthority; docker-compose -f ${file} up --detach"
+      log "running ${_DOCKER_COMPOSE_BIN} with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_GUINODE_ADDR"
+      #run_via_ssh_nowait $APPSAWAY_GUINODE_ADDR "${_DOCKER_COMPOSE_BIN} -f ${file} up" "log.txt"
+      run_via_ssh $APPSAWAY_GUINODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=/run/user/1000/gdm/Xauthority; ${_DOCKER_COMPOSE_BIN} -f ${file} up --detach"
     done
     val1=$(( $val1 + 5 ))
-    echo $val1 >| /home/${APPSAWAY_USER_NAME}/teamcode/appsAway/scripts/PIPE
+    echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE
   elif [ "$APPSAWAY_GUINODE_ADDR" == "" ] && [ "$APPSAWAY_CONSOLENODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
     do
-      log "running docker-compose with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_CONSOLENODE_ADDR"
-      #run_via_ssh_nowait $APPSAWAY_GUINODE_ADDR "docker-compose -f ${file} up" "log.txt"
-      run_via_ssh $APPSAWAY_CONSOLENODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=/run/user/1000/gdm/Xauthority; docker-compose -f ${file} up --detach"
+      log "running ${_DOCKER_COMPOSE_BIN} with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_CONSOLENODE_ADDR"
+      #run_via_ssh_nowait $APPSAWAY_GUINODE_ADDR "${_DOCKER_COMPOSE_BIN} -f ${file} up" "log.txt"
+      run_via_ssh $APPSAWAY_CONSOLENODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=/run/user/1000/gdm/Xauthority; ${_DOCKER_COMPOSE_BIN} -f ${file} up --detach"
     done
     val1=$(( $val1 + 5 ))
-    echo $val1 >| /home/${APPSAWAY_USER_NAME}/teamcode/appsAway/scripts/PIPE
+    echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE
   fi
 
 }
@@ -246,21 +251,21 @@ stop_hardware_steps_via_ssh()
   if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_HEAD_YAML_FILE_LIST}
     do
-      log "stopping docker-compose with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_ICUBHEADNODE_ADDR"
-      run_via_ssh $APPSAWAY_ICUBHEADNODE_ADDR "docker-compose -f ${file} down"
+      log "stopping ${_DOCKER_COMPOSE_BIN} with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_ICUBHEADNODE_ADDR"
+      run_via_ssh $APPSAWAY_ICUBHEADNODE_ADDR "${_DOCKER_COMPOSE_BIN} -f ${file} down"
     done
   fi
   if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
     do
-      log "stopping docker-compose with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_GUINODE_ADDR"
-      run_via_ssh $APPSAWAY_GUINODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=/run/user/1000/gdm/Xauthority; docker-compose -f ${file} down"
+      log "stopping ${_DOCKER_COMPOSE_BIN} with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_GUINODE_ADDR"
+      run_via_ssh $APPSAWAY_GUINODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=/run/user/1000/gdm/Xauthority; ${_DOCKER_COMPOSE_BIN} -f ${file} down"
     done
   elif [ "$APPSAWAY_GUINODE_ADDR" == "" ] && [ "$APPSAWAY_CONSOLENODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
     do
-      log "stopping docker-compose with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_CONSOLENODE_ADDR"
-      run_via_ssh $APPSAWAY_CONSOLENODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=/run/user/1000/gdm/Xauthority; docker-compose -f ${file} down"
+      log "stopping ${_DOCKER_COMPOSE_BIN} with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_CONSOLENODE_ADDR"
+      run_via_ssh $APPSAWAY_CONSOLENODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=/run/user/1000/gdm/Xauthority; ${_DOCKER_COMPOSE_BIN} -f ${file} down"
     done
   fi
 }
@@ -269,13 +274,13 @@ main()
 {
   is_this_node_swarm_master
   val1=$(( 30 ))
-  echo $val1 >| /home/${APPSAWAY_USER_NAME}/teamcode/appsAway/scripts/PIPE
+  echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE
   run_deploy
   val1=$(( 70 ))
-  echo $val1 >| /home/${APPSAWAY_USER_NAME}/teamcode/appsAway/scripts/PIPE
+  echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE
   run_hardware_steps_via_ssh
   val1=$(( 90 ))
-  echo $val1 >| /home/${APPSAWAY_USER_NAME}/teamcode/appsAway/scripts/PIPE
+  echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE
 #  stop_hardware_steps_via_ssh
 }
 
@@ -284,5 +289,5 @@ init
 main
 fini
 val1=$(( 100 ))
-echo $val1 >| /home/${APPSAWAY_USER_NAME}/teamcode/appsAway/scripts/PIPE
+echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE
 exit 0
