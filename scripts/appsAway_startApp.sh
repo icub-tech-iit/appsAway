@@ -154,20 +154,20 @@ fini()
 
 run_via_ssh()
 {
-  if [ "$3" != "" ]; then
-    ${_SSH_BIN} ${_SSH_PARAMS} ${APPSAWAY_USER_NAME}@$1 "$_SSH_CMD_PREFIX ; $2 > $3 2>&1"
+  if [ "$4" != "" ]; then
+    ${_SSH_BIN} ${_SSH_PARAMS} $1@$2 "$_SSH_CMD_PREFIX ; $3 > $4 2>&1"
   else
-    ${_SSH_BIN} ${_SSH_PARAMS} ${APPSAWAY_USER_NAME}@$1 "$_SSH_CMD_PREFIX ; $2"
+    ${_SSH_BIN} ${_SSH_PARAMS} $1@$2 "$_SSH_CMD_PREFIX ; $3"
   fi
 }
 
 
 run_via_ssh_nowait()
 {
-  if [ "$3" != "" ]; then
-    ${_SSH_BIN} ${_SSH_PARAMS} ${APPSAWAY_USER_NAME}@$1 "$_SSH_CMD_PREFIX ; nohup $2 > $3 2>&1 &"
+  if [ "$4" != "" ]; then
+    ${_SSH_BIN} ${_SSH_PARAMS} $1@$2 "$_SSH_CMD_PREFIX ; nohup $3 > $4 2>&1 &"
   else
-    ${_SSH_BIN} ${_SSH_PARAMS} ${APPSAWAY_USER_NAME}@$1 "$_SSH_CMD_PREFIX ; nohup $2 >/dev/null 2>&1 &"
+    ${_SSH_BIN} ${_SSH_PARAMS} $1@$2 "$_SSH_CMD_PREFIX ; nohup $3 >/dev/null 2>&1 &"
   fi
 }
 
@@ -231,7 +231,7 @@ run_hardware_steps_via_ssh()
     do
       log "running ${_DOCKER_COMPOSE_BIN} with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_ICUBHEADNODE_ADDR"
       #run_via_ssh_nowait $APPSAWAY_ICUBHEADNODE_ADDR "${_DOCKER_COMPOSE_BIN} -f ${file} up" "log.txt"
-      run_via_ssh $APPSAWAY_ICUBHEADNODE_ADDR "${_DOCKER_COMPOSE_BIN} -f ${file} up --detach"
+      run_via_ssh $APPSAWAY_ICUBHEADNODE_USERNAME $APPSAWAY_ICUBHEADNODE_ADDR "${_DOCKER_COMPOSE_BIN} -f ${file} up --detach"
     done
     val1=$(( $val1 + 5 ))
     echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE
@@ -242,7 +242,7 @@ run_hardware_steps_via_ssh()
     do
       log "running ${_DOCKER_COMPOSE_BIN} with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_GUINODE_ADDR"
       #run_via_ssh_nowait $APPSAWAY_GUINODE_ADDR "${_DOCKER_COMPOSE_BIN} -f ${file} up" "log.txt"
-      run_via_ssh $APPSAWAY_GUINODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; ${_DOCKER_COMPOSE_BIN} -f ${file} up --detach"
+      run_via_ssh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; ${_DOCKER_COMPOSE_BIN} -f ${file} up --detach"
     done
     val1=$(( $val1 + 5 ))
     echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE
@@ -251,7 +251,7 @@ run_hardware_steps_via_ssh()
     do
       log "running ${_DOCKER_COMPOSE_BIN} with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_CONSOLENODE_ADDR"
       #run_via_ssh_nowait $APPSAWAY_GUINODE_ADDR "${_DOCKER_COMPOSE_BIN} -f ${file} up" "log.txt"
-      run_via_ssh $APPSAWAY_CONSOLENODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; ${_DOCKER_COMPOSE_BIN} -f ${file} up --detach"
+      run_via_ssh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; ${_DOCKER_COMPOSE_BIN} -f ${file} up --detach"
     done
     val1=$(( $val1 + 5 ))
     echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE
@@ -268,20 +268,20 @@ stop_hardware_steps_via_ssh()
     for file in ${APPSAWAY_HEAD_YAML_FILE_LIST}
     do
       log "stopping ${_DOCKER_COMPOSE_BIN} with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_ICUBHEADNODE_ADDR"
-      run_via_ssh $APPSAWAY_ICUBHEADNODE_ADDR "${_DOCKER_COMPOSE_BIN} -f ${file} down"
+      run_via_ssh $APPSAWAY_ICUBHEADNODE_uSERNAME $APPSAWAY_ICUBHEADNODE_ADDR "${_DOCKER_COMPOSE_BIN} -f ${file} down"
     done
   fi
   if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
     do
       log "stopping ${_DOCKER_COMPOSE_BIN} with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_GUINODE_ADDR"
-      run_via_ssh $APPSAWAY_GUINODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=/run/user/1000/gdm/Xauthority; ${_DOCKER_COMPOSE_BIN} -f ${file} down"
+      run_via_ssh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=/run/user/1000/gdm/Xauthority; ${_DOCKER_COMPOSE_BIN} -f ${file} down"
     done
   elif [ "$APPSAWAY_GUINODE_ADDR" == "" ] && [ "$APPSAWAY_CONSOLENODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
     do
       log "stopping ${_DOCKER_COMPOSE_BIN} with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_CONSOLENODE_ADDR"
-      run_via_ssh $APPSAWAY_CONSOLENODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=/run/user/1000/gdm/Xauthority; ${_DOCKER_COMPOSE_BIN} -f ${file} down"
+      run_via_ssh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=/run/user/1000/gdm/Xauthority; ${_DOCKER_COMPOSE_BIN} -f ${file} down"
     done
   fi
 }

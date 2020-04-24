@@ -33,12 +33,12 @@ total_cleanup=false
 
 function checkSuperbuild(){
 
-has_icubBuild=$(ssh -n -T ${APPSAWAY_USER_NAME}@$1 echo "\${ICUB_DIR}")
+has_icubBuild=$(ssh -n -T $1@$2 echo "\${ICUB_DIR}")
 
     if [ "$has_icubBuild" == "" ];
        then echo -e "${BLUE}ICUB_DIR ${NC} is ${RED} unset ${NC}"; else echo -e "variable is set to ${GREEN} '$has_icubBuild' ${NC}"; fi
 
-has_superBuild=$(ssh -n -T ${APPSAWAY_USER_NAME}@$1 echo "\${ROBOTOLOGY_SUPERBUILD_INSTALL_PREFIX}")
+has_superBuild=$(ssh -n -T $1@$2 echo "\${ROBOTOLOGY_SUPERBUILD_INSTALL_PREFIX}")
     if [ "$has_superBuild" == "" ];
         then echo -e "${BLUE}SUPERBUILD ${NC} is ${RED} unset ${NC}"; else echo -e "variable is set to ${GREEN} '$has_superBuild' ${NC}"; fi
 
@@ -50,9 +50,9 @@ echo ""
 
 function checkFunc(){
 
-ssh -T ${APPSAWAY_USER_NAME}@$1<<EOF
+ssh -T $1@$2<<EOF
 
-    echo "The path I should look is is $2"
+    echo "The path I should look is is $3"
 
     cd `echo "\${2}"`/bin
     pwd
@@ -70,11 +70,11 @@ EOF
 
 function checkAndKillFunc(){
 
-ssh -T ${APPSAWAY_USER_NAME}@$1<<EOF
+ssh -T $1@$2<<EOF
 
-    echo "The path I should look is is $2"
+    echo "The path I should look is is $3"
 
-    cd `echo "\${2}"`/bin
+    cd `echo "\${3}"`/bin
     pwd
     echo "I have found the following modules:"
 
@@ -99,7 +99,7 @@ EOF
 
 function killFunc(){
 
-ssh -T ${APPSAWAY_USER_NAME}@$1<<EOF
+ssh -T $1@$2<<EOF
 
     cd `echo "\${ENV_VAR}"`/bin
 
@@ -118,7 +118,7 @@ EOF
 # #####################################################
 
 function dockerRemoveVolumes(){
-ssh -T ${APPSAWAY_USER_NAME}@$1<<EOF
+ssh -T $1@$2<<EOF
 
    
     dockerVolumes=\$(docker volume ls --format "{{.Name}}")
@@ -133,7 +133,7 @@ EOF
 # #####################################################
 
 function dockerCleanupStack(){
-ssh -T ${APPSAWAY_USER_NAME}@$1<<EOF
+ssh -T $1@$2<<EOF
 
     appsPath=\$(echo $APPSAWAY_APP_PATH)
     
@@ -186,11 +186,11 @@ EOF
 
 function dockerCleanupImages(){
 
-ssh -T ${APPSAWAY_USER_NAME}@$1<<END
+ssh -T $1@$2<<END
 
     dockerPS=\$(docker ps -a -q)
     dockerImages=\$(docker images -a -q)
-    dockerImagesUntag=\$(docker images | grep "^<none>" | awk "{print $3}")
+    dockerImagesUntag=\$(docker images | grep "^<none>" | awk "{print $4}")
 
     if [ "\$dockerPS" != "" ]; then
         docker stop \$dockerPS # stop all containers
@@ -228,6 +228,7 @@ fi
 # #####################################################
 start=`date +%s`
 source appsAway_setEnvironment.local.sh
+iter=0
 for p in ${APPSAWAY_NODES_ADDR_LIST}
 do
     if [[ -n "$p" ]] ; then
@@ -244,7 +245,9 @@ do
         echo -e "|----------------- ${BLUE}Running System Cleanup${NC} ------------------|"
         echo ""
 
-        checkSuperbuild $p
+        username=$( echo ${APPSAWAY_NODES_USERNAME_LIST} | awk '{print $( $iter )}' )
+
+        checkSuperbuild $username $p
 
         if [ "$has_superBuild" != "" ] ; then
             echo -e "I have ${BLUE}superbuild${NC}"
@@ -257,20 +260,20 @@ do
         if [ "$has_superBuild" != "" ] || [ "$has_icubBuild" != "" ] ; then
             if [ "$has_superBuild" != "" ] ; then
                 #checkFunc $p '${ROBOTOLOGY_SUPERBUILD_INSTALL_PREFIX}'
-                checkAndKillFunc $p '${ROBOTOLOGY_SUPERBUILD_INSTALL_PREFIX}' &
+                checkAndKillFunc $username $p '${ROBOTOLOGY_SUPERBUILD_INSTALL_PREFIX}' &
                 #killFunc $p '${ROBOTOLOGY_SUPERBUILD_INSTALL_PREFIX}'
             fi
             if [ "$has_icubBuild" != "" ] ; then
                 #checkFunc $p '${ICUB_DIR}'
-                checkAndKillFunc $p '${ICUB_DIR}' &
+                checkAndKillFunc $username $p '${ICUB_DIR}' &
                 #killFunc $p '${ICUB_DIR}'
 
                 #checkFunc $p '${ICUBcontrib_DIR}'
-                checkAndKillFunc $p '${ICUBcontrib_DIR}' &
+                checkAndKillFunc $username $p '${ICUBcontrib_DIR}' &
                 #killFunc $p '${ICUBcontrib_DIR}'
 
                 #checkFunc $p '${YARP_DIR}'
-                checkAndKillFunc $p '${YARP_DIR}' &
+                checkAndKillFunc $username $p '${YARP_DIR}' &
                 #killFunc $p '${YARP_DIR}'
             fi
             sleep 0.5
@@ -288,12 +291,12 @@ do
 
 	if [ "$total_cleanup" = true ] ; then
         echo -e "starting ${PURPLE}cleaning ${NC}of the${PURPLE} images${NC} and ${PURPLE}stack${NC}"
-        dockerCleanupStack $p &
+        dockerCleanupStack $username $p &
         wait
-	dockerCleanupImages $p &
+	dockerCleanupImages $username $p &
     else
         echo -e "starting${PURPLE} cleaning${NC} of just the ${PURPLE}stack${NC}"
-        dockerCleanupStack $p &
+        dockerCleanupStack $username $p &
     fi
 
 	#echo "Do you want to clean the docker images along with the stack ?"
@@ -318,24 +321,28 @@ do
         echo -ne '\n'
         echo -e "${RED}node is empty or unreachable please check the cluster list ${NC}"
     fi
+iter=$((iter+1))
 
 done
 
+iter=0
 for p in ${APPSAWAY_NODES_ADDR_LIST}
 do
+    username=$( echo ${APPSAWAY_NODES_USERNAME_LIST} | awk '{print $( $iter )}' )
     echo ""
     echo '|---------------------------------------------------------- |'
     echo -ne "|--- Started Cleanup Script on the${NC}"
     echo -e "${LGRAY} $(date +%d-%m-%Y)${PURPLE} @ ${LGRAY}$(date +%H:%M:%S)${NC} ---|"
 
     echo -ne "|                 on node  | "
-    printf "${GREEN} %s${NC}                  |\n" "$p"
+    printf "${GREEN} %s${NC}                  |\n" "$username : $p"
     echo -e '|---------------------------------------------------------- |'
 
 
     echo -e "|----------------- ${BLUE}Running System Cleanup${NC} ------------------|"
     echo ""
-    dockerRemoveVolumes $p
+    dockerRemoveVolumes $username $p
+iter=$((iter+1))
 done
 
 end=`date +%s`

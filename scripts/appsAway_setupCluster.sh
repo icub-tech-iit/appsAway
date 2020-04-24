@@ -152,10 +152,10 @@ fini()
 
 run_via_ssh()
 {
-  if [ "$3" != "" ]; then
-    ${_SSH_BIN} ${_SSH_PARAMS} ${APPSAWAY_USER_NAME}@$1 "$2 > $3 2>&1"
+  if [ "$4" != "" ]; then
+    ${_SSH_BIN} ${_SSH_PARAMS} $1@$2 "$3 > $4 2>&1"
   else
-    ${_SSH_BIN} ${_SSH_PARAMS} ${APPSAWAY_USER_NAME}@$1 "$2"
+    ${_SSH_BIN} ${_SSH_PARAMS} $1@$2 "$3"
   fi
 }
 
@@ -166,25 +166,30 @@ swarm_start()
     error "swarm init command string is empty (failed swarm initialization?)"
   fi
 
+  iter=0
   for node_ip in ${APPSAWAY_NODES_ADDR_LIST}
   do
     if [ "$node_ip" != "$APPSAWAY_CONSOLENODE_ADDR" ]; then
+      username=$( echo ${APPSAWAY_NODES_USERNAME_LIST} | awk '{print $( $iter )}' )
       log "running init on node $node_ip.."
-      run_via_ssh $node_ip "$_SWARM_INIT_COMMAND"
+      run_via_ssh $username $node_ip "$_SWARM_INIT_COMMAND"
     fi
+    iter=$((iter+1))
   done
 }
 
 ip2hostname()
 {
-  run_via_ssh ${1} "hostname"
+  run_via_ssh ${1} ${2} "hostname"
 }
 
 fill_hostname_list()
 {
+  iter=0
   for _ip_addr in ${APPSAWAY_NODES_ADDR_LIST}
   do
-	  _hostname=$(ip2hostname $_ip_addr)
+    username=$( echo ${APPSAWAY_NODES_USERNAME_LIST} | awk '{print $( $iter )}' )
+	  _hostname=$(ip2hostname $username $_ip_addr)
 	  if [ "$_hostname" == "" ]; then
 		  exit_err "unable to get hostname from IP $_ip_addr"
 	  fi
@@ -196,11 +201,11 @@ set_hardware_labels()
 {
   log "setting labels on hardware-dependant nodes.."
   if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
-    ${_DOCKER_BIN} ${_DOCKER_PARAMS} node update --label-add type=head $(ip2hostname $APPSAWAY_ICUBHEADNODE_ADDR)
+    ${_DOCKER_BIN} ${_DOCKER_PARAMS} node update --label-add type=head $(ip2hostname $APPSAWAY_ICUBHEADNODE_USERNAME $APPSAWAY_ICUBHEADNODE_ADDR)
   fi
 
   if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
-    ${_DOCKER_BIN} ${_DOCKER_PARAMS} node update --label-add type=gui $(ip2hostname $APPSAWAY_GUINODE_ADDR)
+    ${_DOCKER_BIN} ${_DOCKER_PARAMS} node update --label-add type=gui $(ip2hostname $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR)
   fi
 }
 
@@ -241,29 +246,29 @@ copy_yaml_files()
   done
   if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
     log "creating path ${APPSAWAY_APP_PATH} on node with IP $APPSAWAY_ICUBHEADNODE_ADDR"
-    ${_SSH_BIN} ${_SSH_PARAMS} ${APPSAWAY_USER_NAME}@${APPSAWAY_ICUBHEADNODE_ADDR} "mkdir -p ${APPSAWAY_APP_PATH}"
+    ${_SSH_BIN} ${_SSH_PARAMS} ${APPSAWAY_ICUBHEADNODE_USERNAME}@${APPSAWAY_ICUBHEADNODE_ADDR} "mkdir -p ${APPSAWAY_APP_PATH}"
     for file in ${APPSAWAY_HEAD_YAML_FILE_LIST}
     do
       log "copying yaml file $file to node with IP $APPSAWAY_ICUBHEADNODE_ADDR"
-      ${_SCP_BIN} ${_SCP_PARAMS} ../demos/${APPSAWAY_APP_NAME}/${file} ${APPSAWAY_USER_NAME}@${APPSAWAY_ICUBHEADNODE_ADDR}:${APPSAWAY_APP_PATH}/
+      ${_SCP_BIN} ${_SCP_PARAMS} ../demos/${APPSAWAY_APP_NAME}/${file} ${APPSAWAY_ICUBHEADNODE_USERNAME}@${APPSAWAY_ICUBHEADNODE_ADDR}:${APPSAWAY_APP_PATH}/
     done
   fi
 
   if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
     log "creating path ${APPSAWAY_APP_PATH} on node with IP $APPSAWAY_GUINODE_ADDR"
-    ${_SSH_BIN} ${_SSH_PARAMS} ${APPSAWAY_USER_NAME}@${APPSAWAY_GUINODE_ADDR} "mkdir -p ${APPSAWAY_APP_PATH}"
+    ${_SSH_BIN} ${_SSH_PARAMS} ${APPSAWAY_GUINODE_USERNAME}@${APPSAWAY_GUINODE_ADDR} "mkdir -p ${APPSAWAY_APP_PATH}"
     for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
     do
       log "copying yaml file $file to node with IP $APPSAWAY_GUINODE_ADDR"
-      ${_SCP_BIN} ${_SCP_PARAMS} ../demos/${APPSAWAY_APP_NAME}/${file} ${APPSAWAY_USER_NAME}@${APPSAWAY_GUINODE_ADDR}:${APPSAWAY_APP_PATH}/
+      ${_SCP_BIN} ${_SCP_PARAMS} ../demos/${APPSAWAY_APP_NAME}/${file} ${APPSAWAY_GUINODE_USERNAME}@${APPSAWAY_GUINODE_ADDR}:${APPSAWAY_APP_PATH}/
     done
   elif [ "$APPSAWAY_GUINODE_ADDR" == "" ] && [ "$APPSAWAY_CONSOLENODE_ADDR" != "" ]; then
     log "creating path ${APPSAWAY_APP_PATH} on node with IP $APPSAWAY_CONSOLENODE_ADDR"
-    ${_SSH_BIN} ${_SSH_PARAMS} ${APPSAWAY_USER_NAME}@${APPSAWAY_CONSOLENODE_ADDR} "mkdir -p ${APPSAWAY_APP_PATH}"
+    ${_SSH_BIN} ${_SSH_PARAMS} ${APPSAWAY_CONSOLENODE_USERNAME}@${APPSAWAY_CONSOLENODE_ADDR} "mkdir -p ${APPSAWAY_APP_PATH}"
     for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
     do
       log "copying yaml file $file to node with IP $APPSAWAY_CONSOLENODE_ADDR"
-      ${_SCP_BIN} ${_SCP_PARAMS} ../demos/${APPSAWAY_APP_NAME}/${file} ${APPSAWAY_USER_NAME}@${APPSAWAY_CONSOLENODE_ADDR}:${APPSAWAY_APP_PATH}/
+      ${_SCP_BIN} ${_SCP_PARAMS} ../demos/${APPSAWAY_APP_NAME}/${file} ${APPSAWAY_CONSOLENODE_USERNAME}@${APPSAWAY_CONSOLENODE_ADDR}:${APPSAWAY_APP_PATH}/
     done
   fi
 }
