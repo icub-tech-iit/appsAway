@@ -183,7 +183,7 @@ stop_hardware_steps_via_ssh()
   then
      myXauth=${XAUTHORITY}
   else
-    myXauth="/run/user/1000/gdm/Xauthority"
+    myXauth="/run/user/$UID/gdm/Xauthority"
   fi
 
   if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then

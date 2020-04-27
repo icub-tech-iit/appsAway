@@ -223,7 +223,7 @@ run_hardware_steps_via_ssh()
   then
      myXauth=${XAUTHORITY}
   else
-    myXauth="/run/user/1000/gdm/Xauthority"
+    myXauth="/run/user/$UID/gdm/Xauthority"
   fi
 
  if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
@@ -264,6 +264,15 @@ stop_hardware_steps_via_ssh()
   echo
   mydisplay=$(getdisplay)
 
+  myXauth="" 
+  os=`uname -s`
+  if [ "$os" = "Darwin" ]
+  then
+     myXauth=${XAUTHORITY}
+  else
+    myXauth="/run/user/$UID/gdm/Xauthority"
+  fi
+
   if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_HEAD_YAML_FILE_LIST}
     do
@@ -275,13 +284,13 @@ stop_hardware_steps_via_ssh()
     for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
     do
       log "stopping ${_DOCKER_COMPOSE_BIN} with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_GUINODE_ADDR"
-      run_via_ssh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=/run/user/1000/gdm/Xauthority; ${_DOCKER_COMPOSE_BIN} -f ${file} down"
+      run_via_ssh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; ${_DOCKER_COMPOSE_BIN} -f ${file} down"
     done
   elif [ "$APPSAWAY_GUINODE_ADDR" == "" ] && [ "$APPSAWAY_CONSOLENODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
     do
       log "stopping ${_DOCKER_COMPOSE_BIN} with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_CONSOLENODE_ADDR"
-      run_via_ssh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=/run/user/1000/gdm/Xauthority; ${_DOCKER_COMPOSE_BIN} -f ${file} down"
+      run_via_ssh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; ${_DOCKER_COMPOSE_BIN} -f ${file} down"
     done
   fi
 }
