@@ -166,11 +166,13 @@ swarm_start()
     error "swarm init command string is empty (failed swarm initialization?)"
   fi
 
-  iter=0
+  iter=1
+  List=$APPSAWAY_NODES_USERNAME_LIST
+  set -- $List
   for node_ip in ${APPSAWAY_NODES_ADDR_LIST}
   do
     if [ "$node_ip" != "$APPSAWAY_CONSOLENODE_ADDR" ]; then
-      username=$( echo ${APPSAWAY_NODES_USERNAME_LIST} | awk '{print $( $iter )}' )
+      username=$( eval echo "\$$iter")
       log "running init on node $node_ip.."
       run_via_ssh $username $node_ip "$_SWARM_INIT_COMMAND"
     fi
@@ -185,10 +187,12 @@ ip2hostname()
 
 fill_hostname_list()
 {
-  iter=0
+  iter=1
+  List=$APPSAWAY_NODES_USERNAME_LIST
+  set -- $List
   for _ip_addr in ${APPSAWAY_NODES_ADDR_LIST}
   do
-    username=$( echo ${APPSAWAY_NODES_USERNAME_LIST} | awk '{print $( $iter )}' )
+    username=$( eval echo "\$$iter")
 	  _hostname=$(ip2hostname $username $_ip_addr)
 	  if [ "$_hostname" == "" ]; then
 		  exit_err "unable to get hostname from IP $_ip_addr"

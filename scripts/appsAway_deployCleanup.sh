@@ -120,7 +120,7 @@ EOF
 function dockerRemoveVolumes(){
 ssh -T $1@$2<<EOF
 
-   
+
     dockerVolumes=\$(docker volume ls --format "{{.Name}}")
     if [ "\$dockerVolumes" != "" ]; then
         docker volume rm \$dockerVolumes # To remove (what is called) dangling volumes
@@ -136,7 +136,7 @@ function dockerCleanupStack(){
 ssh -T $1@$2<<EOF
 
     appsPath=\$(echo $APPSAWAY_APP_PATH)
-    
+
     #docker-compose -f \$appsPath/*.yml kill -s SIGINT
 
     if [ -f "\$(echo $APPSAWAY_APP_PATH)/main.yml" ]
@@ -144,12 +144,12 @@ ssh -T $1@$2<<EOF
         docker-compose -f \$(echo $APPSAWAY_APP_PATH)/main.yml kill -s SIGINT
     fi
     if [ -f "\$(echo $APPSAWAY_APP_PATH)/composeGui.yml" ]
-    then 
-        docker-compose -f \$(echo $APPSAWAY_APP_PATH)/composeGui.yml kill -s SIGINT 
-    fi 
-    if [ -f "\$(echo $APPSAWAY_APP_PATH)/composeHead.yml" ] 
-    then 
-        docker-compose -f \$(echo $APPSAWAY_APP_PATH)/composeHead.yml kill -s SIGINT 
+    then
+        docker-compose -f \$(echo $APPSAWAY_APP_PATH)/composeGui.yml kill -s SIGINT
+    fi
+    if [ -f "\$(echo $APPSAWAY_APP_PATH)/composeHead.yml" ]
+    then
+        docker-compose -f \$(echo $APPSAWAY_APP_PATH)/composeHead.yml kill -s SIGINT
     fi
 
 
@@ -228,7 +228,9 @@ fi
 # #####################################################
 start=`date +%s`
 source appsAway_setEnvironment.local.sh
-iter=0
+iter=1
+List=$APPSAWAY_NODES_USERNAME_LIST
+set -- $List
 for p in ${APPSAWAY_NODES_ADDR_LIST}
 do
     if [[ -n "$p" ]] ; then
@@ -245,7 +247,7 @@ do
         echo -e "|----------------- ${BLUE}Running System Cleanup${NC} ------------------|"
         echo ""
 
-        username=$( echo ${APPSAWAY_NODES_USERNAME_LIST} | awk '{print $( $iter )}' )
+        username=$( eval echo "\$$iter")
 
         checkSuperbuild $username $p
 
@@ -325,10 +327,10 @@ iter=$((iter+1))
 
 done
 
-iter=0
+iter=1
 for p in ${APPSAWAY_NODES_ADDR_LIST}
 do
-    username=$( echo ${APPSAWAY_NODES_USERNAME_LIST} | awk '{print $( $iter )}' )
+    username=$( eval echo "\$$iter")
     echo ""
     echo '|---------------------------------------------------------- |'
     echo -ne "|--- Started Cleanup Script on the${NC}"

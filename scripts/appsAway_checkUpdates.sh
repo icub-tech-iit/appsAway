@@ -15,12 +15,14 @@ source ${_APPSAWAY_ENVFILE}
 
 #$_SSH_CHECK_UPD 2>&1 | grep '-'
 
-iter=0
+iter=1
+List=$APPSAWAY_NODES_USERNAME_LIST
+set -- $List
 for p in ${APPSAWAY_NODES_ADDR_LIST}
 do
     if [[ -n "$p" ]] ; then
 
-        username=$( echo ${APPSAWAY_NODES_USERNAME_LIST} | awk '{print $( $iter )}' )
+        username=$( eval echo "\$$iter")
         _OUTPUT=$(ssh -T $username@$p "${_SSH_CHECK_UPD}" 2>&1 | grep 'docker' || true)
         if [[ ! $_OUTPUT = "" ]] ; then
           echo "true"
