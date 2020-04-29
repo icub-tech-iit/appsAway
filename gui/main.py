@@ -10,9 +10,8 @@ from PyQt5.QtGui import QIcon, QPixmap
 
 import sys
 import time
-from subprocess import call
+import subprocess
 import os
-
 
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
@@ -46,33 +45,37 @@ class WidgetGallery(QDialog):
         self.image = "" #'src/main/images/redball.jpg'
 
         self.rc = None #inits the subprocess
+        self.ansible = subprocess.Popen(['true'])
 
         self.button_list = []
 
+        self.gui_dir = os.getcwd()
+        print(self.gui_dir)
+
         # read from .ini file here
         self.button_name_list = []
-        conf_file = open("gui_conf.ini", "r")
+        conf_file = open(self.gui_dir + "/gui_conf.ini", "r")
         for line in conf_file:
           if line.find("title") != -1:
             self.title = line.split('"')[1]
           if line.find("ImageName") != -1:
-            self.image = line.split('"')[1]
+            self.image = self.gui_dir + "/" + line.split('"')[1]
           if line.find("radioButton") != -1:
             self.button_name_list = self.button_name_list + [line.split('"')[1]]
         
 
-
         # try to make a list of buttons so we can have multiple
+
+        self.pushUpdateButton = QPushButton("Everything is Up to Date!")
         self.pushStartButton = QPushButton("Start the Application")
         self.pushStopButton = QPushButton("Stop the Application")
 
         for button_name in self.button_name_list:
           self.button_list = self.button_list + [QRadioButton(button_name)]
 
-        #for button in self.button_list:
-        #  if button.isSelected():
-        #    self.button_list[1].label.split(" ")[0]
-
+        os.chdir("../../../scripts/") 
+        if os.path.isfile("PIPE"):
+          os.remove("PIPE")
 
         self.timer = QTimer(self)
 
@@ -80,10 +83,9 @@ class WidgetGallery(QDialog):
         self.createBottomLeftGroupBox()
         self.createBottomRightGroupBox()
 
+        self.timer.timeout.connect(self.checkForUpdates)
+        self.timer.start(300000)  
 
-        os.chdir("../../../scripts/") 
-        if os.path.isfile("PIPE"):
-          os.remove("PIPE")
 
         self.createProgressBar()
         self.event_handler = MyHandler(self.progressBar)
@@ -111,17 +113,6 @@ class WidgetGallery(QDialog):
         QApplication.setStyle(QStyleFactory.create(styleName))
         QApplication.setPalette(QApplication.style().standardPalette())
 
-    #def advanceProgressBar(self):
-#
-#        print("Trying")
-#        if os.path.isfile("PIPE"):
-#          pipe_file = open("PIPE", "r")
-#          line = pipe_file.readline()
-#          curVal = int(line)
-#          maxVal = self.progressBar.maximum()
-#          self.progressBar.setValue(curVal + (maxVal - curVal) / 100)
-#          pipe_file.close()
-
     def createTopGroupBox(self):
         self.topGroupBox = QGroupBox(self.title)
 
@@ -129,6 +120,23 @@ class WidgetGallery(QDialog):
 
         layout = QVBoxLayout()
         
+        self.pushUpdateButton.setDefault(True)    
+
+        out = subprocess.Popen(['./appsAway_checkUpdates.sh'], 
+           stdout=subprocess.PIPE, 
+           stderr=subprocess.STDOUT)
+        
+        stdout,stderr = out.communicate()
+
+        if b"true" in stdout:
+          self.pushUpdateButton.setEnabled(True)
+          self.pushUpdateButton.setText("Update Available")
+        elif b"false" in stdout:
+          self.pushUpdateButton.setEnabled(False)
+          self.pushUpdateButton.setText("Everything is Up to Date!")
+
+        layout.addWidget(self.pushUpdateButton)
+
         pixmap = QPixmap(self.image)
         self.label.setPixmap(pixmap)
         #self.resize(pixmap.width(),pixmap.height())
@@ -137,6 +145,8 @@ class WidgetGallery(QDialog):
         layout.addStretch(1)
         layout.setAlignment(Qt.AlignCenter)
         self.topGroupBox.setLayout(layout)
+
+        self.pushUpdateButton.clicked.connect(self.startUpdate)
     
     def createBottomRightGroupBox(self):
         self.bottomRightGroupBox = QGroupBox("Application Options")
@@ -206,6 +216,34 @@ class WidgetGallery(QDialog):
     def stopProgressBar(self):
         self.pushStopButton.setEnabled(True)
 
+    def checkForUpdates(self):
+        if self.ansible.poll() == None:
+          return
+        self.timer.start(300000)
+        out = subprocess.Popen(['./appsAway_checkUpdates.sh'], 
+           stdout=subprocess.PIPE, 
+           stderr=subprocess.STDOUT)
+        
+        stdout,stderr = out.communicate()
+
+        if b"true" in stdout:
+          self.pushUpdateButton.setEnabled(True)
+          self.pushUpdateButton.setText("Update Available")
+        elif b"false" in stdout:
+          self.pushUpdateButton.setEnabled(False)
+          self.pushUpdateButton.setText("Everything is Up to Date!")
+
+    def startUpdate(self):
+        # first we pause the timer
+        self.timer.start(1000)
+        self.pushUpdateButton.setEnabled(False)
+        self.pushUpdateButton.setText("Installing....")
+        # then we change working directory
+        os.chdir("ansible_setup") 
+        rc = subprocess.call("./setup_hosts_ini.sh")
+        self.ansible = subprocess.Popen(['make', 'prepare'])
+        os.chdir("..") 
+
     def startApplication(self):
         print("starting application")
         for button in self.button_list:
@@ -215,7 +253,7 @@ class WidgetGallery(QDialog):
               os.environ['APPSAWAY_ROBOT_MODEL'] = button.text().split(" ")[0]
 
 
-        rc = call("./appsAway_startApp.sh")
+        rc = subprocess.call("./appsAway_startApp.sh")
         #self.rc = subprocess.Popen("./appsAway_startApp.sh", stdout=subprocess.PIPE, shell=True)
     
     def stopApplication(self):
@@ -230,13 +268,15 @@ class WidgetGallery(QDialog):
         for button in self.button_list:
           button.setEnabled(True)
 
-        rc = call("./appsAway_stopApp.sh")
+        rc = subprocess.call("./appsAway_stopApp.sh")
         #self.rc = subprocess.Popen("./appsAway_stopApp.sh")
 
     # overload the closing function to close the watchdog
     def exec_(self):
         self.observer.stop()
         self.observer.join()
+        self.installFinish.terminate()
+        self.installFinish.join()
     
 
 if __name__ == '__main__':
