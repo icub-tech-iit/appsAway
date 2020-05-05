@@ -249,8 +249,10 @@ class WidgetGallery(QDialog):
         for button in self.button_list:
             if (button.isChecked()):
               print(button.text()+" is selected")
-              print("Robot model is " + button.text().split(" ")[0])
+
+              # we set the environment variables here. 
               os.environ['APPSAWAY_ROBOT_MODEL'] = button.text().split(" ")[0]
+              os.environ['APPSAWAY_OPTIONS'] = button.text()
 
 
         rc = subprocess.call("./appsAway_startApp.sh")
