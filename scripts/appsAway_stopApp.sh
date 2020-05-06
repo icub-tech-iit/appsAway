@@ -174,10 +174,10 @@ getdisplay()
 stop_hardware_steps_via_ssh()
 {
   #read -n 1 -s -r -p "Press any key to stop the App"
-  
+
   mydisplay=$(getdisplay)
 
-  myXauth="" 
+  myXauth=""
   os=`uname -s`
   if [ "$os" = "Darwin" ]
   then
@@ -186,24 +186,32 @@ stop_hardware_steps_via_ssh()
     myXauth="/run/user/$UID/gdm/Xauthority"
   fi
 
+  stop_cmd=""
+  if [ "$APPSAWAY_REPO_TAG" == "sources" ]
+  then
+     stop_cmd="stop"
+  else
+    stop_cmd="down"
+  fi
+
   if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_HEAD_YAML_FILE_LIST}
     do
-      log "stopping docker-compose with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_ICUBHEADNODE_ADDR"
-      run_via_ssh $APPSAWAY_ICUBHEADNODE_USERNAME $APPSAWAY_ICUBHEADNODE_ADDR "${_DOCKER_COMPOSE_BIN} -f ${file} down"
+      log "stopping docker-compose with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_ICUBHEADNODE_ADDR with command ${stop_cmd}"
+      run_via_ssh $APPSAWAY_ICUBHEADNODE_USERNAME $APPSAWAY_ICUBHEADNODE_ADDR "${_DOCKER_COMPOSE_BIN} -f ${file} ${stop_cmd}"
     done
   fi
   if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
     do
-      log "stopping docker-compose with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_GUINODE_ADDR"
-      run_via_ssh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; ${_DOCKER_COMPOSE_BIN} -f ${file} down"
+      log "stopping docker-compose with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_GUINODE_ADDR with command ${stop_cmd}"
+      run_via_ssh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; ${_DOCKER_COMPOSE_BIN} -f ${file} ${stop_cmd}"
     done
   elif [ "$APPSAWAY_GUINODE_ADDR" == "" ] && [ "$APPSAWAY_CONSOLENODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
     do
-      log "stopping docker-compose with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_CONSOLENODE_ADDR"
-      run_via_ssh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; ${_DOCKER_COMPOSE_BIN} -f ${file} down"
+      log "stopping docker-compose with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_CONSOLENODE_ADDR with command ${stop_cmd}"
+      run_via_ssh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; ${_DOCKER_COMPOSE_BIN} -f ${file} ${stop_cmd}"
     done
  fi
 }
