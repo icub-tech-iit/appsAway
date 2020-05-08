@@ -258,7 +258,7 @@ class WidgetGallery(QDialog):
               os.environ['APPSAWAY_OPTIONS'] = button.text()
 
         self.setupEnvironment()
-        #rc = subprocess.call("./appsAway_startApp.sh")
+        rc = subprocess.call("./appsAway_startApp.sh")
         #self.rc = subprocess.Popen("./appsAway_startApp.sh", stdout=subprocess.PIPE, shell=True)
     
     def stopApplication(self):
