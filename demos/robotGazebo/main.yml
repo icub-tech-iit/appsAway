@@ -9,6 +9,7 @@ x-yarp-base: &yarp-base
     - YARP_FORWARD_LOG_ENABLE=1
     - YARP_ROBOT_NAME
     - APPSAWAY_ROBOT_MODEL
+    - APPSAWAY_OPTIONS
   volumes:
     - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
     - "${XAUTHORITY}:/root/.Xauthority:rw"
