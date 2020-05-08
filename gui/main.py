@@ -73,7 +73,8 @@ class WidgetGallery(QDialog):
         for button_name in self.button_name_list:
           self.button_list = self.button_list + [QRadioButton(button_name)]
 
-        os.chdir("../../../scripts/") 
+        #os.chdir("../../../scripts/") 
+        os.chdir(os.environ.get('HOME') + "/teamcode/appsAway/scripts/")
         if os.path.isfile("PIPE"):
           os.remove("PIPE")
 
@@ -239,10 +240,12 @@ class WidgetGallery(QDialog):
         self.pushUpdateButton.setEnabled(False)
         self.pushUpdateButton.setText("Installing....")
         # then we change working directory
-        os.chdir("ansible_setup") 
+        #os.chdir("ansible_setup") 
+        os.chdir(os.environ.get('HOME') + "/teamcode/appsAway/scripts/ansible_setup")
         rc = subprocess.call("./setup_hosts_ini.sh")
         self.ansible = subprocess.Popen(['make', 'prepare'])
-        os.chdir("..") 
+        #os.chdir("..") 
+        os.chdir(os.environ.get('HOME') + "/teamcode/appsAway/scripts/")
 
     def startApplication(self):
         print("starting application")
@@ -254,8 +257,8 @@ class WidgetGallery(QDialog):
               os.environ['APPSAWAY_ROBOT_MODEL'] = button.text().split(" ")[0]
               os.environ['APPSAWAY_OPTIONS'] = button.text()
 
-
-        rc = subprocess.call("./appsAway_startApp.sh")
+        self.setupEnvironment()
+        #rc = subprocess.call("./appsAway_startApp.sh")
         #self.rc = subprocess.Popen("./appsAway_startApp.sh", stdout=subprocess.PIPE, shell=True)
     
     def stopApplication(self):
@@ -272,6 +275,34 @@ class WidgetGallery(QDialog):
 
         rc = subprocess.call("./appsAway_stopApp.sh")
         #self.rc = subprocess.Popen("./appsAway_stopApp.sh")
+
+    def setupEnvironment(self):
+        os.chdir(os.environ.get('APPSAWAY_APP_PATH'))
+
+        main_file = open("main.yml", "r")
+        main_list = main_file.read().split('\n')
+        for i in range(len(main_list)):
+          if main_list[i].find("x-yarp-base") != -1:
+            if main_list[i+1].find("image") != -1:
+              image_line = main_list[i+1]
+              image_line = image_line.split(':')
+              image_line[2] = os.environ.get('APPSAWAY_REPO_VERSION') + "_" + os.environ.get('APPSAWAY_REPO_TAG')
+              main_list[i+1] = image_line[0] + ':' + image_line[1] + ':' + image_line[2]
+          if main_list[i].find("APPSAWAY_OPTIONS") != -1:
+            main_list[i] = "    - APPSAWAY_OPTIONS=" + "\"" + os.environ.get('APPSAWAY_OPTIONS') + "\""
+        main_file.close()
+        main_file = open("main.yml", "w")
+        for line in main_list:
+          main_file.write(line + '\n')
+        main_file.close()
+
+        env_file = open(".env", "w")
+        env_file.write("APPSAWAY_OPTIONS=" + os.environ.get('APPSAWAY_OPTIONS'))
+        env_file.close()
+
+        os.chdir(os.environ.get('HOME') + "/teamcode/appsAway/scripts/")
+          
+
 
     # overload the closing function to close the watchdog
     def exec_(self):
