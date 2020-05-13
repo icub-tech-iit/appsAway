@@ -288,17 +288,17 @@ class WidgetGallery(QDialog):
               image_line = image_line.split(':')
               image_line[2] = os.environ.get('APPSAWAY_REPO_VERSION') + "_" + os.environ.get('APPSAWAY_REPO_TAG')
               main_list[i+1] = image_line[0] + ':' + image_line[1] + ':' + image_line[2]
-          if main_list[i].find("APPSAWAY_OPTIONS") != -1:
+          if main_list[i].find("APPSAWAY_OPTIONS") != -1 and os.environ.get('APPSAWAY_OPTIONS') != None:
             main_list[i] = "    - APPSAWAY_OPTIONS=" + "\"" + os.environ.get('APPSAWAY_OPTIONS') + "\""
         main_file.close()
         main_file = open("main.yml", "w")
         for line in main_list:
           main_file.write(line + '\n')
         main_file.close()
-
-        env_file = open(".env", "w")
-        env_file.write("APPSAWAY_OPTIONS=" + os.environ.get('APPSAWAY_OPTIONS'))
-        env_file.close()
+        if os.environ.get('APPSAWAY_OPTIONS') != None:
+          env_file = open(".env", "w")
+          env_file.write("APPSAWAY_OPTIONS=" + os.environ.get('APPSAWAY_OPTIONS'))
+          env_file.close()
 
         os.chdir(os.environ.get('HOME') + "/teamcode/appsAway/scripts/")
           
