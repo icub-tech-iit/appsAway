@@ -4,7 +4,8 @@ Here we can find all the available demos. Each demo has its own folder, and cont
 
 In addition to the YAML files, there is also a `gui` folder containing a `gui_conf.ini` file with the instructions for the application GUI. The image to use on the background should be saved in the `images` folder, inside the `gui` folder.
 
-### Example of a demo folder tree (robotGazebo demo)
+<details>
+<summary>Click for example of a demo folder tree (robotGazebo demo) </summary>
 
 ```bash
 ├── composeGui.yml
@@ -16,6 +17,8 @@ In addition to the YAML files, there is also a `gui` folder containing a `gui_co
 │       └── Icon.ico
 └── main.yml
 ```
+
+</details>
 
 
 ## Understanding a YAML file
