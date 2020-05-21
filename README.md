@@ -6,7 +6,7 @@ For more information on the individual sections, please consult the correspondin
 
 # Repository Structure
 
-## Demos [Link](https://github.com/icub-tech-iit/appsAway/tree/master/demos)
+## [Demos](https://github.com/icub-tech-iit/appsAway/tree/master/demos)
 
 In this folder we can find all the available demos, in their respective folders. 
 
@@ -27,12 +27,12 @@ In this folder we can find all the available demos, in their respective folders.
 </details>
 
 
-## Gui [Link](https://github.com/icub-tech-iit/appsAway/tree/master/gui)
+## [Gui](https://github.com/icub-tech-iit/appsAway/tree/master/gui)
 
 Here we have the launch GUI script, along with the installation script.
 
 
-## Modules [Link](https://github.com/icub-tech-iit/appsAway/tree/master/modules)
+## [Modules](https://github.com/icub-tech-iit/appsAway/tree/master/modules)
 
 Additional modules that don't belong in any particular demo can be included in this folder.
 
@@ -46,7 +46,7 @@ Additional modules that don't belong in any particular demo can be included in t
 
 </details>
 
-## Scripts [Link](https://github.com/icub-tech-iit/appsAway/tree/master/scripts)
+## [Scripts](https://github.com/icub-tech-iit/appsAway/tree/master/scripts)
 
 This folder contains all the scripts that link, launch and stop your demos in the machine cluster.
 
