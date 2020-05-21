@@ -16,6 +16,7 @@ In this folder we can find all the available demos, in their respective folders.
 ```bash
 .
 ├── basicDockerDeploy
+├── demo_template
 ├── grasp_the_ball
 ├── grasp_the_ball_noFT
 ├── README.md
@@ -71,7 +72,6 @@ This folder contains all the scripts that link, launch and stop your demos in th
 ├── appsAway_stopApp.sh
 ├── cleanDockerObjs.sh
 └── start.sh
-
 ```
 
 </details>

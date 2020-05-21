@@ -1,0 +1,62 @@
+version: "3.7"
+
+x-yarp-head: &yarp-head
+  image: icubteamcode/superbuild-icubhead:master-unstable_binaries
+  environment:
+    - YARP_FORWARD_LOG_ENABLE=1
+    - YARP_ROBOT_NAME
+  volumes:
+    - type: volume
+      source: mystack_yarp-config
+      target: /root/.config/yarp
+      volume:
+        nocopy: true
+    - "/dev:/dev"
+  network_mode: "host"
+  privileged: true
+
+
+services:
+
+# This is an example for running yarprobotinterface in the container
+  yrobotinterface:
+    <<: *yarp-head
+    devices: 
+      - "/dev/bosch-i2c-imu:/dev/bosch-i2c-imu"
+    container_name: yrobotinterface
+    command: yarprobotinterface
+
+#################################### ADD YOUR SERVICES HERE #####################################
+# IMPORTANT:  this yml file is responsible for what runs on the icub-head. You can specify the 
+# yarp devices running on the head, but avoid running extra modules that can be ran in any other
+# machine in your cluster.
+
+  your_service: 
+    # use this if it is part of the superbuild-head image
+    <<: *yarp-head 
+
+    # use this if you are running your service from your own docker image
+    # NOTE - YOU REALLY SHOULD NOT BE USING ANY OTHER IMAGE ON THE ICUB-HEAD
+    image: YOURIMAGE:TAG 
+    
+    ##############################################################
+    # set any extra options here, e.g. environment, volumes, etc #
+    ##############################################################
+
+    devices:
+       - 
+    # you can specify the device you want the container to connect to
+    # e.g. for cameras, "/dev/video0:/dev/video0"
+
+
+##### specify your shell/bash command to run your application.
+##### The format is command: sh -c "bash/shell commands"
+##### e.g. for cameras, sh -c "yarpdev --from camera/ServerGrabberDualDragon.ini --split true"
+    command: sh -c ""
+
+#################################################################################################
+
+
+volumes:
+  mystack_yarp-config:
+    external: true

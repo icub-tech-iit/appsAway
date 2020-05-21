@@ -91,7 +91,7 @@ Check an example from one of the demos for a working example using YARP. For mor
 
 ### Creating your own demo
 
-To create your own demo, you should start from the template provided in the demo_template folder. **Do not change the options already specified in the template**, they are used to correctly initialize both YARP and the visual interfaces.
+To create your own demo, you should start from the template provided in the demo_template folder. **Do not change the options already specified in the template**, they are used to correctly initialize both YARP and the visual interfaces. You can add your own services to the template files. Any application that requires a graphical interface should be included in `composeGui.yml` file, while any device or module running on the robot head should be included in `composeHead.yml` (e.g.: camera devices, yarprobotinterface, etc).
 
 ## Options for the GUI
 
