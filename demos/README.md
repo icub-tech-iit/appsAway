@@ -29,65 +29,69 @@ YAML files contain a structure that docker uses to launch its images. You will n
 <summary>Click for code explanation</summary>
 
 ```yml
+>This is the version of compose file to use
 version: "3.8" 
->**This is the version of compose file to use**
 
+>We can define our own service here (it has to be defined before you run services, below)
 name\_of\_service: &pointer\_to\_service 
->**We can define our own service here (it has to be defined before you run services, below)**
 
+>  Here is where you write the docker image name that you want to run.
   image: name\_of\_image\_or\_dockerhub\_link:version\_or\_tag 
->  **Here is where you write the docker image name that you want to run.**
 
+>  Indicate here the ports you want to open for this service
   ports:
     - "6379" 
->  **Indicate here the ports you want to open for this service**
 
+>  You can define or specify which environment variables will be available inside the container here
   environment: 
     - ENVIRONMENT\_VARIABLE=VALUE
->  **You can define or specify which environment variables will be available inside the container here**
 
+>  Here we specify if the service is using a volume outside the container, which volume and what files inside that volume
   volumes:
     - volume\_name:/path/to/directory/or/file 
->  **Here we specify if the service is using a volume outside the container, which volume and what files inside that volume**
 
+>  we can specify the network connection to run the service on
   networks:
     - hostnet 
->  **we can specify the network connection to run the service on**
 
+>  We can specify the options when running multiple containers from the same image. Only used on Docker Swarm
   deploy: 
->  **We can specify the options when running multiple containers from the same image. Only used on Docker Swarm**
 
+>Initialization of the services to run on this (and only this!) machine
 services: 
->**Initialization of the services to run on this (and only this!) machine**
 
+>  You can also define your service here instead
+>  Name of the service - you can use any name that makes sense
   service1: 
->  **Name of the service - you can use any name that makes sense**
->    **You can also define your service here instead**
     image: 
     ports:
     networks:
     deploy:
     volumes:
 
+>  In case you specify your service before "services:"...
   service2: 
->  **In case you specify your service before "services:"...**
   
+>    Use this to point to your service. The options in your service will be used
     <<: \*pointer\_to\_service 
->    **Use this to point to your service. The options in your service will be used**
 
+>Here we specify the networks to be used in this application, and configure their options
 networks: 
   hostnet:
     external: true
     name: host
->**Here we specify the networks to be used in this application, and configure their options**
 
+>the list of volumes that can be used by the containers is specified here, along with their respective options
 volumes: 
   volume\_name:
->**the list of volumes that can be used by the containers is specified here, along with their respective options**
 ```
 </details>
 
-Check an example from one of the demos for a working example using YARP. For more details on what options are available check Docker [documentation](https://docs.docker.com/compose/compose-file/) page
+Check an example from one of the demos for a working example using YARP. For more details on what options are available check Docker [documentation](https://docs.docker.com/compose/compose-file/) page.
+
+### Creating your own demo
+
+To create your own demo, you should start from the template provided in the demo_template folder. **Do not change the options already specified in the template**, they are used to correctly initialize both YARP and the visual interfaces.
 
 ## Options for the GUI
 
@@ -97,17 +101,17 @@ Our default GUI application is used to start and stop the demos. In order to con
 <summary>Check .ini file structure</summary>
 
 ```
-[setup] 
-title "Name of your application" 
->**Title that will show in the GUI**
+[setup]  
+>Title that will show in the GUI
+title "Name of your application"
 
 [top options] 
+>path to the image illustrating your demo, to be used as the background image in the GUI
 ImageName "images/your\_demo\_image.png" 
->**path to the image illustrating your demo, to be used as the background image in the GUI**
  
 [right options]
+>The option string is sent directly to the container as an environment variable called APPSAWAY_OPTIONS, make sure your container is ready to process it!!!
 radioButton "option" 
->**The option string is sent directly to the container as an environment variable called APPSAWAY_OPTIONS, make sure your container is ready to process it!!!**
 ```
 
 We recommend that you include a title and image for your demo. If your demo needs no other options, you can ignore the `right options` section.
