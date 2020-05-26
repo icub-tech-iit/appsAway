@@ -89,14 +89,14 @@ volumes:
 
 Check an example from one of the demos for a working example using YARP. For more details on what options are available check Docker [documentation](https://docs.docker.com/compose/compose-file/) page.
 
-### Creating your own demo
+
+## Creating your own demo
+
+### Fork this repository
 
 To create your own demo, create a fork of this repository.
 
 You should start from the template provided in the demoTemplate folder. **Do not change the options already specified in the template**, they are used to correctly initialize both YARP and the visual interfaces. You can add your own services to the template files. Any application that requires a graphical interface should be included in `composeGui.yml` file, while any device or module running on the robot head should be included in `composeHead.yml` (e.g.: camera devices, yarprobotinterface, etc).
-
-Inside the demoTemplate folder you will find a Docker folder. You should include in this folder the Dockerfile to generate your docker image.
-
 
 <details>
 <summary>Click for template tree </summary>
@@ -117,7 +117,16 @@ Inside the demoTemplate folder you will find a Docker folder. You should include
 </details>
 
 
-## Options for the GUI
+### Include your own Dockerfile and entrypoint
+
+Inside the demoTemplate folder you will find a Docker folder. You should include in this folder the Dockerfile to generate your docker image, and the entrypoint file for your Docker image launch.
+
+Dockerfiles are used to create the Docker image that will be downloaded by the demo users. Check the Dockerfile template to create your own Dockerfile, and the entrypoint.sh.template file to create the entrypoint. You can add any other files that you use or are copied into the container on this folder.
+
+For more information on Docker, and how to create a Docker image, check the [Docker](https://docs.docker.com/) documentation.
+
+
+### Setting up the GUI
 
 Our default GUI application is used to start and stop the demos. In order to configure it properly for your individual demo, you can specify your options in the `gui\_conf.ini` file.
 
@@ -141,3 +150,10 @@ radioButton "option"
 We recommend that you include a title and image for your demo. If your demo needs no other options, you can ignore the `right options` section.
 
 </details>
+
+
+### Pushing your demo
+
+When you are done creating all the necessary files for your demo, push your code to your fork and create a pull request. Please specify which arguments you want to pass to your container in the pull request. **Please make sure your origin repository** (that you are using to create the Docker image) **is public**, so we can automatically generate your image with updated versions of superbuild. All demos will be reviewed before being accepted.
+
+
