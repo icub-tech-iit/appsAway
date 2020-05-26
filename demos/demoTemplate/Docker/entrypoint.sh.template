@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# we want the docker container not to be executed if any of these commands fails
+set -e
+
+# you can insert here any bash commands you want to run upon container launch
+# for example, you can run yarp server (bash syntax)
+
+
+
+# if you pass any command upon starting the container, you can execute it with the 
+# following instruction:
+
+exec "$@"

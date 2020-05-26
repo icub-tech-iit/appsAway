@@ -16,10 +16,9 @@ In this folder we can find all the available demos, in their respective folders.
 ```bash
 .
 ├── basicDockerDeploy
-├── demo_template
-├── grasp_the_ball
-├── grasp_the_ball_noFT
-├── README.md
+├── demoTemplate
+├── graspTheBall
+├── graspTheBallNoFT
 ├── robotBaseStartup
 └── robotGazebo
 ```
@@ -76,8 +75,3 @@ This folder contains all the scripts that link, launch and stop your demos in th
 
 </details>
 
-# Contacts
-
-For additional information, feedback or other requests, don't hesitate to contact us!
-
-(Should I include our emails here?)
