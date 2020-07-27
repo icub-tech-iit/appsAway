@@ -1,0 +1,152 @@
+version: "3.7"
+
+x-yarp-base: &yarp-base
+  image: alexantn88/erzelli1:latest
+  environment:
+    - YARP_FORWARD_LOG_ENABLE=1
+    - YARP_ROBOT_NAME
+  volumes:
+    - type: volume
+      source: yarp-config
+      target: /root/.config/yarp
+      volume:
+        nocopy: true
+  networks:
+    - hostnet
+
+
+
+x-yarp-head: &yarp-head
+  image: icubteamcode/superbuild-icubhead:master-unstable_binaries
+  environment:
+    - YARP_FORWARD_LOG_ENABLE=1
+    - YARP_ROBOT_NAME
+  volumes:
+    - type: volume
+      source: yarp-config
+      target: /root/.config/yarp
+      volume:
+        nocopy: true
+  network_mode: "host"
+
+#note: following services that need yarpRobotinterface is running, I write yarp wait /yarpRobotInterface;
+#just to remember us to solve thi issue. Such yarp port doesn't exist.
+
+services:
+#following service are configured in icub-main/app/iCubStartup/scripts/iCubStartup.xml.template
+  yserver:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+    command: yarpserver --write
+#  yGazeCtrl:
+#    <<: *yarp-base
+#    deploy:
+#      placement:
+#        constraints: [node.labels.type != head]
+#    command: sh -c "checkRobotInterface;  iKinGazeCtrl --from iKinGazeCtrl.ini"
+#    #note: in our issue we used this configuration file config_no_imu_filter.ini,, but I could not find it.
+    #<port timeout="60.0" request="is_ready" reply="[ok]">/icub/yarprobotinterface</port>
+
+#  yWBD:
+#    <<: *yarp-base
+#    deploy:
+#      placement:
+#        constraints: [node.labels.type != head]
+#    command: sh -c "checkRobotInterface; wholeBodyDynamics --autoconnect --no_legs"
+#    #note: Do I add --headV2 option??.
+#    #note: We need to check if WBD is already running, because some yarprobotinterface configuration files already contain it.
+#    # <port timeout="60.0" request="is_ready" reply="[ok]">/icub/yarprobotinterface</port>
+
+#  yGravityCompensator:
+#    <<: *yarp-base
+#    deploy:
+#      placement:
+#        constraints: [node.labels.type != head]
+#    command: sh -c "gravityCompensator --autoconnect --no_legs"
+#    #note: Do I add --headV2 option??.
+
+#------------------------------------------------------------------------------------------------
+#Following services are configured in ./icub-main/app/default/scripts/cameras_calib.xml.template
+
+  yCamCalib_l:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "checkRobotInterface; camCalib --context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_LEFT --name /icub/camcalib/left"
+
+  yCamCalib_r:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "checkRobotInterface; camCalib --context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_RIGHT --name /icub/camcalib/right"
+
+  yConnectCam_l:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type == head]
+    command: sh -c "yarp wait /icub/cam/left; yarp wait /icub/camcalib/left/in; yarp connect /icub/cam/left /icub/camcalib/left/in tcp"
+
+  yConnectCam_r:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type == head]
+    command: sh -c "yarp wait /icub/cam/right; yarp wait /icub/camcalib/right/in; yarp connect /icub/cam/right /icub/camcalib/right/in tcp"
+
+#------------------------------------------------------------------------------------------------
+#Following services are configured in icub-basic-demos/demoRedBall/app/scripts/demoRedBall.xml.template
+#we need to verify following depencencies:
+#<port>/icub/camcalib/left/out</port>
+#<port>/iKinGazeCtrl/rpc</port>
+#<port>/icub/cartesianController/right_arm/state:o</port>
+#<port>/icub/cartesianController/left_arm/state:o</port>
+#<port>/wholeBodyDynamics/right_arm/FT:i</port>
+#<port>/wholeBodyDynamics/left_arm/FT:i</port>
+
+  yDemoOpenFace:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "yarp wait /icub/camcalib/left/out; yarpOpenFace --name yarpOpenFace --robot iTeen --file /usr/local/share/ICUBcontrib/robots/iTeenGenova01/icubEyes.ini"
+
+  yConnectCamToYOF_l:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type == head]
+    command: sh -c "yarp wait /icub/camcalib/left/out; yarp wait /yarpOpenFace/inputImage:i ; yarp connect /icub/camcalib/left/out /yarpOpenFace/inputImage:i tcp"
+
+
+#------------------------------------------------------------------------------------------------
+
+
+
+  #use network.peer ip address and port 8080 to see the containers status in browser (http://localhost:8080/)
+  visualizer:
+    image: dockersamples/visualizer:stable
+    ports:
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+
+networks:
+  hostnet:
+    external: true
+    name: host
+
+volumes:
+  yarp-config:
+    driver: vieux/sshfs
+    driver_opts:
+      sshcmd: ${USER_NAME}@${MASTER_ADDR}:${YARP_CONF_PATH}
+      password: ${USER_PASSWORD}

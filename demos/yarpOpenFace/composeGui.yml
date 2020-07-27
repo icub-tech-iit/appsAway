@@ -1,0 +1,81 @@
+version: "3.7"
+
+x-yarp-base: &yarp-base
+  image: icubteamcode/superbuild:master-unstable_binaries
+  environment:
+    - DISPLAY=${DISPLAY}
+    - XAUTHORITY=/root/.Xauthority
+    - YARP_FORWARD_LOG_ENABLE=1
+    - YARP_ROBOT_NAME
+  volumes:
+    - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
+    - "${XAUTHORITY}:/root/.Xauthority:rw"
+    - type: volume
+      source: mystack_yarp-config
+      target: /root/.config/yarp
+      volume:
+        nocopy: true
+  network_mode: "host"
+  privileged: true
+  #ipc: host
+
+
+services:
+
+  ylogger:
+    <<: *yarp-base
+    container_name: ylogger
+    command: yarplogger --start
+
+#following services are configured in ./icub-main/app/default/scripts/cameras_calib.xml.template
+  yview_l:
+    <<: *yarp-base
+    container_name: yview_l
+    command: sh -c "yarpview --name /icub/view/left --x 0 --y 0 --p 50"
+
+  yview_r:
+    <<: *yarp-base
+    container_name: yview_r
+    command: sh -c "yarpview --name /icub/view/right --x 450 --y 0 --p 50"
+
+  yconnect_l:
+    <<: *yarp-base
+    container_name: yconnect_l
+    depends_on:
+      - yview
+    command: sh -c "yarp wait /icub/camcalib/left/out; yarp wait /icub/view/left; yarp connect /icub/camcalib/left/out /icub/view/left tcp"
+
+  yconnect_r:
+    <<: *yarp-base
+    container_name: yconnect_r
+    depends_on:
+      - yview
+    command: sh -c "yarp wait /icub/camcalib/right/out; yarp wait /icub/view/right; yarp connect /icub/camcalib/right/out /icub/view/right tcp"
+
+  yframeGrabberGui_l:
+    <<: *yarp-base
+    container_name: yframeGrabberGui_l
+    command: sh -c "yarp wait /icub/cam/left; frameGrabberGui2 --local /icub/fggui/left --remote /icub/cam/left --x 800 --y 0 --width 350 --height 500"
+
+
+    
+    
+#-----------------------------------------------------------------------------------------------------------------------------------------------------
+#Following services are configured in icub-basic-demos/demoRedBall/app/scripts/demoRedBall.xml.template
+  yview:
+    <<: *yarp-base
+    container_name: yview_demo
+    command: sh -c "yarpview --name /faceDetector_viewer --x 450 --y 400 --p 50 --compact"
+
+  yconnect_demo:
+    <<: *yarp-base
+    container_name: yconnect_demo
+    depends_on:
+      - yview
+    command: sh -c "yarp wait /yarpOpenFace/auResultImage:o; yarp wait /faceDetector_viewer; yarp connect /yarpOpenFace/auResultImage:o /faceDetector_viewer tcp"
+
+
+
+volumes:
+  mystack_yarp-config:
+    external: true
