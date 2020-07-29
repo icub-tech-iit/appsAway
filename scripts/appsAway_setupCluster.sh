@@ -34,6 +34,7 @@ _SSH_BIN=$(which ssh || true)
 _SSH_PARAMS="-T"
 _SCP_BIN=$(which scp || true)
 _SCP_PARAMS="-q -B"
+_SCP_PARAMS_DIR="-q -B -r"
 _DOCKER_BIN=$(which docker || true)
 _DOCKER_PARAMS=""
 _HOSTNAME_LIST=""
@@ -236,7 +237,7 @@ create_env_file()
   echo "USER_PASSWORD=$APPSAWAY_USER_PASSWORD" >> ${APPSAWAY_APP_PATH}/${_DOCKER_ENV_FILE}
   echo "MASTER_ADDR=$APPSAWAY_CONSOLENODE_ADDR" >> ${APPSAWAY_APP_PATH}/${_DOCKER_ENV_FILE}
   echo "YARP_CONF_PATH=${APPSAWAY_APP_PATH}/${_YARP_CONFIG_FILES_PATH}" >> ${APPSAWAY_APP_PATH}/${_DOCKER_ENV_FILE}
-
+  
 }
 
 copy_yaml_files()
@@ -277,6 +278,27 @@ copy_yaml_files()
   fi
 }
 
+copy_yarp_files()
+{
+  cd ${APPSAWAY_APP_PATH}
+
+  iter=1
+  List=$APPSAWAY_NODES_USERNAME_LIST
+  set -- $List
+  for node_ip in ${APPSAWAY_NODES_ADDR_LIST}
+  do
+    if [ "$node_ip" != "$APPSAWAY_CONSOLENODE_ADDR" ]; then
+      username=$( eval echo "\$$iter")
+      log "copying folder on node $node_ip.."
+      ${_SCP_BIN} ${_SCP_PARAMS} ${_DOCKER_ENV_FILE} ${username}@${node_ip}:${APPSAWAY_APP_PATH}/
+      ${_SCP_BIN} ${_SCP_PARAMS_DIR} ${_YARP_CONFIG_FILES_PATH} ${username}@${node_ip}:${APPSAWAY_APP_PATH}/
+    fi
+    iter=$((iter+1))
+  done
+}
+
+
+
 main()
 {
   fill_hostname_list
@@ -285,6 +307,7 @@ main()
   copy_yaml_files
   create_yarp_config_files
   create_env_file
+  copy_yarp_files
 }
 
 parse_opt "$@"
