@@ -6,11 +6,7 @@ x-yarp-head: &yarp-head
     - YARP_FORWARD_LOG_ENABLE=1
     - YARP_ROBOT_NAME
   volumes:
-    - type: volume
-      source: mystack_yarp-config
-      target: /root/.config/yarp
-      volume:
-        nocopy: true
+    - "${YARP_CONF_PATH}:/root/.config/yarp"
     - "/dev:/dev"
   network_mode: "host"
   privileged: true
@@ -41,6 +37,6 @@ services:
 #    command: sh -c "yarpdev --name /icub/face/raw --device serial --subdevice serialport --context faceExpressions --from serialport.ini"
 
 
-volumes:
-  mystack_yarp-config:
-    external: true
+#volumes:
+#  mystack_yarp-config:
+#    external: true
