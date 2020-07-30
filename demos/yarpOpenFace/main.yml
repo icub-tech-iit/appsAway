@@ -15,20 +15,6 @@ x-yarp-base: &yarp-base
     - hostnet
 
 
-
-x-yarp-head: &yarp-head
-  image: icubteamcode/superbuild-icubhead:master-unstable_binaries
-  environment:
-    - YARP_FORWARD_LOG_ENABLE=1
-    - YARP_ROBOT_NAME
-  volumes:
-    - type: volume
-      source: yarp-config
-      target: /root/.config/yarp
-      volume:
-        nocopy: true
-  network_mode: "host"
-
 #note: following services that need yarpRobotinterface is running, I write yarp wait /yarpRobotInterface;
 #just to remember us to solve thi issue. Such yarp port doesn't exist.
 
@@ -150,3 +136,4 @@ volumes:
     driver_opts:
       sshcmd: ${USER_NAME}@${MASTER_ADDR}:${YARP_CONF_PATH}
       password: ${USER_PASSWORD}
+      allow_other: ""
