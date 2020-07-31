@@ -79,3 +79,4 @@ volumes:
     driver_opts:
       sshcmd: ${USER_NAME}@${MASTER_ADDR}:${YARP_CONF_PATH}
       password: ${USER_PASSWORD}
+      allow_other: ""
