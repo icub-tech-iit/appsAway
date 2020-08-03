@@ -63,7 +63,7 @@ services:
     container_name: yconnect_demo
     depends_on:
       - yview
-    command: sh -c "yarp wait /faceLandmark/video:o; yarp wait /faceLandmark_viewer; yarp connect /faceLandmark/video:o /faceLandmark_viewer udp"
+    command: sh -c "yarp wait /faceLandmark/image:o; yarp wait /faceLandmark_viewer; yarp connect /faceLandmark/image:o /faceLandmark_viewer udp"
 
 
 
