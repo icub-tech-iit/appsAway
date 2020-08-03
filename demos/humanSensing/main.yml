@@ -5,28 +5,12 @@ x-yarp-base: &yarp-base
   environment:
     - YARP_FORWARD_LOG_ENABLE=1
   volumes:
-    - type: volume
-      source: yarp-config
-      target: /root/.config/yarp
-      volume:
-        nocopy: true
+    - "${YARP_CONF_PATH}:/root/.config/yarp"
   networks:
     - hostnet
 
 
 
-x-yarp-head: &yarp-head
-  image: icubteamcode/superbuild-icubhead:master-unstable_binaries
-  environment:
-    - YARP_FORWARD_LOG_ENABLE=1
-    - YARP_ROBOT_NAME
-  volumes:
-    - type: volume
-      source: yarp-config
-      target: /root/.config/yarp
-      volume:
-        nocopy: true
-  network_mode: "host"
 
 #note: following services that need yarpRobotinterface is running, I write yarp wait /yarpRobotInterface;
 #just to remember us to solve thi issue. Such yarp port doesn't exist.
@@ -78,12 +62,12 @@ services:
 
 #------------------------------------------------------------------------------------------------
 
- yDemofaceLandmarks:
+  yDemofaceLandmarks:
     <<: *yarp-base
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "yarp wait /icub/camcalib/left/out; faceLandmarks
+    command: sh -c "faceLandmarks"
 
   yConnectCamToFL_l:
     <<: *yarp-base
@@ -112,11 +96,3 @@ networks:
   hostnet:
     external: true
     name: host
-
-volumes:
-  yarp-config:
-    driver: vieux/sshfs
-    driver_opts:
-      sshcmd: ${USER_NAME}@${MASTER_ADDR}:${YARP_CONF_PATH}
-      password: ${USER_PASSWORD}
-      allow_other: ""

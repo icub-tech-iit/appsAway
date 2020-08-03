@@ -6,14 +6,11 @@ x-yarp-base: &yarp-base
     - DISPLAY=${DISPLAY}
     - XAUTHORITY=/root/.Xauthority
     - YARP_FORWARD_LOG_ENABLE=1
+    - YARP_ROBOT_NAME
   volumes:
     - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
     - "${XAUTHORITY}:/root/.Xauthority:rw"
-    - type: volume
-      source: mystack_yarp-config
-      target: /root/.config/yarp
-      volume:
-        nocopy: true
+    - "${YARP_CONF_PATH}:/root/.config/yarp"
   network_mode: "host"
   privileged: true
   #ipc: host
@@ -54,19 +51,15 @@ services:
 #-----------------------------------------------------------------------------------------------------------------------------------------------------
 
   yview:
-   <<: *yarp-base
+    <<: *yarp-base
     container_name: yview_demo
-    command: yarpview --name /faceLandmark_viewer --x 320 --y 0 --p 50 --compact
+    command: sh -c "yarpview --name /faceLandmark_viewer --x 320 --y 0 --p 50 --compact"
 
   yconnect_demo:
     <<: *yarp-base
     container_name: yconnect_demo
     depends_on:
       - yview
-    command: sh -c "yarp wait /faceLandmark/image:o; yarp wait /faceLandmark_viewer; yarp connect /faceLandmark/image:o /faceLandmark_viewer udp"
+    command: sh -c "yarp wait /faceLandmarks/image:o; yarp wait /faceLandmark_viewer; yarp connect /faceLandmarks/image:o /faceLandmark_viewer udp"
 
 
-
-volumes:
-  mystack_yarp-config:
-    external: true
