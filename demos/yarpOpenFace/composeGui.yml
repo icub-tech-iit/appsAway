@@ -68,7 +68,7 @@ services:
     container_name: yconnect_demo
     depends_on:
       - yview
-    command: sh -c "yarp wait /yarpOpenFace/auResultImage:o; yarp wait /faceDetector_viewer; yarp connect /yarpOpenFace/auResultImage:o /faceDetector_viewer tcp"
+    command: sh -c "yarp wait /yarpOpenFace/outputImg:o; yarp wait /faceDetector_viewer; yarp connect /yarpOpenFace/outputImg:o /faceDetector_viewer tcp"
 
 
 

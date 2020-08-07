@@ -106,7 +106,7 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "yarp wait /icub/camcalib/left/out; yarp wait /yarpOpenFace/inputImage:i ; yarp connect /icub/camcalib/left/out /yarpOpenFace/inputImage:i tcp"
+    command: sh -c "yarp wait /icub/camcalib/left/out; yarp wait /yarpOpenFace/inputImg:i ; yarp connect /icub/camcalib/left/out /yarpOpenFace/inputImg:i tcp"
 
 
 #------------------------------------------------------------------------------------------------
