@@ -4,9 +4,10 @@ from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QDateTimeEdit,
         QDial, QDialog, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit,
         QProgressBar, QPushButton, QRadioButton, QScrollBar, QSizePolicy,
         QSlider, QSpinBox, QStyleFactory, QTableWidget, QTabWidget, QTextEdit,
-        QVBoxLayout, QWidget)
+        QVBoxLayout, QWidget, QLineEdit)
 
 from PyQt5.QtGui import QIcon, QPixmap
+from PyQt5.QtCore import pyqtSlot
 
 import sys
 import time
@@ -52,6 +53,9 @@ class WidgetGallery(QDialog):
         self.gui_dir = os.getcwd()
         print(self.gui_dir)
 
+        self.textEdit = ""
+        self.textEdit_name = ""
+
         # read from .ini file here
         self.button_name_list = []
         conf_file = open(self.gui_dir + "/gui_conf.ini", "r")
@@ -62,7 +66,9 @@ class WidgetGallery(QDialog):
             self.image = self.gui_dir + "/" + line.split('"')[1]
           if line.find("radioButton") != -1:
             self.button_name_list = self.button_name_list + [line.split('"')[1]]
-        
+          if line.find("textEdit") != -1:
+            self.textEdit_name = line.split('"')[1]
+            self.button_name_list = self.button_name_list + [line.split('"')[1]]
 
         # try to make a list of buttons so we can have multiple
 
@@ -72,6 +78,9 @@ class WidgetGallery(QDialog):
 
         for button_name in self.button_name_list:
           self.button_list = self.button_list + [QRadioButton(button_name)]
+
+        if line.find("textEdit") != -1:
+          self.textEdit = QLineEdit(self)
 
         #os.chdir("../../../scripts/") 
         os.chdir(os.environ.get('HOME') + "/teamcode/appsAway/scripts/")
@@ -157,12 +166,25 @@ class WidgetGallery(QDialog):
         if len(self.button_list) >= 1:
           self.button_list[0].setChecked(True)
 
+        self.textEdit.setText('/your/custom/port')
+
         layout = QVBoxLayout()
         for button in self.button_list:
           layout.addWidget(button)
+        
+        self.textEdit.setEnabled(False)
+        layout.addWidget(self.textEdit)
 
         layout.addStretch(1)
-        self.bottomRightGroupBox.setLayout(layout)    
+        self.bottomRightGroupBox.setLayout(layout)   
+
+        self.button_list[len(self.button_list)-1].clicked.connect(self.on_click) 
+
+    @pyqtSlot()
+    def on_click(self):
+        self.textEdit.setEnabled(True)
+        textboxValue = self.textEdit.text()
+        print("The custom port is:" + textboxValue)
 
     def createBottomLeftGroupBox(self):
         self.bottomLeftGroupBox = QGroupBox("Application")
