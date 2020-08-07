@@ -1,7 +1,7 @@
 version: "3.7"
 
 x-yarp-base: &yarp-base
-  image: alexantn88/erzelli1:latest
+  image: icubteamcode/erzelli1:master-unstable_sources
   environment:
     - YARP_FORWARD_LOG_ENABLE=1
     - YARP_ROBOT_NAME
@@ -99,7 +99,7 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "yarp wait /icub/camcalib/left/out; yarpOpenFace --name yarpOpenFace --robot iTeen --file /usr/local/share/ICUBcontrib/robots/iTeenGenova01/icubEyes.ini"
+    command: sh -c "yarp wait /icub/camcalib/left/out; yarpOpenFace --name /yarpOpenFace --robot iTeen --file /usr/local/share/ICUBcontrib/robots/iTeenGenova01/icubEyes.ini"
 
   yConnectCamToYOF_l:
     <<: *yarp-base
