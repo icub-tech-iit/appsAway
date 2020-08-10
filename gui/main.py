@@ -20,6 +20,16 @@ from watchdog.events import FileSystemEventHandler
 global PAUSED
 PAUSED = True
 
+class optionButton():
+    def __init__(self, is_custom, button):
+        self.is_custom = is_custom
+        self.button = button
+    def init_textInput(self, textInput):
+        self.textInput = textInput
+    def set_customName(self, customName):
+        self.customName = customName
+    
+
 class MyHandler(FileSystemEventHandler):
     def __init__(self, progressBar):
         self.progressBar = progressBar
@@ -65,10 +75,14 @@ class WidgetGallery(QDialog):
           if line.find("ImageName") != -1:
             self.image = self.gui_dir + "/" + line.split('"')[1]
           if line.find("radioButton") != -1:
-            self.button_name_list = self.button_name_list + [line.split('"')[1]]
+            self.button_list = self.button_list + [optionButton(False, QRadioButton(line.split('"')[1]))]
           if line.find("textEdit") != -1:
-            self.textEdit_name = line.split('"')[1]
-            self.button_name_list = self.button_name_list + [line.split('"')[1]]
+            self.button_list = self.button_list + [optionButton(True, QRadioButton(line.split('"')[1]))]
+            self.button_list[-1].init_textInput(QLineEdit(self))
+            self.button_list[-1].textInput.setText("write custom option")
+            self.button_list[-1].set_customName(line.split('"')[1])
+            #self.textEdit_name = line.split('"')[1]
+            #self.button_name_list = self.button_name_list + [line.split('"')[1]]
 
         # try to make a list of buttons so we can have multiple
 
@@ -76,11 +90,11 @@ class WidgetGallery(QDialog):
         self.pushStartButton = QPushButton("Start the Application")
         self.pushStopButton = QPushButton("Stop the Application")
 
-        for button_name in self.button_name_list:
-          self.button_list = self.button_list + [QRadioButton(button_name)]
+        #for button_name in self.button_name_list:
+        #  self.button_list = self.button_list + [QRadioButton(button_name)]
 
-        if line.find("textEdit") != -1:
-          self.textEdit = QLineEdit(self)
+        #if line.find("textEdit") != -1:
+        #  self.textEdit = QLineEdit(self)
 
         #os.chdir("../../../scripts/") 
         os.chdir(os.environ.get('HOME') + "/teamcode/appsAway/scripts/")
@@ -164,27 +178,39 @@ class WidgetGallery(QDialog):
         self.bottomRightGroupBox.setAlignment(Qt.AlignHCenter)
 
         if len(self.button_list) >= 1:
-          self.button_list[0].setChecked(True)
-
-        self.textEdit.setText('/your/custom/port')
-
+          self.button_list[0].button.setChecked(True)
+          
         layout = QVBoxLayout()
-        for button in self.button_list:
-          layout.addWidget(button)
-        
-        self.textEdit.setEnabled(False)
-        layout.addWidget(self.textEdit)
+        for buttonOption in self.button_list:
+          layout.addWidget(buttonOption.button)
+          if buttonOption.is_custom:
+            buttonOption.textInput.setEnabled(False)
+            layout.addWidget(buttonOption.textInput)
+            buttonOption.button.clicked.connect(self.on_click(buttonOption))
+
+        if self.button_list[0].is_custom:
+          self.button_list[0].textInput.setEnabled(True)
+          layout.addWidget(self.button_list[0].textInput)
 
         layout.addStretch(1)
         self.bottomRightGroupBox.setLayout(layout)   
 
-        self.button_list[len(self.button_list)-1].clicked.connect(self.on_click) 
+        #self.button_list[len(self.button_list)-1].clicked.connect(self.on_click) 
 
     @pyqtSlot()
-    def on_click(self):
-        self.textEdit.setEnabled(True)
-        textboxValue = self.textEdit.text()
-        print("The custom port is:" + textboxValue)
+    def on_click(self, buttonOption):
+        def setEnable():
+          buttonOption.textInput.setEnabled(True)
+          self.disableAllOthers(buttonOption)
+          textboxValue = buttonOption.textInput.text()
+          print("The custom option is:" + textboxValue)
+        return setEnable
+
+    def disableAllOthers(self, currentOption):
+        for buttonOption in self.button_list:
+          if buttonOption.is_custom:
+            if buttonOption != currentOption:
+              buttonOption.textInput.setEnabled(False)
 
     def createBottomLeftGroupBox(self):
         self.bottomLeftGroupBox = QGroupBox("Application")
@@ -214,8 +240,8 @@ class WidgetGallery(QDialog):
         global PAUSED
         self.pushStartButton.setEnabled(False)
 
-        for button in self.button_list:
-          button.setEnabled(False)
+        for buttonOption in self.button_list:
+          buttonOption.button.setEnabled(False)
 
         #self.bottomRightGroupBox.setEnabled(False)
 
@@ -271,13 +297,17 @@ class WidgetGallery(QDialog):
 
     def startApplication(self):
         print("starting application")
-        for button in self.button_list:
-            if (button.isChecked()):
-              print(button.text()+" is selected")
+
+        self.custom_option = "";
+        for buttonOption in self.button_list:
+            if (buttonOption.button.isChecked()):
+              print(buttonOption.button.text()+" is selected")
 
               # we set the environment variables here. 
-              os.environ['APPSAWAY_ROBOT_MODEL'] = button.text().split(" ")[0]
-              os.environ['APPSAWAY_OPTIONS'] = button.text()
+              os.environ['APPSAWAY_OPTIONS'] = buttonOption.button.text()
+              if buttonOption.is_custom:
+                os.environ[buttonOption.customName] = buttonOption.textInput.text()
+                self.custom_option = buttonOption.customName
 
         self.setupEnvironment()
         rc = subprocess.call("./appsAway_startApp.sh")
@@ -292,35 +322,58 @@ class WidgetGallery(QDialog):
         self.progressBar.setValue(0)
         PAUSED = True
 
-        for button in self.button_list:
-          button.setEnabled(True)
+        for buttonOption in self.button_list:
+          buttonOption.button.setEnabled(True)
 
         rc = subprocess.call("./appsAway_stopApp.sh")
         #self.rc = subprocess.Popen("./appsAway_stopApp.sh")
 
     def setupEnvironment(self):
         os.chdir(os.environ.get('APPSAWAY_APP_PATH'))
+        yml_files = ["main.yml", "composeGui.yml"]#, "composeHead.yml"]
 
-        main_file = open("main.yml", "r")
-        main_list = main_file.read().split('\n')
-        for i in range(len(main_list)):
-          if main_list[i].find("x-yarp-base") != -1:
-            if main_list[i+1].find("image") != -1:
-              image_line = main_list[i+1]
-              image_line = image_line.split(':')
-              image_line[2] = os.environ.get('APPSAWAY_REPO_VERSION') + "_" + os.environ.get('APPSAWAY_REPO_TAG')
-              main_list[i+1] = image_line[0] + ':' + image_line[1] + ':' + image_line[2]
-          if main_list[i].find("APPSAWAY_OPTIONS") != -1 and os.environ.get('APPSAWAY_OPTIONS') != None:
-            main_list[i] = "    - APPSAWAY_OPTIONS=" + "\"" + os.environ.get('APPSAWAY_OPTIONS') + "\""
-        main_file.close()
-        main_file = open("main.yml", "w")
-        for line in main_list:
-          main_file.write(line + '\n')
-        main_file.close()
-        if os.environ.get('APPSAWAY_OPTIONS') != None:
-          env_file = open(".env", "w")
-          env_file.write("APPSAWAY_OPTIONS=" + os.environ.get('APPSAWAY_OPTIONS'))
-          env_file.close()
+        for yml_file in yml_files:
+          main_file = open(yml_file, "r")
+          main_list = main_file.read().split('\n')
+          custom_option_found = False
+          for i in range(len(main_list)):
+            if main_list[i].find("x-yarp-base") != -1 or main_list[i].find("x-yarp-head") != -1 or main_list[i].find("x-yarp-gui") != -1:
+              if main_list[i+1].find("image") != -1:
+                image_line = main_list[i+1]
+                image_line = image_line.split(':')
+                image_line[2] = os.environ.get('APPSAWAY_REPO_VERSION') + "_" + os.environ.get('APPSAWAY_REPO_TAG')
+                main_list[i+1] = image_line[0] + ':' + image_line[1] + ':' + image_line[2]
+            if main_list[i].find("APPSAWAY_OPTIONS") != -1 and os.environ.get('APPSAWAY_OPTIONS') != None:
+                main_list[i] = "    - APPSAWAY_OPTIONS=" + "\"" + os.environ.get('APPSAWAY_OPTIONS') + "\""
+            if main_list[i].find(self.custom_option) != -1 and os.environ.get(self.custom_option) != None:
+                main_list[i] = "    - " + self.custom_option + "=" + os.environ.get(self.custom_option)
+                custom_option_found = True
+            if main_list[i].find("volumes") != -1 and not custom_option_found:
+                if self.custom_option != "":
+                    main_list.insert(i, "    - " + self.custom_option + "=" + os.environ.get(self.custom_option))
+                    custom_option_found = True
+          main_file.close()
+          main_file = open(yml_file, "w")
+          for line in main_list:
+            main_file.write(line + '\n')
+          main_file.close()
+        env_file = open(".env", "r")
+        env_list = env_file.read().split('\n')
+        env_file.close()
+        custom_option_found = False
+        for i in range(len(env_list)):
+          if env_list[i].find("APPSAWAY_OPTIONS") != -1 and os.environ.get('APPSAWAY_OPTIONS') != None:
+            env_list[i] = "APPSAWAY_OPTIONS=" + os.environ.get('APPSAWAY_OPTIONS')
+          if env_list[i].find(self.custom_option) != -1 and os.environ.get(self.custom_option) != None:
+            env_list[i] = self.custom_option+"="+os.environ.get(self.custom_option)
+            custom_option_found = True
+          if i == len(env_list)-1 and not custom_option_found:
+              if self.custom_option != "":
+                  env_list.append(self.custom_option + "=" + os.environ.get(self.custom_option))
+        env_file = open(".env", "w")
+        for line in env_list:
+          env_file.write(line + '\n')
+        env_file.close()
 
         os.chdir(os.environ.get('HOME') + "/teamcode/appsAway/scripts/")
           
