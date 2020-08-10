@@ -128,7 +128,7 @@ For more information on Docker, and how to create a Docker image, check the [Doc
 
 ### Setting up the GUI
 
-Our default GUI application is used to start and stop the demos. In order to configure it properly for your individual demo, you can specify your options in the `gui\_conf.ini` file.
+Our default GUI application is used to start and stop the demos. In order to configure it properly for your individual demo, you can specify your options in the `gui_conf.ini` file.
 
 <details>
 <summary>Check .ini file structure</summary>
