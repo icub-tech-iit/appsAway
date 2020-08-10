@@ -187,10 +187,11 @@ class WidgetGallery(QDialog):
             buttonOption.textInput.setEnabled(False)
             layout.addWidget(buttonOption.textInput)
             buttonOption.button.clicked.connect(self.on_click(buttonOption))
-
-        if self.button_list[0].is_custom:
-          self.button_list[0].textInput.setEnabled(True)
-          layout.addWidget(self.button_list[0].textInput)
+        
+        if len(self.button_list) >= 1:
+          if self.button_list[0].is_custom:
+            self.button_list[0].textInput.setEnabled(True)
+            layout.addWidget(self.button_list[0].textInput)
 
         layout.addStretch(1)
         self.bottomRightGroupBox.setLayout(layout)   
