@@ -353,6 +353,8 @@ class WidgetGallery(QDialog):
                 if self.custom_option != "":
                     main_list.insert(i, "    - " + self.custom_option + "=" + os.environ.get(self.custom_option))
                     custom_option_found = True
+            if main_list[i].find("services") != -1:
+                break
           main_file.close()
           main_file = open(yml_file, "w")
           for line in main_list:
