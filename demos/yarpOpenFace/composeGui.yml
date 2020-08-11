@@ -57,11 +57,11 @@ services:
     
     
 #-----------------------------------------------------------------------------------------------------------------------------------------------------
-#Following services are configured in icub-basic-demos/demoRedBall/app/scripts/demoRedBall.xml.template
+#Following services are configured in icub-basic-demos/demoRedBall/app/scripts/demoRedBall.xml.template 
   yview:
     <<: *yarp-base
     container_name: yview_demo
-    command: sh -c "yarpview --name /faceDetector_viewer --x 450 --y 400 --p 50 --compact"
+    command: sh -c "yarpview --name /faceDetector_viewer --x 450 --y 400 --p 50"
 
   yconnect_demo:
     <<: *yarp-base

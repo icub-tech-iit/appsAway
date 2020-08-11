@@ -99,14 +99,14 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "if [ -z "$CUSTOM_PORT" ]; then yarp wait $CUSTOM_PORT; else yarp wait /icub/camcalib/left/out; fi ; yarpOpenFace --name /yarpOpenFace --robot iTeen --file /usr/local/share/ICUBcontrib/robots/iTeenGenova01/icubEyes.ini"
+    command: sh -c "if set|grep '^CUSTOM_PORT=' >/dev/null; then yarp wait $CUSTOM_PORT; else yarp wait /icub/camcalib/left/out; fi ; yarpOpenFace --name /yarpOpenFace --robot iTeen --file /usr/local/share/ICUBcontrib/robots/iTeenGenova01/icubEyes.ini"
 
   yConnectCamToYOF_l:
     <<: *yarp-base
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "if [ -z "$CUSTOM_PORT" ]; then yarp wait $CUSTOM_PORT ; yarp wait /yarpOpenFace/inputImg:i ; yarp connect $CUSTOM_PORT /yarpOpenFace/inputImg:i tcp ; else yarp wait /icub/camcalib/left/out; yarp wait /yarpOpenFace/inputImg:i ; yarp connect /icub/camcalib/left/out /yarpOpenFace/inputImg:i tcp; fi"
+    command: sh -c "if set|grep '^CUSTOM_PORT=' >/dev/null; then yarp wait $CUSTOM_PORT ; yarp wait /yarpOpenFace/inputImg:i ; yarp connect $CUSTOM_PORT /yarpOpenFace/inputImg:i tcp ; else yarp wait /icub/camcalib/left/out; yarp wait /yarpOpenFace/inputImg:i ; yarp connect /icub/camcalib/left/out /yarpOpenFace/inputImg:i tcp; fi"
 #    command: sh -c "yarp wait /icub/camcalib/left/out; yarp wait /yarpOpenFace/inputImg:i ; yarp connect /icub/camcalib/left/out /yarpOpenFace/inputImg:i tcp"
 
 
