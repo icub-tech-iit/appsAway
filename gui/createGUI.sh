@@ -39,8 +39,3 @@ cp main.py ./src/main/python/main.py
 
 # compile our GUI. The output is quite verbose so we make it run silent.
 fbs freeze #> /dev/null
-
-# copy application images and configuration files (e.g. buttons) to the GUI folder
-cp ../demos/$APPSAWAY_APP_NAME/gui/gui_conf.ini ./target/appGUI/
-cp -R ../demos/$APPSAWAY_APP_NAME/gui/images ./target/appGUI/
-
