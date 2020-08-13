@@ -190,6 +190,11 @@ run_deploy()
   export $(cat .env)
   for _file2deploy in ${APPSAWAY_DEPLOY_YAML_FILE_LIST}
   do
+    log "downloading the image: ${_DOCKER_COMPOSE_BIN} -f ${_file2deploy} pull "
+    ${_DOCKER_COMPOSE_BIN} -f ${_file2deploy} pull
+    log "pushing image into service registry for distribution in swarm"
+    ${_DOCKER_COMPOSE_BIN} -f ${_file2deploy} push
+    log "Image from ${_file2deploy} successfully pushed"
     val1=$(( $val1 + 10 ))
     echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE
     ${_DOCKER_BIN} ${_DOCKER_PARAMS} stack deploy -c ${_file2deploy} ${APPSAWAY_STACK_NAME}
