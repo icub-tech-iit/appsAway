@@ -9,11 +9,7 @@ x-yarp-base: &yarp-base
   volumes:
     - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
     - "${XAUTHORITY}:/root/.Xauthority:rw"
-    - type: volume
-      source: mystack_yarp-config
-      target: /root/.config/yarp
-      volume:
-        nocopy: true
+    - "${YARP_CONF_PATH}:/root/.config/yarp"
   network_mode: "host"
   privileged: true
   #ipc: host
@@ -67,6 +63,6 @@ services:
 
 
 
-volumes:
-  mystack_yarp-config:
-    external: true
+#volumes:
+#  mystack_yarp-config:
+#    external: true
