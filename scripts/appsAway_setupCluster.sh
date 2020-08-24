@@ -249,6 +249,11 @@ copy_yaml_files()
     log "copying yaml file $file to master node (this)"
     cp ../demos/${APPSAWAY_APP_NAME}/${file} ${APPSAWAY_APP_PATH}/
   done
+  for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
+  do
+    log "copying yaml file $file to master node (this)"
+    cp ../demos/${APPSAWAY_APP_NAME}/${file} ${APPSAWAY_APP_PATH}/
+  done
   if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
     log "creating path ${APPSAWAY_APP_PATH} on node with IP $APPSAWAY_ICUBHEADNODE_ADDR"
     ${_SSH_BIN} ${_SSH_PARAMS} ${APPSAWAY_ICUBHEADNODE_USERNAME}@${APPSAWAY_ICUBHEADNODE_ADDR} "mkdir -p ${APPSAWAY_APP_PATH}"
