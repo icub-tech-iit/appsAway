@@ -1,7 +1,7 @@
 version: "3.7"
 
 x-yarp-base: &yarp-base
-  image: icubteamcode/human_sensing:master-unstable_source
+  image: icubteamcode/human-sensing:master-unstable_sources
   environment:
     - YARP_FORWARD_LOG_ENABLE=1
   volumes:
