@@ -48,7 +48,7 @@ services:
         constrains: [node.labels.type != head] 
 ####### You can specify additional constraints, e.g. manager
 
-      restart-policy:
+      restart_policy:
         condition: [on-failure, always, etc]
         # this specifies when you want to restart the container. Generally we woud use "on-failure"
         # for services that are connecting ports, for example
