@@ -40,6 +40,7 @@ services:
     depends_on:
       - yview
     command: sh -c "yarp wait /icub/camcalib/left/out; yarp wait /icub/view/left; yarp connect /icub/camcalib/left/out /icub/view/left tcp"
+    restart: on-failure
 
   yconnect_r:
     <<: *yarp-base
@@ -47,6 +48,7 @@ services:
     depends_on:
       - yview
     command: sh -c "yarp wait /icub/camcalib/right/out; yarp wait /icub/view/right; yarp connect /icub/camcalib/right/out /icub/view/right tcp"
+    restart: on-failure
 
   yframeGrabberGui_l:
     <<: *yarp-base
@@ -69,9 +71,6 @@ services:
     depends_on:
       - yview
     command: sh -c "yarp wait /pf3dTracker/video:o; yarp wait /PF3DTracker_viewer; yarp connect /pf3dTracker/video:o /PF3DTracker_viewer tcp"
+    restart: on-failure
 
 
-
-#volumes:
-#  mystack_yarp-config:
-#    external: true

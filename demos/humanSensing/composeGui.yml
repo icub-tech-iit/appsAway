@@ -13,7 +13,6 @@ x-yarp-base: &yarp-base
     - "${YARP_CONF_PATH}:/root/.config/yarp"
   network_mode: "host"
   privileged: true
-  #ipc: host
 
 
 services:
@@ -40,6 +39,7 @@ services:
     depends_on:
       - yview
     command: sh -c "yarp wait /icub/camcalib/left/out; yarp wait /icub/view/left; yarp connect /icub/camcalib/left/out /icub/view/left udp"
+    restart: on-failure
 
   yconnect_r:
     <<: *yarp-base
@@ -47,6 +47,7 @@ services:
     depends_on:
       - yview
     command: sh -c "yarp wait /icub/camcalib/right/out; yarp wait /icub/view/right; yarp connect /icub/camcalib/right/out /icub/view/right udp"
+    restart: on-failure
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -61,5 +62,6 @@ services:
     depends_on:
       - yview
     command: sh -c "yarp wait /faceLandmarks/image:o; yarp wait /faceLandmark_viewer; yarp connect /faceLandmarks/image:o /faceLandmark_viewer udp"
+    restart: on-failure
 
 

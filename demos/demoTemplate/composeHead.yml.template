@@ -45,6 +45,11 @@ services:
     # e.g. for cameras, "/dev/video0:/dev/video0"
 
 
+    restart: [on-failure, always, etc]
+    # this specifies when you want to restart the container. Generally we woud use "on-failure"
+    # for services that are connecting ports, for example
+
+
 ##### specify your shell/bash command to run your application.
 ##### The format is command: sh -c "bash/shell commands"
 ##### e.g. for cameras, sh -c "yarpdev --from camera/ServerGrabberDualDragon.ini --split true"

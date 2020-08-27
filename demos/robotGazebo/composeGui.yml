@@ -23,6 +23,3 @@ services:
     <<: *yarp-base
     command: gazebo
 
-#volumes:
-#  mystack_yarp-config:
-#    external: true

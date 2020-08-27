@@ -14,6 +14,3 @@ x-yarp-head: &yarp-head
 
 #services:
 
-#volumes:
-#  mystack_yarp-config:
-#    external: true

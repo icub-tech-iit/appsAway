@@ -112,6 +112,8 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
+      restart-policy:
+        condition: on-failure
     command: sh -c "yarp wait /icub/cam/left; yarp wait /icub/camcalib/left/in; yarp connect /icub/cam/left /icub/camcalib/left/in udp"
 
   yConnectCam_r:
@@ -119,6 +121,8 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
+      restart-policy:
+        condition: on-failure
     command: sh -c "yarp wait /icub/cam/right; yarp wait /icub/camcalib/right/in; yarp connect /icub/cam/right /icub/camcalib/right/in udp"
 
 #------------------------------------------------------------------------------------------------
@@ -142,6 +146,8 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
+      restart-policy:
+        condition: on-failure
     command: sh -c "yarp wait /icub/face/emotions/out; yarp wait /icub/face/raw/in ; yarp connect /icub/face/emotions/out /icub/face/raw/in tcp"
 
 
@@ -174,6 +180,8 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
+      restart-policy:
+        condition: on-failure
     command: sh -c "yarp wait /icub/camcalib/left/out; yarp wait /pf3dTracker/video:i; yarp connect /icub/camcalib/left/out /pf3dTracker/video:i udp"
 
 
@@ -182,6 +190,8 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
+      restart-policy:
+        condition: on-failure
     command: sh -c "yarp wait /pf3dTracker/data:o; yarp wait /demoRedBall/trackTarget:i; yarp connect /pf3dTracker/data:o /demoRedBall/trackTarget:i udp"
 
 
@@ -190,6 +200,8 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
+      restart-policy:
+        condition: on-failure
     command: sh -c "yarp wait /demoRedBall/cmdFace:rpc; yarp wait /icub/face/emotions/in; yarp connect /demoRedBall/cmdFace:rpc /icub/face/emotions/in tcp"
 
 

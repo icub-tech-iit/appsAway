@@ -28,8 +28,6 @@ services:
     depends_on:
       - yview
     command: sh -c "yarp wait /grabber; yarp wait /view; yarp connect /grabber /view tcp"
-    deploy:
-      restart_policy:
-        condition: on-failure
+    restart: on-failure
     
 

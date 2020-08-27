@@ -26,32 +26,6 @@ services:
       placement:
         constraints: [node.role == manager]
     command: yarpserver --write
-#  yGazeCtrl:
-#    <<: *yarp-base
-#    deploy:
-#      placement:
-#        constraints: [node.labels.type != head]
-#    command: sh -c "checkRobotInterface;  iKinGazeCtrl --from iKinGazeCtrl.ini"
-#    #note: in our issue we used this configuration file config_no_imu_filter.ini,, but I could not find it.
-    #<port timeout="60.0" request="is_ready" reply="[ok]">/icub/yarprobotinterface</port>
-
-#  yWBD:
-#    <<: *yarp-base
-#    deploy:
-#      placement:
-#        constraints: [node.labels.type != head]
-#    command: sh -c "checkRobotInterface; wholeBodyDynamics --autoconnect --no_legs"
-#    #note: Do I add --headV2 option??.
-#    #note: We need to check if WBD is already running, because some yarprobotinterface configuration files already contain it.
-#    # <port timeout="60.0" request="is_ready" reply="[ok]">/icub/yarprobotinterface</port>
-
-#  yGravityCompensator:
-#    <<: *yarp-base
-#    deploy:
-#      placement:
-#        constraints: [node.labels.type != head]
-#    command: sh -c "gravityCompensator --autoconnect --no_legs"
-#    #note: Do I add --headV2 option??.
 
 #------------------------------------------------------------------------------------------------
 #Following services are configured in ./icub-main/app/default/scripts/cameras_calib.xml.template
@@ -75,6 +49,8 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
+      restart-policy:
+        condition: on-failure
     command: sh -c "yarp wait /icub/cam/left; yarp wait /icub/camcalib/left/in; yarp connect /icub/cam/left /icub/camcalib/left/in tcp"
 
   yConnectCam_r:
@@ -82,6 +58,8 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
+      restart-policy:
+        condition: on-failure
     command: sh -c "yarp wait /icub/cam/right; yarp wait /icub/camcalib/right/in; yarp connect /icub/cam/right /icub/camcalib/right/in tcp"
 
 #------------------------------------------------------------------------------------------------
@@ -106,8 +84,9 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
+      restart-policy:
+        condition: on-failure
     command: sh -c "if set|grep '^CUSTOM_PORT=' >/dev/null; then yarp wait $CUSTOM_PORT ; yarp wait /yarpOpenFace/inputImg:i ; yarp connect $CUSTOM_PORT /yarpOpenFace/inputImg:i tcp ; else yarp wait /icub/camcalib/left/out; yarp wait /yarpOpenFace/inputImg:i ; yarp connect /icub/camcalib/left/out /yarpOpenFace/inputImg:i tcp; fi"
-#    command: sh -c "yarp wait /icub/camcalib/left/out; yarp wait /yarpOpenFace/inputImg:i ; yarp connect /icub/camcalib/left/out /yarpOpenFace/inputImg:i tcp"
 
 
 #------------------------------------------------------------------------------------------------
