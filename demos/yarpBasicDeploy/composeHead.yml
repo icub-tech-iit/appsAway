@@ -18,28 +18,3 @@ services:
         container_name: ynamelist
         command: yarp name list
           
- # yrobotinterface:
- #   <<: *yarp-head
- #   devices: 
- #     - "/dev/bosch-i2c-imu:/dev/bosch-i2c-imu"
- #   container_name: yrobotinterface
- #   command: yarprobotinterface
-
- # yGrabberCameras:
- #   <<: *yarp-head
- #   devices: 
- #     - "/dev/video0:/dev/video0"
- #   container_name: yGrabberCameras
- #   command: sh -c "yarpdev --from camera/ServerGrabberDualDragon.ini --split true"
-    #command: sh -c "yarpdev --device usbCamera --d /dev/video0 --camModel leopard_python --name /icub/cam/left"
-
-#  yserialDevice4Emotions:
-#    <<: *yarp-head
-#    deploy:
-#      placement:
-#        constraints: [node.labels.type == head]
-#    command: sh -c "yarpdev --name /icub/face/raw --device serial --subdevice serialport --context faceExpressions --from serialport.ini"
-
-#volumes:
-#  mystack_yarp-config:
-#    external: true
