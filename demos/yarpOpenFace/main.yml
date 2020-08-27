@@ -51,7 +51,7 @@ services:
         constraints: [node.labels.type != head]
       restart-policy:
         condition: on-failure
-    command: sh -c "yarp wait /icub/cam/left; yarp wait /icub/camcalib/left/in; yarp connect /icub/cam/left /icub/camcalib/left/in tcp"
+    command: sh -c "yarp wait /icub/cam/left; yarp wait /icub/camcalib/left/in; yarp connect /icub/cam/left /icub/camcalib/left/in udp"
 
   yConnectCam_r:
     <<: *yarp-base
@@ -60,7 +60,7 @@ services:
         constraints: [node.labels.type != head]
       restart-policy:
         condition: on-failure
-    command: sh -c "yarp wait /icub/cam/right; yarp wait /icub/camcalib/right/in; yarp connect /icub/cam/right /icub/camcalib/right/in tcp"
+    command: sh -c "yarp wait /icub/cam/right; yarp wait /icub/camcalib/right/in; yarp connect /icub/cam/right /icub/camcalib/right/in udp"
 
 #------------------------------------------------------------------------------------------------
 #Following services are configured in icub-basic-demos/demoRedBall/app/scripts/demoRedBall.xml.template
@@ -86,7 +86,7 @@ services:
         constraints: [node.labels.type != head]
       restart-policy:
         condition: on-failure
-    command: sh -c "if set|grep '^CUSTOM_PORT=' >/dev/null; then yarp wait $CUSTOM_PORT ; yarp wait /yarpOpenFace/inputImg:i ; yarp connect $CUSTOM_PORT /yarpOpenFace/inputImg:i tcp ; else yarp wait /icub/camcalib/left/out; yarp wait /yarpOpenFace/inputImg:i ; yarp connect /icub/camcalib/left/out /yarpOpenFace/inputImg:i tcp; fi"
+    command: sh -c "if set|grep '^CUSTOM_PORT=' >/dev/null; then yarp wait $CUSTOM_PORT ; yarp wait /yarpOpenFace/inputImg:i ; yarp connect $CUSTOM_PORT /yarpOpenFace/inputImg:i udp ; else yarp wait /icub/camcalib/left/out; yarp wait /yarpOpenFace/inputImg:i ; yarp connect /icub/camcalib/left/out /yarpOpenFace/inputImg:i udp; fi"
 
 
 #------------------------------------------------------------------------------------------------
