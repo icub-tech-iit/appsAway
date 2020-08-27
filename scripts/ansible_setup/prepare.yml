@@ -59,6 +59,12 @@
         warn: no
       when: ansible_distribution != 'MacOSX'
 
+    - name: Enable docker.sock in all machines
+      shell: chmod 666 /var/run/docker.sock
+      args:
+        warn: no
+      when: ansible_distribution != 'MacOSX'
+
     - name: Finishing up with needed packages 
       apt: 
         name:

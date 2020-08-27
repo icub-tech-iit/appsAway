@@ -12,8 +12,8 @@ ORIGIN_PYTHON_PATH=$(which python$MAJOR_MINOR)    # /usr/bin/python3.6
 
 # now we update which python to use for installing the gui
 echo $APPSAWAY_USER_PASSWORD | sudo -S add-apt-repository ppa:deadsnakes/ppa
-echo $APPSAWAY_USER_PASSWORD | sudo -S apt-get update
-echo $APPSAWAY_USER_PASSWORD | sudo -S apt-get install python3.6 python3.6-dev python3.6-venv python3.6-pip
+echo $APPSAWAY_USER_PASSWORD | sudo -S apt-get -y update
+echo $APPSAWAY_USER_PASSWORD | sudo -S apt-get -y install python3.6 python3.6-dev python3.6-venv python3.6-pip
 echo $APPSAWAY_USER_PASSWORD | sudo -S update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.6 1
 echo $APPSAWAY_USER_PASSWORD | sudo -S update-alternatives --set python3 /usr/bin/python3.6
 
