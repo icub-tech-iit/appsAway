@@ -28,7 +28,7 @@ services:
         constraints: [node.role == manager]
     command: yarpserver --write
   
- yMicrophone:
+  yMicrophone:
     <<: *yarp-base
     devices: 
       - "/dev/snd:/dev/snd"
