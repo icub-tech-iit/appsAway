@@ -339,7 +339,7 @@ class WidgetGallery(QDialog):
         for yml_file in yml_files_default:
           if os.path.isfile(yml_file):
             print("yml file found: " + yml_file)
-            yml_files = + [yml_file]
+            yml_files = yml_files + [yml_file]
 
         for yml_file in yml_files:
           main_file = open(yml_file, "r")
