@@ -330,8 +330,16 @@ class WidgetGallery(QDialog):
         #self.rc = subprocess.Popen("./appsAway_stopApp.sh")
 
     def setupEnvironment(self):
-        os.chdir(os.environ.get('APPSAWAY_APP_PATH'))
-        yml_files = ["main.yml", "composeGui.yml"]#, "composeHead.yml"]
+        #os.chdir(os.environ.get('APPSAWAY_APP_PATH'))
+        os.chdir(os.environ.get('HOME') + "/teamcode/appsAway/demos/" + os.environ.get('APPSAWAY_APP_NAME'))
+        yml_files_default = ["main.yml", "composeGui.yml", "composeHead.yml"]
+        yml_files = []
+
+
+        for yml_file in yml_files_default:
+          if os.path.isfile(yml_file):
+            print("yml file found: " + yml_file)
+            yml_files = + [yml_file]
 
         for yml_file in yml_files:
           main_file = open(yml_file, "r")
@@ -360,6 +368,10 @@ class WidgetGallery(QDialog):
           for line in main_list:
             main_file.write(line + '\n')
           main_file.close()
+
+        # env file is located in iCubApps folder, so we need APPSAWAY_APP_PATH
+        os.chdir(os.environ.get('APPSAWAY_APP_PATH'))
+
         env_file = open(".env", "r")
         env_list = env_file.read().split('\n')
         env_file.close()
@@ -380,7 +392,8 @@ class WidgetGallery(QDialog):
 
         os.chdir(os.environ.get('HOME') + "/teamcode/appsAway/scripts/")
           
-
+        # now we copy all the files to their respective machines
+        rc = subprocess.call("./appsAway_copyFiles.sh")
 
     # overload the closing function to close the watchdog
     def exec_(self):
