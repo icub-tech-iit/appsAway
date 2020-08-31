@@ -1,0 +1,72 @@
+version: "3.7"
+
+x-yarp-base: &yarp-base
+  image: icubteamcode/icubgraspgazebo:master-unstable_binaries
+  environment:
+    - YARP_FORWARD_LOG_ENABLE=1
+    - YARP_ROBOT_NAME
+  volumes:
+    - type: volume
+      source: yarp-config
+      target: /root/.config/yarp
+      volume:
+        nocopy: true
+  networks:
+    - hostnet
+
+
+services:
+#following service are configured in icub-main/app/iCubStartup/scripts/iCubStartup.xml.template
+  yserver:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+    command: yarpserver --write
+
+# yarp manager handles all the connections, so we don't need to create services for each of them
+  ymanager:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+    command: sh -c "yarp wait /icubSim/torso/state:o && yarp wait /icubSim/head/state:o && yarp wait /icubSim/left_arm/state:o && yarp wait /icubSim/right_arm/state:o && yarpmanager-console --application ${ICUBcontrib_DIR}/share/ICUBcontrib/applications/icub-grasp.xml --run --connect --exit --silent"
+
+  yStartDemo:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp wait /icub-grasp/rpc && echo "go" | yarp rpc /icub-grasp/rpc"
+
+
+#------------------------------------------------------------------------------------------------
+
+
+
+  #use network.peer ip address and port 8080 to see the containers status in browser (http://localhost:8080/)
+  visualizer:
+    image: dockersamples/visualizer:stable
+    ports:
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+
+networks:
+  hostnet:
+    external: true
+    name: host
+
+volumes:
+  yarp-config:
+    driver: vieux/sshfs
+    driver_opts:
+      sshcmd: ${USER_NAME}@${MASTER_ADDR}:${YARP_CONF_PATH}
+      password: ${USER_PASSWORD}
+      allow_other: ""
