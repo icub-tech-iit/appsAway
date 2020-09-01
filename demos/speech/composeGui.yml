@@ -1,7 +1,7 @@
 version: "3.7"
 
 x-yarp-base: &yarp-base
-  image: icubteamcode/superbuild:master-unstable_binaries
+  image: icubteamcode/superbuild:master-unstable_sources
   environment:
     - DISPLAY=${DISPLAY}
     - XAUTHORITY=/root/.Xauthority
@@ -11,20 +11,7 @@ x-yarp-base: &yarp-base
     - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
     - "${XAUTHORITY}:/root/.Xauthority:rw"
     - "${YARP_CONF_PATH}:/root/.config/yarp"
+    - "${FILE_INPUT_PATH}:/root/authorization"
   network_mode: "host"
   privileged: true
   #ipc: host
-
-
-services:
-
-  ylogger:
-    <<: *yarp-base
-    container_name: ylogger
-    command: yarplogger --start
-
-
-
-
-
-
