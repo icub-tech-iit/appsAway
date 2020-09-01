@@ -1,0 +1,231 @@
+version: "3.7"
+
+x-yarp-base: &yarp-base
+  image: icubteamcode/icubgraspgazebo:master-unstable_binaries
+  environment:
+    - YARP_FORWARD_LOG_ENABLE=1
+    - YARP_ROBOT_NAME
+  volumes:
+    - type: volume
+      source: yarp-config
+      target: /root/.config/yarp
+      volume:
+        nocopy: true
+  networks:
+    - hostnet
+
+services:
+#following service are configured in icub-main/app/iCubStartup/scripts/iCubStartup.xml.template
+  yserver:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+    command: yarpserver --write
+
+  yStartDemo:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp wait /icub-grasp/rpc; sleep 20 ; echo "go" | yarp rpc /icub-grasp/rpc"
+
+
+  yrobotinterface:
+    <<: *yarp-base
+    container_name: yrobotinterface
+    command: sh -c "yarp wait /icubSim/torso/state:o ; yarp wait /icubSim/left_arm/state:o ; yarp wait /icubSim/right_arm/state:o ;  yarprobotinterface --context gazeboCartesianControl --config no_legs.xml "
+#    command: sh -c " yarp wait /icubSim/torso/state:o ; yarp wait /icubSim/left_arm/state:o ; yarp wait /icubSim/right_arm/state:o ; ( yarprobotinterface --context gazeboCartesianControl --config no_legs.xml & ) ; checkRobotInterface --robot icubSim ; yarp wait /icubSim/torso/state:o ; yarp wait /icubSim/right_arm/state:o ; ( iKinCartesianSolver --context gazeboCartesianControl --part right_arm & ) ; yarp wait /icubSim/torso/state:o ; yarp wait /icubSim/left_arm/state:o ; ( iKinCartesianSolver --context gazeboCartesianControl --part left_arm & ) ; yarp wait /icubSim/torso/state:o ; yarp wait /icubSim/head/state:o ; yarp wait /icubSim/inertial ; iKinGazeCtrl --context gazeboCartesianControl --from iKinGazeCtrl.ini"
+
+  iKinCartesianSolver_r:
+    <<: *yarp-base
+    container_name: iKinCartesianSolver_r
+    depends_on:
+      - yrobotinterface
+    command: sh -c "checkRobotInterface --robot icubSim; yarp wait /icubSim/torso/state:o; yarp wait /icubSim/right_arm/state:o; iKinCartesianSolver --context gazeboCartesianControl --part right_arm"
+
+  iKinCartesianSolver_l:
+    <<: *yarp-base
+    container_name: iKinCartesianSolver_l
+    depends_on:
+      - yrobotinterface
+    command: sh -c "checkRobotInterface --robot icubSim; yarp wait /icubSim/torso/state:o; yarp wait /icubSim/left_arm/state:o; iKinCartesianSolver --context gazeboCartesianControl --part left_arm"
+
+  iKinGazeCtrl:
+    <<: *yarp-base
+    container_name: iKinGazeCtrl
+    depends_on:
+      - yrobotinterface
+    command: sh -c "checkRobotInterface --robot icubSim; yarp wait /icubSim/torso/state:o; yarp wait /icubSim/head/state:o; yarp wait /icubSim/inertial; iKinGazeCtrl --context gazeboCartesianControl --from iKinGazeCtrl.ini"
+
+  connect-world:
+    <<: *yarp-base
+    container_name: connect-world
+    depends_on:
+      - yrobotinterface
+    deploy:
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp wait /icub-grasp/world/eraser:o; yarp wait /world/model-eraser/model-name:i; yarp connect /icub-grasp/world/eraser:o /world/model-eraser/model-name:i tcp"
+
+  connect-mustard:
+    <<: *yarp-base
+    container_name: connect-mustard
+    depends_on:
+      - yrobotinterface
+    deploy:
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp wait /icub-grasp/mustard_bottle/mover:o; yarp wait /mustard_bottle/model-mover/delta-pose:i; yarp connect /icub-grasp/mustard_bottle/mover:o /mustard_bottle/model-mover/delta-pose:i tcp"
+
+  connect-pudding:
+    <<: *yarp-base
+    container_name: connect-pudding
+    depends_on:
+      - yrobotinterface
+    deploy:
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp wait /icub-grasp/pudding_box/mover:o; yarp wait /pudding_box/model-mover/delta-pose:i; yarp connect /icub-grasp/pudding_box/mover:o /pudding_box/model-mover/delta-pose:i tcp"
+
+  connect-view:
+    <<: *yarp-base
+    container_name: connect-view
+    depends_on:
+      - yrobotinterface
+    deploy:
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp wait /icubSim/cam/left/rgbImage:o; yarp wait /view/left; yarp connect /icubSim/cam/left/rgbImage:o /view/left tcp"
+
+  connect-rgb:
+    <<: *yarp-base
+    container_name: connect-rgb
+    depends_on:
+      - yrobotinterface
+    deploy:
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp wait /icubSim/cam/left/rgbImage:o; yarp wait /icub-grasp/rgb:i; yarp connect /icubSim/cam/left/rgbImage:o /icub-grasp/rgb:i tcp"
+
+  connect-depth:
+    <<: *yarp-base
+    container_name: connect-depth
+    depends_on:
+      - yrobotinterface
+    deploy:
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp wait /icubSim/cam/left/depthImage:o; yarp wait /icub-grasp/depth:i; yarp connect /icubSim/cam/left/depthImage:o /icub-grasp/depth:i tcp"
+
+  connect-superquadric:
+    <<: *yarp-base
+    container_name: connect-superquadric
+    depends_on:
+      - yrobotinterface
+    deploy:
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp wait /icub-grasp/sq:rpc; yarp wait /find-superquadric/points:rpc; yarp connect /icub-grasp/sq:rpc /find-superquadric/point:rpc tcp"
+
+#  icub-gazebo-grasping-sandbox:
+#    <<: *yarp-base
+#    container_name: icub-gazebo-grasping-sandbox
+#    depends_on:
+#      - yrobotinterface
+#    command: sh -c "yarp wait /iKinGazeCtrl/rpc; yarp wait /icubSim/cartesianController/right_arm/state:o; yarp wait /icubSim/cartesianController/left_arm/state:o; icub-gazebo-grasping-sandbox"
+    
+#  yplaceholder:
+#    <<: *yarp-base
+#    command: yarp name list
+
+#------------------------------------------------------------------------------------------------
+
+
+
+  #use network.peer ip address and port 8080 to see the containers status in browser (http://localhost:8080/)
+  visualizer:
+    image: dockersamples/visualizer:stable
+    ports:
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+
+networks:
+  hostnet:
+    external: true
+    name: host
+
+volumes:
+  yarp-config:
+    driver: vieux/sshfs
+    driver_opts:
+      sshcmd: ${USER_NAME}@${MASTER_ADDR}:${YARP_CONF_PATH}
+      password: ${USER_PASSWORD}
+      allow_other: ""
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

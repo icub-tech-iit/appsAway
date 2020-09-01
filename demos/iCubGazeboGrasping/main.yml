@@ -14,33 +14,12 @@ x-yarp-base: &yarp-base
   networks:
     - hostnet
 
-
 services:
 #following service are configured in icub-main/app/iCubStartup/scripts/iCubStartup.xml.template
-  yserver:
-    <<: *yarp-base
-    deploy:
-      placement:
-        constraints: [node.role == manager]
-    command: yarpserver --write
 
-# yarp manager handles all the connections, so we don't need to create services for each of them
-  ymanager:
+  yplaceholder:
     <<: *yarp-base
-    deploy:
-      placement:
-        constraints: [node.role == manager]
-    command: sh -c "yarp wait /icubSim/torso/state:o && yarp wait /icubSim/head/state:o && yarp wait /icubSim/left_arm/state:o && yarp wait /icubSim/right_arm/state:o && yarpmanager-console --application ${ICUBcontrib_DIR}/share/ICUBcontrib/applications/icub-grasp.xml --run --connect --exit --silent"
-
-  yStartDemo:
-    <<: *yarp-base
-    deploy:
-      placement:
-        constraints: [node.role == manager]
-      restart_policy:
-        condition: on-failure
-    command: sh -c "yarp wait /icub-grasp/rpc && echo "go" | yarp rpc /icub-grasp/rpc"
-
+    command: yarp name list
 
 #------------------------------------------------------------------------------------------------
 
@@ -70,3 +49,63 @@ volumes:
       sshcmd: ${USER_NAME}@${MASTER_ADDR}:${YARP_CONF_PATH}
       password: ${USER_PASSWORD}
       allow_other: ""
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

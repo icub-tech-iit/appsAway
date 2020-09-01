@@ -1,0 +1,82 @@
+version: "3.7"
+
+x-yarp-base: &yarp-base
+  image: icubteamcode/icubgraspgazebo:master-unstable_binaries
+  environment:
+    - DISPLAY=${DISPLAY}
+    - XAUTHORITY=/root/.Xauthority
+    - YARP_FORWARD_LOG_ENABLE=1
+    - YARP_ROBOT_NAME
+    - ICUBcontrib_DIR=/workspace/iCubContrib
+  volumes:
+    - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
+    - "${XAUTHORITY}:/root/.Xauthority:rw"
+    - "${YARP_CONF_PATH}:/root/.config/yarp"
+  network_mode: "host"
+  privileged: true
+  #ipc: host
+
+
+services:
+
+  yDemo:
+    <<: *yarp-base
+    command: /workspace/iCubContrib/bin/icub-grasp.sh
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
