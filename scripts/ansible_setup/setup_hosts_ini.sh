@@ -35,6 +35,11 @@ then
     echo "cuda" >> ./hosts.ini
 fi
 
+if [ -z "${APPSAWAY_CONSOLENODE_ADDR}" ]
+then
+    echo "console" >> ./hosts.ini
+fi
+
 echo "" >> ./hosts.ini
 
 # now we populate each node
@@ -84,6 +89,41 @@ then
     echo "" >> ./hosts.ini
 fi
 
-echo "[all:vars]
-ansible_ssh_user=\"${APPSAWAY_USER_NAME}\"
-ansible_become_pass=\"${APPSAWAY_USER_PASSWORD}\" " >> ./hosts.ini
+if [ -z "${APPSAWAY_USER_NAME}" ]
+then
+    APPSAWAY_USER_NAME=${USER}
+fi
+
+if [ -z "${APPSAWAY_CONSOLENODE_ADDR}" ]
+then
+    if [ "$os" = "Darwin" ]
+    then
+        LOCALHOST=$(arp -a | awk -F'[()]' '{print $2}')
+    else
+        LOCALHOST=$(hostname -I | awk '{print $1}')
+    fi
+    
+    echo "[console]
+    consoleLaptop ansible_host=${LOCALHOST}
+    " >> ./hosts.ini
+fi
+
+if [ -z "${APPSAWAY_USER_PASSWORD}" ]
+then
+   
+    echo "Your username is ${APPSAWAY_USER_NAME}"
+    read -p "Insert your password " -s PASSWORD
+    
+    APPSAWAY_USER_PASSWORD=${PASSWORD}
+
+    echo "[all:vars]
+    ansible_ssh_user=\"${APPSAWAY_USER_NAME}\"
+    ansible_ssh_pass=\"${APPSAWAY_USER_PASSWORD}\" 
+    ansible_become_pass=\"${APPSAWAY_USER_PASSWORD}\"" >> ./hosts.ini
+
+else
+    echo "[all:vars]
+    ansible_ssh_user=\"${APPSAWAY_USER_NAME}\"
+    ansible_become_pass=\"${APPSAWAY_USER_PASSWORD}\" " >> ./hosts.ini
+fi
+
