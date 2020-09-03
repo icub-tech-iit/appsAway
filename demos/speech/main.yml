@@ -4,17 +4,16 @@ x-yarp-base: &yarp-base
   image: icubteamcode/speech:master-unstable_sources
   environment:
     - YARP_FORWARD_LOG_ENABLE=1
+    - FILE_INPUT
   volumes:
     - type: volume
       source: yarp-config
       target: /root/.config/yarp
       volume:
         nocopy: true
+    - "${FILE_INPUT_PATH}:/root/authorization"
   networks:
     - hostnet
-
-
-
 
 #note: following services that need yarpRobotinterface is running, I write yarp wait /yarpRobotInterface;
 #just to remember us to solve thi issue. Such yarp port doesn't exist.
@@ -28,34 +27,14 @@ services:
         constraints: [node.role == manager]
     command: yarpserver --write
   
-  yMicrophone:
-    <<: *yarp-base
-    devices: 
-      - "/dev/snd:/dev/snd"
-    container_name: yMicrophone
-    command: sh -c "yarpdev --device AudioRecorderWrapper --from /root/startaudio.ini --channels 1  --rate 16000 --samples 16000"
-
 #------------------------------------------------------------------------------------------------
   yDemoGoogleSpeech:
     <<: *yarp-base
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "googleSpeech"
+    command: sh -c "yarp wait /microphone/audio:o; googleSpeech"
 
-  yconnect_audio:
-    <<: *yarp-base
-    container_name: yconnect_audio
-    depends_on:
-      - yMicrophone
-    command: sh -c "yarp wait /microphone/audio:o; yarp wait /googleSpeech/sound:i; yarp connect /microphone/audio:o /googleSpeech/sound:i tcp"
-
-  yconnect_rpc:
-    <<: *yarp-base
-    container_name: yconnect_rpc
-    depends_on:
-      - yMicrophone
-    command: sh -c "yarp wait /microphone/rpc; yarp wait /googleSpeech/commands:rpc; yarp connect /googleSpeech/commands:rpc /microphone/rpc tcp"
 #------------------------------------------------------------------------------------------------
 
   #use network.peer ip address and port 8080 to see the containers status in browser

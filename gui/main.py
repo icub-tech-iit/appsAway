@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QDateTimeEdit,
 
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtCore import pyqtSlot
+from itertools import chain
 
 import sys
 import time
@@ -28,8 +29,8 @@ class optionButton():
         self.is_required = is_required
     def init_textInput(self, textInput):
         self.textInput = textInput
-    def set_customName(self, customName):
-        self.customName = customName
+    #def set_customName(self, customName):
+    #    self.customName = customName
     
 
 class MyHandler(FileSystemEventHandler):
@@ -78,23 +79,28 @@ class WidgetGallery(QDialog):
           if line.find("ImageName") != -1:
             self.image = self.gui_dir + "/" + line.split('"')[1]
           if line.find("radioButton") != -1:
-            button_text = line.split('"')[1] #text inside the button ('Choose file...')
-            var_name = line.split('" ')[1].split(' ')[0] #e.g., FILE_INPUT
-            self.button_list = self.button_list + [optionButton(line.split(' "')[0], QRadioButton(button_text), var_name, line.split(" ")[-1])]
-          if line.find("textEdit") != -1:
-            button_text = line.split('"')[1] #text inside the button ('Choose file...')
-            var_name = line.split('" ')[1].split(' ')[0] #e.g., FILE_INPUT
-            self.button_list = self.button_list + [optionButton(line.split(' "')[0], QRadioButton(button_text), var_name, line.split(" ")[-1])]
-            self.button_list[-1].init_textInput(QLineEdit(self))
-            self.button_list[-1].textInput.setText("write custom option")
-            self.button_list[-1].set_customName(button_text)
+            button_text = line.split('"')[1] 
+            var_name = line.split('" ')[1].split(' ')[0]
+            requisite = line.split(" ")[-1]
+            self.button_list = self.button_list + [optionButton(line.split(' "')[0], QRadioButton(button_text), var_name, requisite)]
+          if line.find("textEdit") != -1: # note: if we have only one textEdit button, we are creating a QRadioButton
+            button_text = line.split('"')[1] 
+            var_name = line.split('" ')[1].split(' ')[0] #e.g., CUSTOM_PORT   
+            requisite = line.split(" ")[-1]
+            self.button_list = self.button_list + [optionButton(line.split(' "')[0], QRadioButton(button_text), var_name, requisite)]
+            self.input_list.append(QLineEdit(self))
+            self.input_list[-1].setPlaceholderText(var_name)
+            #self.button_list[-1].init_textInput(QLineEdit(self))
+            #self.button_list[-1].textInput.setPlaceholderText(var_name) #setText("write custom option")
+            #self.button_list[-1].set_customName(button_text)
             #self.textEdit_name = button_text
             #self.button_name_list = self.button_name_list + [button_text]
           if line.find("fileInput") != -1:
             button_text = line.split('"')[1] #text inside the button ('Choose file...')
             var_name = line.split('" ')[1].split(' ')[0] #e.g., FILE_INPUT
-            self.button_list = self.button_list + [optionButton(line.split(' "')[0], QPushButton(button_text), var_name, line.split(" ")[-1])]
-            self.button_list[-1].set_customName(button_text)
+            requisite = line.split(" ")[-1] # can be True or False
+            self.button_list = self.button_list + [optionButton(line.split(' "')[0], QPushButton(button_text), var_name, requisite)]
+            #self.button_list[-1].set_customName(button_text)
 
             self.input_list.append(QLineEdit(self))
             self.input_list[-1].setPlaceholderText(var_name)
@@ -194,7 +200,6 @@ class WidgetGallery(QDialog):
         if len(self.button_list) >= 1:
           self.button_list[0].button.setChecked(True)
 
-
         layout = QVBoxLayout()
         for buttonOption in self.button_list:
           layout.addWidget(buttonOption.button)
@@ -203,17 +208,17 @@ class WidgetGallery(QDialog):
             buttonOption.button.clicked.connect(lambda:self.openFile(buttonOption))
 
           if buttonOption.varType == 'textEdit':
-            buttonOption.textInput.setEnabled(False)
-            layout.addWidget(buttonOption.textInput)
             buttonOption.button.clicked.connect(self.on_click(buttonOption))
-        if len(self.button_list) >= 1:
-          if self.button_list[0].varType == 'textEdit':
-            self.button_list[0].textInput.setEnabled(True)
-            layout.addWidget(self.button_list[0].textInput)
+            # buttonOption.textInput.setEnabled(False)
+            #layout.addWidget(buttonOption.textInput)
+
+        #if len(self.button_list) >= 1:
+        #  if self.button_list[0].varType == 'textEdit':
+        #   self.button_list[0].textInput.setEnabled(True)
+        #   layout.addWidget(self.button_list[0].textInput)
 
         for obj in self.input_list:
-            layout.addWidget(obj)
-
+          layout.addWidget(obj)
 
         layout.addStretch(1)
         self.bottomRightGroupBox.setLayout(layout)   
@@ -236,18 +241,22 @@ class WidgetGallery(QDialog):
 
     @pyqtSlot()
     def on_click(self, buttonOption):
-        def setEnable():
-          buttonOption.textInput.setEnabled(True)
-          self.disableAllOthers(buttonOption)
-          textboxValue = buttonOption.textInput.text()
-          print("The custom option is:" + textboxValue)
-        return setEnable
+      def setEnable():
+        for obj in self.input_list:
+          if buttonOption.varName == obj.placeholderText():
+              obj.setEnabled(True)
+        self.disableAllOthers(buttonOption)
+        #textboxValue = buttonOption.textInput.text()
+        #print("The custom option is:" + textboxValue)
+      return setEnable
 
     def disableAllOthers(self, currentOption):
-        for buttonOption in self.button_list:
-          if buttonOption.varType == 'textEdit':
-            if buttonOption != currentOption:
-              buttonOption.textInput.setEnabled(False)
+      for buttonOption in self.button_list:
+        if buttonOption.varType == 'textEdit':
+          if buttonOption != currentOption:
+            for obj in self.input_list:
+              if buttonOption.varName == obj.placeholderText():
+                obj.setEnabled(False)
 
     def createBottomLeftGroupBox(self):
         self.bottomLeftGroupBox = QGroupBox("Application")
@@ -255,10 +264,13 @@ class WidgetGallery(QDialog):
         self.bottomLeftGroupBox.setAlignment(Qt.AlignHCenter)
         
         self.pushStartButton.setDefault(True)
-        for obj in self.button_list:
-          if obj.is_required:
-            self.pushStartButton.setEnabled(False)
+        self.pushStartButton.setEnabled(True)
         
+        # if there are requisites, the start application button can be enabled after satisfying all the requisites
+        for b in self.button_list:
+          if b.is_required.find("True") != -1: 
+            self.pushStartButton.setEnabled(False)
+    
         self.pushStopButton.setDefault(True)
         self.pushStopButton.setEnabled(False)
 
@@ -349,16 +361,20 @@ class WidgetGallery(QDialog):
                 for obj in self.input_list:
                   if buttonOption.varName == obj.placeholderText():
                     print(obj.text())
-                    file_input = obj.text().split('/')[-1]   #filename
+                    file_input = obj.text().split('/')[-1]   # filename
                     file_input_path = obj.text()             # full path to filename
-                    file_input_path = file_input_path[:file_input_path.rfind('/')]                
+                    file_input_path = file_input_path[:file_input_path.rfind('/')]  # file path without the filename          
                     os.environ[buttonOption.varName] = file_input
                     os.environ[buttonOption.varName + '_PATH'] = file_input_path
               else:
                 # we set the environment variables here. 
                 os.environ['APPSAWAY_OPTIONS'] = buttonOption.button.text()
                 if buttonOption.varType == 'textEdit':
-                  os.environ[buttonOption.customName] = buttonOption.textInput.text()
+                  for obj in self.input_list:
+                    if buttonOption.varName == obj.placeholderText():
+                      os.environ[buttonOption.varName] = obj.text()
+
+                         #os.environ[buttonOption.customName] = buttonOption.textInput.text()
                   #self.custom_option = buttonOption.customName
 
         self.setupEnvironment()
@@ -415,27 +431,27 @@ class WidgetGallery(QDialog):
             #    custom_option_found = True
 
             # Check if the custom variable has already been set and it overwrites with the new value
-            if not end_environ_set and not custom_option_found:
-              print('410', main_list[i])
-              for filtered_buttonOption in filter(lambda x: x.varType == 'fileInput', self.button_list):
-                  if main_list[i].find(filtered_buttonOption.varName) != -1 and os.environ.get(filtered_buttonOption.varName) != None:
-                    main_list[i] = main_list[i][:main_list[i].find('=')]
-                    main_list[i] = main_list[i] + "=" + os.environ.get(filtered_buttonOption.varName)
+            #if not end_environ_set and not custom_option_found:
+            #  print('410', main_list[i])
+            #  for filtered_buttonOption in filter(lambda x: x.varType == 'fileInput', self.button_list):
+            #      if main_list[i].find(filtered_buttonOption.varName) != -1 and os.environ.get(filtered_buttonOption.varName) != None:
+            #        main_list[i] = main_list[i][:main_list[i].find('=')]
+            #        main_list[i] = main_list[i] + "=" + os.environ.get(filtered_buttonOption.varName)
 
-                  if main_list[i].find(filtered_buttonOption.varName + '_PATH') != -1 and os.environ.get(filtered_buttonOption.varName + '_PATH') != None:
-                    main_list[i] = main_list[i][:main_list[i].find('=')]
-                    main_list[i] = main_list[i] + "=" + os.environ.get(filtered_buttonOption.varName + '_PATH')
-                    custom_option_found = True
+            #      if main_list[i].find(filtered_buttonOption.varName + '_PATH') != -1 and os.environ.get(filtered_buttonOption.varName + '_PATH') != None:
+            #        main_list[i] = main_list[i][:main_list[i].find('=')]
+            #        main_list[i] = main_list[i] + "=" + os.environ.get(filtered_buttonOption.varName + '_PATH')
+            #        custom_option_found = True
 
             # if no custom variable has been found it's added to the file
-            if main_list[i].find("volumes") != -1 and not custom_option_found:
-                print('423', main_list[i])
+            #if main_list[i].find("volumes") != -1 and not custom_option_found:
+            #    print('423', main_list[i])
 
-                end_environ_set = True
-                for filtered_buttonOption in filter(lambda x: x.varType == 'fileInput', self.button_list):
-                    main_list.insert(i, "    - " + filtered_buttonOption.varName + "=" + os.environ.get(filtered_buttonOption.varName))
-                    main_list.insert(i, "    - " + filtered_buttonOption.varName + "_PATH=" + os.environ.get(filtered_buttonOption.varName + '_PATH'))
-                    custom_option_found = True
+            #    end_environ_set = True
+            #    for filtered_buttonOption in filter(lambda x: x.varType == 'fileInput', self.button_list):
+            #        main_list.insert(i, "    - " + filtered_buttonOption.varName + "=" + os.environ.get(filtered_buttonOption.varName))
+            #        main_list.insert(i, "    - " + filtered_buttonOption.varName + "_PATH=" + os.environ.get(filtered_buttonOption.varName + '_PATH'))
+            #        custom_option_found = True
                     
                 #if self.custom_option != "":
                     #main_list.insert(i, "    - " + self.custom_option + "=" + os.environ.get(self.custom_option))
@@ -456,15 +472,53 @@ class WidgetGallery(QDialog):
         env_list = env_file.read().split('\n')
         env_file.close()
         #custom_option_found = False
-        for i in range(len(env_list)):
-          if env_list[i].find("APPSAWAY_OPTIONS") != -1 and os.environ.get('APPSAWAY_OPTIONS') != None:
-            env_list[i] = "APPSAWAY_OPTIONS=" + os.environ.get('APPSAWAY_OPTIONS')
+        # end_environ_set=False
+
+        fileIn_list=list(filter(lambda x: x.varType == 'fileInput', self.button_list)) #list of button of type 'fileInput'
+        fileIn_var_list=list(chain.from_iterable((el.varName,el.varName + "_PATH")  for el in fileIn_list)) #for each button of type 'fileInput' we need to add both el.varName (e.g. FIND_INPUT) and el.varName + "_PATH"(e.g. FIND_INPUT_PATH)
+        
+        textEd_list=list(filter(lambda x: x.varType == 'textEdit', self.button_list)) #list of button of type 'textEdit'
+        textEd_var_list=[el.varName for el in textEd_list]#for each button of type 'textEdit' we need to add el.varName (e.g. CUSTOM_PORT)
+        
+        var_list=["APPSAWAY_OPTIONS"] + fileIn_var_list + textEd_var_list #list of enviroment variables
+        print(var_list)
+
+        # Checking if we already have all the environment variables in the .env; if yes we overwrite them, if not we add them 
+        for var_l in var_list:
+          not_found=True
+          print(var_l)
+          print(os.environ.get(var_l))
+          for i in range(len(env_list)):
+            if env_list[i].find(var_l + "=") != -1 and os.environ.get(var_l) != None:
+              env_list[i] = var_l + "=" + os.environ.get(var_l)
+              not_found=False 
+          if not_found and os.environ.get(var_l) != None:
+            env_list.insert(len(env_list), var_l + "=" + os.environ.get(var_l))
+
+          #if env_list[i].find("APPSAWAY_OPTIONS") != -1 and os.environ.get('APPSAWAY_OPTIONS') != None:
+           # env_list[i] = "APPSAWAY_OPTIONS=" + os.environ.get('APPSAWAY_OPTIONS')
           #if env_list[i].find(self.custom_option) != -1 and os.environ.get(self.custom_option) != None:
             #env_list[i] = self.custom_option+"="+os.environ.get(self.custom_option)
             #custom_option_found = True
           #if i == len(env_list)-1: #and not custom_option_found:
               #if self.custom_option != "":
                   #env_list.append(self.custom_option + "=" + os.environ.get(self.custom_option))
+
+          #if not end_environ_set:
+          #  for filtered_buttonOption in filter(lambda x: x.varType == 'fileInput', self.button_list):
+              # Check if the custom variable has already been set and it overwrites with the new value
+          #    if env_list[i].find(filtered_buttonOption.varName) != -1 and os.environ.get(filtered_buttonOption.varName) != None:
+          #      env_list[i] = filtered_buttonOption.varName + "=" + os.environ.get(filtered_buttonOption.varName)
+          #    found = True
+          #    else:
+                #if no custom variable has been found it's added to the file
+          #      env_list.insert(i,filtered_buttonOption.varName + "=" + os.environ.get(filtered_buttonOption.varName))
+          #    if env_list[i].find(filtered_buttonOption.varName) != -1 and os.environ.get(filtered_buttonOption.varName) != None:
+          #      env_list[i] = filtered_buttonOption.varName + "_PATH=" + os.environ.get(filtered_buttonOption.varName + '_PATH')
+          #    else:
+          #      env_list.insert(i,filtered_buttonOption.varName + "_PATH=" + os.environ.get(filtered_buttonOption.varName + '_PATH'))
+            #end_environ_set=True
+
         env_file = open(".env", "w")
         for line in env_list:
           env_file.write(line + '\n')
