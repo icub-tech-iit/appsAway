@@ -466,6 +466,7 @@ class WidgetGallery(QDialog):
               main_file.write(main_list[i] + '\n')
             else:
               main_file.write(main_list[i])
+          main_file.close()
             
 
 
