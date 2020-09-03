@@ -5,6 +5,7 @@ x-yarp-base: &yarp-base
   environment:
     - YARP_FORWARD_LOG_ENABLE=1
     - YARP_ROBOT_NAME
+    - CUSTOM_PORT
   volumes:
     - type: volume
       source: yarp-config
