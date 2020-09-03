@@ -40,3 +40,10 @@ services:
     depends_on:
       - yMicrophone
     command: sh -c "yarp wait /microphone/rpc; yarp wait /googleSpeech/commands:rpc; yarp connect /googleSpeech/commands:rpc /microphone/rpc tcp"
+
+
+
+
+
+
+

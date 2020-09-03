@@ -106,6 +106,14 @@ class WidgetGallery(QDialog):
             self.input_list[-1].setPlaceholderText(var_name)
         # try to make a list of buttons so we can have multiple
 
+          if line.find("languageInput") != -1:
+            var_name = line.split('" ')[1].split(' ')[0] #e.g., FILE_INPUT
+            requisite = line.split(" ")[-1] # can be True or False
+            self.button_list = self.button_list + [optionButton(line.split(' "')[0], QComboBox(self), var_name, requisite)]
+            self.button_list[-1].button.addItem("language en-US")
+            self.button_list[-1].button.addItem("language it-IT")
+            self.button_list[-1].button.move(50, 250)
+
         self.pushUpdateButton = QPushButton("Everything is Up to Date!")
         self.pushStartButton = QPushButton("Start the Application")
         self.pushStopButton = QPushButton("Stop the Application")
@@ -197,12 +205,16 @@ class WidgetGallery(QDialog):
 
         self.bottomRightGroupBox.setAlignment(Qt.AlignHCenter)
 
+
         if len(self.button_list) >= 1:
           self.button_list[0].button.setChecked(True)
 
         layout = QVBoxLayout()
         for buttonOption in self.button_list:
           layout.addWidget(buttonOption.button)
+
+          for obj in self.input_list:
+           layout.addWidget(obj)
 
           if buttonOption.varType == 'fileInput':
             buttonOption.button.clicked.connect(lambda:self.openFile(buttonOption))
@@ -212,18 +224,22 @@ class WidgetGallery(QDialog):
             # buttonOption.textInput.setEnabled(False)
             #layout.addWidget(buttonOption.textInput)
 
+          if buttonOption.varType == 'languageInput':
+            buttonOption.button.view().pressed.connect(lambda:self.showItem(buttonOption))
+
         #if len(self.button_list) >= 1:
         #  if self.button_list[0].varType == 'textEdit':
         #   self.button_list[0].textInput.setEnabled(True)
         #   layout.addWidget(self.button_list[0].textInput)
 
-        for obj in self.input_list:
-          layout.addWidget(obj)
-
         layout.addStretch(1)
         self.bottomRightGroupBox.setLayout(layout)   
 
         #self.button_list[len(self.button_list)-1].clicked.connect(self.on_click) 
+    
+    def showItem(self, buttonOption):
+        return self.button_list[-1].button.currentText()
+     
 
     def openFile(self, buttonOption):
         filename, _ = QFileDialog.getOpenFileName(self, "Choose file", "/home", "File extension Json (*.json)")
@@ -355,7 +371,8 @@ class WidgetGallery(QDialog):
         for buttonOption in self.button_list:
             #if (buttonOption.button.isChecked()):
             if (buttonOption.button.isEnabled):
-              print(buttonOption.button.text()+" is enabled")
+              if buttonOption.varType != 'languageInput': # Combo has no attribute text
+                print(buttonOption.button.text()+" is enabled")
 
               if buttonOption.varType == 'fileInput':
                 for obj in self.input_list:
@@ -366,6 +383,10 @@ class WidgetGallery(QDialog):
                     file_input_path = file_input_path[:file_input_path.rfind('/')]  # file path without the filename          
                     os.environ[buttonOption.varName] = file_input
                     os.environ[buttonOption.varName + '_PATH'] = file_input_path
+              elif buttonOption.varType == 'languageInput':
+                    language = self.showItem(buttonOption).split(' ')[1] #to have just it-IT 
+                    print(language)
+                    os.environ[buttonOption.varName] = language
               else:
                 # we set the environment variables here. 
                 os.environ['APPSAWAY_OPTIONS'] = buttonOption.button.text()
@@ -376,6 +397,7 @@ class WidgetGallery(QDialog):
 
                          #os.environ[buttonOption.customName] = buttonOption.textInput.text()
                   #self.custom_option = buttonOption.customName
+         
 
         self.setupEnvironment()
         rc = subprocess.call("./appsAway_startApp.sh")
@@ -461,18 +483,9 @@ class WidgetGallery(QDialog):
                 break
           main_file.close()
           main_file = open(yml_file, "w")
-          for i in range(len(main_list)):
-            if i != len(main_list) -1:
-              main_file.write(main_list[i] + '\n')
-            else:
-              main_file.write(main_list[i])
+          for line in main_list:
+            main_file.write(line + '\n')
           main_file.close()
-            
-
-
-          #for line in main_list:
-          #  main_file.write(line + '\n')
-          #main_file.close()
 
         # env file is located in iCubApps folder, so we need APPSAWAY_APP_PATH
         os.chdir(os.environ.get('APPSAWAY_APP_PATH'))
@@ -484,12 +497,15 @@ class WidgetGallery(QDialog):
         # end_environ_set=False
 
         fileIn_list=list(filter(lambda x: x.varType == 'fileInput', self.button_list)) #list of button of type 'fileInput'
-        fileIn_var_list=list(chain.from_iterable((el.varName,el.varName + "_PATH")  for el in fileIn_list)) #for each button of type 'fileInput' we need to add both el.varName (e.g. FIND_INPUT) and el.varName + "_PATH"(e.g. FIND_INPUT_PATH)
+        fileIn_var_list=list(chain.from_iterable((el.varName,el.varName + "_PATH")  for el in fileIn_list)) #for each button of type 'fileInput' we need to add both el.varName (e.g. FILE_INPUT) and el.varName + "_PATH"(e.g. FIND_INPUT_PATH)
         
         textEd_list=list(filter(lambda x: x.varType == 'textEdit', self.button_list)) #list of button of type 'textEdit'
         textEd_var_list=[el.varName for el in textEd_list]#for each button of type 'textEdit' we need to add el.varName (e.g. CUSTOM_PORT)
+
+        language_list=list(filter(lambda x: x.varType == 'languageInput', self.button_list)) #list of button of type 'languageInput'
+        lanIn_var_list=[el.varName for el in language_list]#for each button of type 'textEdit' we need to add el.varName (e.g. LANGUAGE_INPUT)
         
-        var_list=["APPSAWAY_OPTIONS"] + fileIn_var_list + textEd_var_list #list of enviroment variables
+        var_list=["APPSAWAY_OPTIONS"] + fileIn_var_list + textEd_var_list + lanIn_var_list #list of enviroment variables
         print(var_list)
 
         # Checking if we already have all the environment variables in the .env; if yes we overwrite them, if not we add them 
@@ -501,7 +517,10 @@ class WidgetGallery(QDialog):
             if env_list[i].find(var_l + "=") != -1 and os.environ.get(var_l) != None:
               env_list[i] = var_l + "=" + os.environ.get(var_l)
               not_found=False 
+          print(os.environ.get(var_l))
+          print(not_found)
           if not_found and os.environ.get(var_l) != None:
+            print("521")
             env_list.insert(len(env_list), var_l + "=" + os.environ.get(var_l))
 
           #if env_list[i].find("APPSAWAY_OPTIONS") != -1 and os.environ.get('APPSAWAY_OPTIONS') != None:
