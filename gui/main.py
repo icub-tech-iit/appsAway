@@ -461,9 +461,17 @@ class WidgetGallery(QDialog):
                 break
           main_file.close()
           main_file = open(yml_file, "w")
-          for line in main_list:
-            main_file.write(line + '\n')
-          main_file.close()
+          for i in range(len(main_list)):
+            if i != len(main_list) -1:
+              main_file.write(main_list[i] + '\n')
+            else:
+              main_file.write(main_list[i])
+            
+
+
+          #for line in main_list:
+          #  main_file.write(line + '\n')
+          #main_file.close()
 
         # env file is located in iCubApps folder, so we need APPSAWAY_APP_PATH
         os.chdir(os.environ.get('APPSAWAY_APP_PATH'))
