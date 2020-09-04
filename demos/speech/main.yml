@@ -6,6 +6,7 @@ x-yarp-base: &yarp-base
     - YARP_FORWARD_LOG_ENABLE=1
     - FILE_INPUT
     - LANGUAGE_INPUT
+    - GOOGLE_PROCESS_INPUT
   volumes:
     - type: volume
       source: yarp-config
@@ -36,6 +37,13 @@ services:
         constraints: [node.labels.type != head]
     command: sh -c "yarp wait /microphone/audio:o; googleSpeech --language_code ${LANGUAGE_INPUT}"
 
+  yDemoGoogleSpeechProcess:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "if [ ${GOOGLE_PROCESS_INPUT} = 'True' ]; then yarp wait /microphone/audio:o; googleSpeechProcess; fi"
+
 #------------------------------------------------------------------------------------------------
 
   #use network.peer ip address and port 8080 to see the containers status in browser
@@ -62,6 +70,7 @@ volumes:
       sshcmd: ${USER_NAME}@${MASTER_ADDR}:${YARP_CONF_PATH}
       password: ${USER_PASSWORD}
       allow_other: ""
+
 
 
 

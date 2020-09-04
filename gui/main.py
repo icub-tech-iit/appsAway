@@ -113,6 +113,24 @@ class WidgetGallery(QDialog):
             self.button_list[-1].button.addItem("language en-US")
             self.button_list[-1].button.addItem("language it-IT")
             self.button_list[-1].button.move(50, 250)
+          
+          if line.find("googleInput") != -1:
+            button_text = line.split('"')[1] #text inside the button 
+            var_name = line.split('" ')[1].split(' ')[0] #e.g., GOOGLE_INPUT
+            requisite = line.split(" ")[-1] # can be True or False
+            self.button_list = self.button_list + [optionButton(line.split(' "')[0], QCheckBox(self), var_name, requisite)]
+            self.button_list[-1].button.setText(button_text)
+            self.button_list[-1].button.setChecked(True)
+            self.button_list[-1].button.setEnabled(False)
+
+
+          if line.find("googleProcessInput") != -1:
+            button_text = line.split('"')[1] #text inside the button 
+            var_name = line.split('" ')[1].split(' ')[0] #e.g., GOOGLE_PROCESS_INPUT
+            requisite = line.split(" ")[-1] # can be True or False
+            self.button_list = self.button_list + [optionButton(line.split(' "')[0], QCheckBox(self), var_name, requisite)]
+            self.button_list[-1].button.setText(button_text)
+
 
         self.pushUpdateButton = QPushButton("Everything is Up to Date!")
         self.pushStartButton = QPushButton("Start the Application")
@@ -236,9 +254,10 @@ class WidgetGallery(QDialog):
         self.bottomRightGroupBox.setLayout(layout)   
 
         #self.button_list[len(self.button_list)-1].clicked.connect(self.on_click) 
+  
     
     def showItem(self, buttonOption):
-        return self.button_list[-1].button.currentText()
+        return buttonOption.button.currentText()
      
 
     def openFile(self, buttonOption):
@@ -377,7 +396,6 @@ class WidgetGallery(QDialog):
               if buttonOption.varType == 'fileInput':
                 for obj in self.input_list:
                   if buttonOption.varName == obj.placeholderText():
-                    print(obj.text())
                     file_input = obj.text().split('/')[-1]   # filename
                     file_input_path = obj.text()             # full path to filename
                     file_input_path = file_input_path[:file_input_path.rfind('/')]  # file path without the filename          
@@ -385,8 +403,14 @@ class WidgetGallery(QDialog):
                     os.environ[buttonOption.varName + '_PATH'] = file_input_path
               elif buttonOption.varType == 'languageInput':
                     language = self.showItem(buttonOption).split(' ')[1] #to have just it-IT 
-                    print(language)
                     os.environ[buttonOption.varName] = language
+              elif buttonOption.varType == 'googleProcessInput':
+                  if buttonOption.button.isChecked():
+                    print(buttonOption.button.isChecked())
+                    os.environ[buttonOption.varName] = "True"
+                  else:
+                    os.environ[buttonOption.varName] = "False"
+
               else:
                 # we set the environment variables here. 
                 os.environ['APPSAWAY_OPTIONS'] = buttonOption.button.text()
@@ -413,7 +437,13 @@ class WidgetGallery(QDialog):
         PAUSED = True
 
         for buttonOption in self.button_list:
-          buttonOption.button.setEnabled(True)
+          if buttonOption.varType == 'googleInput':
+            buttonOption.button.setEnabled(False)
+          else:
+            if buttonOption.varType == 'googleProcessInput':
+              buttonOption.button.setChecked(False)
+            buttonOption.button.setEnabled(True)
+          
 
         rc = subprocess.call("./appsAway_stopApp.sh")
         #self.rc = subprocess.Popen("./appsAway_stopApp.sh")
@@ -504,23 +534,21 @@ class WidgetGallery(QDialog):
 
         language_list=list(filter(lambda x: x.varType == 'languageInput', self.button_list)) #list of button of type 'languageInput'
         lanIn_var_list=[el.varName for el in language_list]#for each button of type 'textEdit' we need to add el.varName (e.g. LANGUAGE_INPUT)
+
+        process_list=list(filter(lambda x: x.varType == 'googleProcessInput', self.button_list)) #list of button of type 'languageInput'
+        proc_var_list=[el.varName for el in process_list]#for each button of type 'textEdit' we need to add el.varName (e.g. LANGUAGE_INPUT)
         
-        var_list=["APPSAWAY_OPTIONS"] + fileIn_var_list + textEd_var_list + lanIn_var_list #list of enviroment variables
+        var_list=["APPSAWAY_OPTIONS"] + fileIn_var_list + textEd_var_list + lanIn_var_list +  proc_var_list #list of enviroment variables
         print(var_list)
 
         # Checking if we already have all the environment variables in the .env; if yes we overwrite them, if not we add them 
         for var_l in var_list:
           not_found=True
-          print(var_l)
-          print(os.environ.get(var_l))
           for i in range(len(env_list)):
             if env_list[i].find(var_l + "=") != -1 and os.environ.get(var_l) != None:
               env_list[i] = var_l + "=" + os.environ.get(var_l)
               not_found=False 
-          print(os.environ.get(var_l))
-          print(not_found)
           if not_found and os.environ.get(var_l) != None:
-            print("521")
             env_list.insert(len(env_list), var_l + "=" + os.environ.get(var_l))
 
           #if env_list[i].find("APPSAWAY_OPTIONS") != -1 and os.environ.get('APPSAWAY_OPTIONS') != None:
