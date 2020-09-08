@@ -65,7 +65,6 @@ class WidgetGallery(QDialog):
         self.input_list = [] # used to associate button to inputs
 
         self.gui_dir = os.getcwd()
-        print(self.gui_dir)
 
         self.textEdit = ""
         self.textEdit_name = ""
@@ -232,7 +231,8 @@ class WidgetGallery(QDialog):
           layout.addWidget(buttonOption.button)
 
           for obj in self.input_list:
-           layout.addWidget(obj)
+            if buttonOption.varName == obj.placeholderText():
+              layout.addWidget(obj)
 
           if buttonOption.varType == 'fileInput':
             buttonOption.button.clicked.connect(lambda:self.openFile(buttonOption))
@@ -390,8 +390,8 @@ class WidgetGallery(QDialog):
         for buttonOption in self.button_list:
             #if (buttonOption.button.isChecked()):
             if (buttonOption.button.isEnabled):
-              if buttonOption.varType != 'languageInput': # Combo has no attribute text
-                print(buttonOption.button.text()+" is enabled")
+              #if buttonOption.varType != 'languageInput': # Combo has no attribute text
+              #  print(buttonOption.button.text()+" is enabled")
 
               if buttonOption.varType == 'fileInput':
                 for obj in self.input_list:
@@ -406,7 +406,6 @@ class WidgetGallery(QDialog):
                     os.environ[buttonOption.varName] = language
               elif buttonOption.varType == 'googleProcessInput':
                   if buttonOption.button.isChecked():
-                    print(buttonOption.button.isChecked())
                     os.environ[buttonOption.varName] = "True"
                   else:
                     os.environ[buttonOption.varName] = "False"
@@ -539,7 +538,6 @@ class WidgetGallery(QDialog):
         proc_var_list=[el.varName for el in process_list]#for each button of type 'textEdit' we need to add el.varName (e.g. LANGUAGE_INPUT)
         
         var_list=["APPSAWAY_OPTIONS"] + fileIn_var_list + textEd_var_list + lanIn_var_list +  proc_var_list #list of enviroment variables
-        print(var_list)
 
         # Checking if we already have all the environment variables in the .env; if yes we overwrite them, if not we add them 
         for var_l in var_list:
