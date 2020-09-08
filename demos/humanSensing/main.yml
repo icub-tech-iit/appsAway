@@ -1,7 +1,7 @@
 version: "3.7"
 
 x-yarp-base: &yarp-base
-  image: icubteamcode/human-sensing:master-unstable_sources
+  image: icubteamcode/humansensing:master-unstable_sources
   environment:
     - YARP_FORWARD_LOG_ENABLE=1
     - CUSTOM_PORT
@@ -113,4 +113,5 @@ volumes:
       sshcmd: ${USER_NAME}@${MASTER_ADDR}:${YARP_CONF_PATH}
       password: ${USER_PASSWORD}
       allow_other: ""
+
 
