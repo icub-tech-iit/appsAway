@@ -235,15 +235,16 @@ class WidgetGallery(QDialog):
               layout.addWidget(obj)
 
           if buttonOption.varType == 'fileInput':
-            buttonOption.button.clicked.connect(lambda:self.openFile(buttonOption))
+            buttonOption.button.clicked.connect(self.openFile(buttonOption))
 
           if buttonOption.varType == 'textEdit':
             buttonOption.button.clicked.connect(self.on_click(buttonOption))
             # buttonOption.textInput.setEnabled(False)
             #layout.addWidget(buttonOption.textInput)
 
-          if buttonOption.varType == 'languageInput':
-            buttonOption.button.view().pressed.connect(lambda:self.showItem(buttonOption))
+          #if buttonOption.varType == 'languageInput':
+          #  buttonOption.button.view().pressed.connect(self.showItem(buttonOption))
+          
 
         #if len(self.button_list) >= 1:
         #  if self.button_list[0].varType == 'textEdit':
@@ -255,12 +256,18 @@ class WidgetGallery(QDialog):
 
         #self.button_list[len(self.button_list)-1].clicked.connect(self.on_click) 
   
-    
-    def showItem(self, buttonOption):
-        return buttonOption.button.currentText()
+    #@pyqtSlot()
+    #def showItem(self, buttonOption):
+    #  def printItem():
+        #if buttonOption.varType == 'languageInput':
+    #      print(buttonOption.varType)
+    #      print(buttonOption.button)
+          #return buttonOption.button.currentText()
+    #  return printItem
      
-
+    @pyqtSlot()
     def openFile(self, buttonOption):
+      def takeFile():
         filename, _ = QFileDialog.getOpenFileName(self, "Choose file", "/home", "File extension Json (*.json)")
 
         required_satisfied = True
@@ -272,6 +279,7 @@ class WidgetGallery(QDialog):
               required_satisfied = False
         if required_satisfied == True:
           self.pushStartButton.setEnabled(True)
+      return takeFile
 
 
     @pyqtSlot()
@@ -402,7 +410,8 @@ class WidgetGallery(QDialog):
                     os.environ[buttonOption.varName] = file_input
                     os.environ[buttonOption.varName + '_PATH'] = file_input_path
               elif buttonOption.varType == 'languageInput':
-                    language = self.showItem(buttonOption).split(' ')[1] #to have just it-IT 
+                    #language = self.showItem(buttonOption).split(' ')[1] #to have just it-IT 
+                    language = buttonOption.button.currentText().split(' ')[1] #to have just it-IT 
                     os.environ[buttonOption.varName] = language
               elif buttonOption.varType == 'googleProcessInput':
                   if buttonOption.button.isChecked():
@@ -512,8 +521,9 @@ class WidgetGallery(QDialog):
                 break
           main_file.close()
           main_file = open(yml_file, "w")
-          for line in main_list:
-            main_file.write(line + '\n')
+          for i in range(len(main_list)-1):
+            main_file.write(main_list[i]+ '\n')
+          main_file.write(main_list[-1])
           main_file.close()
 
         # env file is located in iCubApps folder, so we need APPSAWAY_APP_PATH
