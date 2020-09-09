@@ -7,8 +7,9 @@
 name: SBIH_build_release
 
 on:
-    release:
-        types: [published, created, edited]
+    repository_dispatch:
+        types: [SBIH_build_stable]
+
 # other types can include unpublished, deleted, prereleased
     # Testing webhooks here #
 #    repository_dispatch:
@@ -19,6 +20,10 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v2
+              with:
+                  repository: icub-tech-iit/code
+                  token: ${{ secrets.CODE_REPO_ACCSS_TOKEN }}
+
             - name: Get the version
               id: get_version
               run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3)
@@ -33,68 +38,20 @@ jobs:
               run: if [ "${{ github.event.client_payload.type }}" == "superbuild_release" ]; then $(echo ${{ github.event.client_payload.version }} > VERSION_FILE); else echo "./SB_version.json" > VERSIONFILE_NAME && cat $(cat VERSIONFILE_NAME) | grep -Pio 'v[1-9]{1,}.{1,}(?=\"\})' > VERSION_FILE; fi
 #########################################################################################
 
-# This block creates the "string" that will serve as the tag argument in docker build
-            - name: set builder tag for Superbuild full
-              run: echo "icubteamcode/superbuild-icubhead:${VERSION_FILE}_sources" > SBIH_DOCKER_TAG_FULL
 
-# This block creates the "string" that will serve as the tag argument in docker build thin
-            - name: set builder tag for Superbuild full
-              run: echo "icubteamcode/superbuild-icubhead:${VERSION_FILE}_binaries" > SBIH_DOCKER_TAG_PROD
+
 
 # this block will generate the image and push it to dockerhub
             - name: Build superbuild-icubhead Docker full image
-              run: docker build ./dockerfile_images/basic/superbuild-icubhead --file ./dockerfile_images/basic/superbuild-icubhead/Dockerfile --tag $(cat SBIH_DOCKER_TAG_FULL)
+              run: docker build ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.superbuild_icubHead_stable_tag_full }}
             - name: Push superbuild-icubhead Docker full image
-              run: docker push $(cat SBIH_DOCKER_TAG_FULL)
+              run: docker push ${{ github.event.client_payload.superbuild_icubHead_stable_tag_full }}
 
 # this block will generate the thin image and push it to dockerhub
             - name: Build superbuild-icubhead Docker thin image
-              run: docker build ./dockerfile_images/basic/superbuild-icubhead --file ./dockerfile_images/basic/superbuild-icubhead/Dockerfile4Production --tag $(cat SBIH_DOCKER_TAG_PROD)
+              run: docker build ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile4Production --tag ${{ github.event.client_payload.superbuild_icubHead_stable_tag_full }}
             - name: Push superbuild-icubhead Docker thin image
-              run: docker push $(cat SBIH_DOCKER_TAG_PROD)
+              run: docker push ${{ github.event.client_payload.superbuild_icubHead_stable_tag_full }}
 
-#################### NOW WE COMPILE EVERYTHING ELSE #########################
 
-# This block creates the "string" that will serve as the tag argument in docker build
-            - name: set builder tag for Superbuild full
-              run: echo "icubteamcode/superbuild:${VERSION_FILE}_sources" > SB_DOCKER_TAG_FULL
-
-# This block creates the "string" that will serve as the tag argument in docker build thin
-            - name: set builder tag for Superbuild full
-              run: echo "icubteamcode/superbuild:${VERSION_FILE}_binaries" > SB_DOCKER_TAG_PROD
-
-# this block reads the date and sets it as an argument for build
-            - name: set date argument for Docker build
-              run: |
-                echo "$(date +'%d/%m/%Y')" > DATE_TAG
-                echo "built on $(cat DATE_TAG)" > DATE_TAG
-                echo $(cat DATA_TAG)
-
-# this block sets the starting image for Docker build
-            - name: set starting image argument for Docker build
-              run: |
-                echo "icubteamcode/ubuntu1804mesa:latest" > START_IMAGE_TAG
-                echo $(cat START_IMAGE_TAG)
-
-            - name: Build superbuild Docker full image
-              run: docker build ./dockerfile_images/basic/superbuild --file ./dockerfile_images/basic/superbuild/Dockerfile --build-arg STARTING_IMG_NAME=$(cat START_IMAGE_TAG) --build-arg metadata=$(cat DATE_TAG) --tag $(cat SB_DOCKER_TAG_FULL)
-            - name: Push superbuild Docker full image
-              run: docker push $(cat SB_DOCKER_TAG_FULL)
-#
-            - name: Build superbuild Docker thin image
-              run: docker build ./dockerfile_images/basic/superbuild --file ./dockerfile_images/basic/superbuild/Dockerfile4Production --tag $(cat SB_DOCKER_TAG_PROD)
-            - name: Push superbuild Docker thin image
-              run: docker push $(cat SB_DOCKER_TAG_PROD)
-
-#################### Build the demos #######################
-
-#            - name: Build graspTheBall Docker full image
-#              run: docker build ./dockerfile_images/demos/graspTheBall --file ./dockerfile_images/demos/graspTheBall/Dockerfile --tag icubteamcode/grasptheball:${{ steps.get_version.outputs.VERSION }}_full
-#            - name: Push graspTheBall Docker full image
-#              run: docker push icubteamcode/grasptheball:${{ steps.get_version.outputs.VERSION }}_full
-#
-            - name: Build graspTheBall Docker thin image
-              run: docker build ./dockerfile_images/demos/graspTheBall --file ./dockerfile_images/demos/graspTheBall/Dockerfile4Production --tag icubteamcode/grasptheball:${{ steps.get_version.outputs.VERSION }}_binaries
-            - name: Push graspTheBall Docker thin image
-              run: docker push icubteamcode/grasptheball:${{ steps.get_version.outputs.VERSION }}_binaries
 
