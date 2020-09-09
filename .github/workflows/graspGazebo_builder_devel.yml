@@ -4,81 +4,39 @@
 name: GRGZ_builder_devel
 
 on: 
-    push:
-        paths:
-            - 'dockerfile_images/demos/graspGazebo/**' # trigger if there are changes to the superbuild
-            - '.github/workflows/graspGazebo_builder_devel.yml'
-            #- 'dockerfile_images/basic/ubuntu1804mesa/**' # trigger if there are changes to the ubuntu container
-            #- '!no_change_folder/**' # this can be used to ignore subfolders of the ones mentioned above
-    # Testing webhooks here #
-#    repository_dispatch:
-#        types: [superbuild_release, AppsAway_update]
+    repository_dispatch:
+        types: [GRGZ_build_devel]
 
 jobs:
     build:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v2
+              with:
+                  repository: icub-tech-iit/code
+                  token: ${{ secrets.CODE_REPO_ACCSS_TOKEN }}
+
             - name: Login to DockerHub Registry
               run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
-
-##### Command to set the tag for the full superbuild Docker image (without version) #####
-            - name: set builder tag for Superbuild full
-              run: echo "icubteamcode/icubgraspgazebo:master-unstable_sources" > GRGZ_DOCKER_TAG_FULL
-#########################################################################################
-
-##### Command to set the tag for the thin superbuild Docker image (without version) #####
-            - name: set builder tag for Superbuild full
-              run: echo "icubteamcode/icubgraspgazebo:master-unstable_binaries" > GRGZ_DOCKER_TAG_PROD
-#########################################################################################
-
-##### Command to set the tag for the ubuntu:bionic Docker image (without version) #####
-            - name: set builder tag for Superbuild full
-              run: echo "ubuntu:bionic" > UB_DOCKER_TAG_PROD
-#########################################################################################
-
-
-######## Command to set the tag for the starting image argument for full Image ##########
-            - name: set starting image argument for Docker build
-              run: |
-                echo "START_IMAGE_FULL_NAME=$(cat GRGZ_DOCKER_TAG_FULL)" > START_IMAGE_FULL
-                echo $(cat START_IMAGE_FULL)
-#########################################################################################
-
-######## Command to set the tag for the starting image argument for thin Image ##########
-            - name: set starting image argument for Docker build
-              run: |
-                echo "START_IMAGE_THIN_NAME=$(cat UB_DOCKER_TAG_PROD)" > START_IMAGE_THIN
-                echo $(cat START_IMAGE_THIN)
-#########################################################################################
 
 
 ######## Command to build the full Docker image, using only stable/unstable tag #########
             - name: Build superbuild Docker full image
-              run: docker build ./dockerfile_images/demos/graspGazebo --file ./dockerfile_images/demos/graspGazebo/Dockerfile --tag $(cat GRGZ_DOCKER_TAG_FULL)
+              run: docker build ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.grazpgazebotag_full }}
 #########################################################################################
 
 ######### Command to push the full Docker Image online ##################################
             - name: Push superbuild Docker full image
-              run: docker push $(cat GRGZ_DOCKER_TAG_FULL)
+              run: docker push ${{ github.event.client_payload.grazpgazebotag_full }}
 #########################################################################################
 
 ######## Command to build the thin Docker image, using only stable/unstable tag #########
             - name: Build superbuild Docker thin image
-              run: docker build --build-arg $(cat START_IMAGE_FULL) --build-arg $(cat START_IMAGE_THIN) ./dockerfile_images/demos/graspGazebo --file ./dockerfile_images/demos/graspGazebo/Dockerfile4production --tag $(cat GRGZ_DOCKER_TAG_PROD)
+              run: docker build --build-arg ${{ github.event.client_payload.start_image_full }} --build-arg ${{ github.event.client_payload.start_image_thin }} ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile4production --tag ${{ github.event.client_payload.grazpgazebotag_thin }}
 #########################################################################################
 
 ######### Command to push the thin Docker Image online ##################################
             - name: Push superbuild Docker thin image
-              run: docker push $(cat GRGZ_DOCKER_TAG_PROD)
+              run: docker push ${{ github.event.client_payload.grazpgazebotag_thin }}
 #########################################################################################
 
-######## Command to build the thin Docker image, using only stable/unstable tag #########
-#            - name: Build superbuild Docker thin image
-#              run: docker build  ./dockerfile_images/demos/superbuild-gazebo --file ./dockerfile_images/demos/superbuild-gazebo/Dockerfile4Production --tag $(cat GRGZ_DOCKER_TAG_PROD)
-#########################################################################################
-
-######### Command to push the full Docker Image online ##################################
-#            - name: Push superbuild Docker thin image
-#              run: docker push $(cat GRGZ_DOCKER_TAG_PROD)
-#########################################################################################
