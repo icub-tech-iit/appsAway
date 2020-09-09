@@ -1,0 +1,53 @@
+# this workflow will generate the containers on push. These containers are for test only, so ideally they should be uploaded to a private repo, not available to the public. tag=superbuild_devel (?)
+# for the stable versions, use superbuild_builder_stable.yml, triggered on release
+
+name: SBGZ_builder_devel
+
+on: 
+    push:
+        paths:
+            - 'dockerfile_images/basic/superbuild-gazebo/**' # trigger if there are changes to the superbuild
+            - '.github/workflows/superbuild_gazebo_builder_devel.yml'
+            #- 'dockerfile_images/basic/ubuntu1804mesa/**' # trigger if there are changes to the ubuntu container
+            #- '!no_change_folder/**' # this can be used to ignore subfolders of the ones mentioned above
+    # Testing webhooks here #
+#    repository_dispatch:
+#        types: [superbuild_release, AppsAway_update]
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+            - name: Login to DockerHub Registry
+              run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+
+##### Command to set the tag for the full superbuild Docker image (without version) #####
+            - name: set builder tag for Superbuild full
+              run: echo "icubteamcode/superbuild-gazebo:master-unstable_sources" > SBGZ_DOCKER_TAG_FULL
+#########################################################################################
+
+##### Command to set the tag for the thin superbuild Docker image (without version) #####
+            - name: set builder tag for Superbuild full
+              run: echo "icubteamcode/superbuild-gazebo:master-unstable_binaries" > SBGZ_DOCKER_TAG_PROD
+#########################################################################################
+
+######## Command to build the full Docker image, using only stable/unstable tag #########
+            - name: Build superbuild Docker full image
+              run: docker build ./dockerfile_images/basic/superbuild-gazebo --file ./dockerfile_images/basic/superbuild-gazebo/Dockerfile --tag $(cat SBGZ_DOCKER_TAG_FULL)
+#########################################################################################
+
+######### Command to push the full Docker Image online ##################################
+            - name: Push superbuild Docker full image
+              run: docker push $(cat SBGZ_DOCKER_TAG_FULL)
+#########################################################################################
+
+######## Command to build the thin Docker image, using only stable/unstable tag #########
+            - name: Build superbuild Docker thin image
+              run: docker build  ./dockerfile_images/basic/superbuild-gazebo --file ./dockerfile_images/basic/superbuild-gazebo/Dockerfile4Production --tag $(cat SBGZ_DOCKER_TAG_PROD)
+#########################################################################################
+
+######### Command to push the full Docker Image online ##################################
+            - name: Push superbuild Docker thin image
+              run: docker push $(cat SBGZ_DOCKER_TAG_PROD)
+#########################################################################################

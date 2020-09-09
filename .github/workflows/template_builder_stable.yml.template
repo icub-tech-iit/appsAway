@@ -1,0 +1,46 @@
+
+#### specify the name of the job -  not important, but it's nice for organization: ###
+
+#name: <name>_builder_release
+
+######################################################################################
+
+
+#### specify the trigger for this job -for release we want the new releases/tags created ####
+#on:
+#    release:
+#        types: [published, created, edited]
+#### other types can include unpublished, deleted, prereleased
+
+#############################################################################################
+
+
+#### Specify the instructions for this particular build ####
+#jobs:
+#    build:
+#        runs-on: ubuntu-latest   # other OS can be used, but since we are just building, ubuntu works
+#        steps:
+############# This segment checks out the repo to the github workflow #######################
+#            - uses: actions/checkout@v2
+
+############# This segment finds the tag of the current release #############################
+#            - name: Get the version
+#              id: get_version
+#              run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3)
+
+############# This segment logs in to the DockerHub account for pushing the container #######
+#            - name: Login to DockerHub Registry
+#              run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+
+############# This segment builds the container. Attention to the paths to the build folder/file
+#            - name: Build <project> Docker image
+#              run: docker build  ./<path/to/build/folder> --file ./<path/to/Dockerfile> --tag <Dockerhub/repo>:<container name>_${{ steps.get_version.outputs.VERSION }}
+
+############# Now push the container to the Dockerhub repo ##################################
+#            - name: Push graspTheBall Docker image
+#              run: docker push <Dockerhub/repo>:<container name>_${{ steps.get_version.outputs.VERSION }}
+
+##### The command ${{ steps.get_version.outputs.VERSION }} automatically adds the releast tag to the name of the container.
+
+
+#IMPORTANT NOTE: The Docker build folder should be the one used to manually build the Docker containers. This is so .ini/.conf/other files are found/copied correctly.

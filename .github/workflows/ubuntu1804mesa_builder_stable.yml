@@ -1,0 +1,64 @@
+# this workflow will generate the containers on release, generating stable versions of the containers. The tag is given by:
+#            - name: Get the version
+#              id: get_version
+#              run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3)
+#              ${{ steps.get_version.outputs.VERSION }}
+
+name: Ubuntu_build_release
+
+on:
+    release:
+        types: [published, created, edited]
+# other types can include unpublished, deleted, prereleased
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+            - name: Get the version
+              id: get_version
+              run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3)
+            - name: Login to DockerHub Registry
+              run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+
+            - name: Build ubuntu1804mesa Docker image
+              run: docker build ./dockerfile_images/basic/ubuntu1804mesa --file ./dockerfile_images/basic/ubuntu1804mesa/Dockerfile --tag icubteamcode/ubuntu1804mesa:${{ steps.get_version.outputs.VERSION }}
+            - name: Push ubuntu1804mesa Docker image
+              run: docker push icubteamcode/ubuntu1804mesa:${{ steps.get_version.outputs.VERSION }}
+
+#################### Build the superbuild ###################
+
+            - name: Build superbuild Docker full image
+              run: docker build ./dockerfile_images/basic/superbuild --file ./dockerfile_images/basic/superbuild/Dockerfile --tag icubteamcode/superbuild:${{ steps.get_version.outputs.VERSION }}_full
+            - name: Push superbuild Docker full image
+              run: docker push icubteamcode/superbuild:${{ steps.get_version.outputs.VERSION }}_full
+#
+            - name: Build superbuild Docker thin image
+              run: docker build ./dockerfile_images/basic/superbuild --file ./dockerfile_images/basic/superbuild/Dockerfile4Production --tag icubteamcode/superbuild:${{ steps.get_version.outputs.VERSION }}_prod
+            - name: Push superbuild Docker thin image
+              run: docker push icubteamcode/superbuild:${{ steps.get_version.outputs.VERSION }}_prod
+
+#################### Build the superbuild-icubhead ####################
+
+            - name: Build superbuild-icubhead Docker full image
+              run: docker build ./dockerfile_images/basic/superbuild-icubhead --file ./dockerfile_images/basic/superbuild-icubhead/Dockerfile --tag icubteamcode/superbuild-icubhead:${{ steps.get_version.outputs.VERSION }}_full
+            - name: Push superbuild-icubhead Docker full image
+              run: docker push icubteamcode/superbuild-icubhead:${{ steps.get_version.outputs.VERSION }}_full
+#
+            - name: Build superbuild-icubhead Docker thin image
+              run: docker build ./dockerfile_images/basic/superbuild-icubhead --file ./dockerfile_images/basic/superbuild-icubhead/Dockerfile4Production --tag icubteamcode/superbuild-icubhead:${{ steps.get_version.outputs.VERSION }}_prod
+            - name: Push superbuild-icubhead Docker thin image
+              run: docker push icubteamcode/superbuild-icubhead:${{ steps.get_version.outputs.VERSION }}_prod
+
+#################### Build the demos #######################
+
+#            - name: Build graspTheBall Docker full image
+#              run: docker build ./dockerfile_images/demos/graspTheBall --file ./dockerfile_images/demos/graspTheBall/Dockerfile --tag icubteamcode/grasptheball:${{ steps.get_version.outputs.VERSION }}_full
+#            - name: Push graspTheBall Docker full image
+#              run: docker push icubteamcode/grasptheball:${{ steps.get_version.outputs.VERSION }}_full
+#
+            - name: Build graspTheBall Docker thin image
+              run: docker build ./dockerfile_images/demos/graspTheBall --file ./dockerfile_images/demos/graspTheBall/Dockerfile4Production --tag icubteamcode/grasptheball:${{ steps.get_version.outputs.VERSION }}_prod
+            - name: Push graspTheBall Docker thin image
+              run: docker push icubteamcode/grasptheball:${{ steps.get_version.outputs.VERSION }}_prod

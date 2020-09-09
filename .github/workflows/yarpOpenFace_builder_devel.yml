@@ -1,0 +1,118 @@
+# this workflow will generate the containers on push. These containers are for test only, so ideally they should be uploaded to a private repo, not available to the public. tag=yarpOpenFace:version (?)
+# for the stable versions, use yarpOpenFace_builder_stable.yml, triggered on release
+
+name: YOF_builder_devel
+
+on: 
+    push:
+        paths:
+            - 'dockerfile_images/demos/openFace/**' 
+            - '.github/workflows/yarpOpenFace_builder_devel.yml'
+
+jobs:
+    build-unstable:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+            - name: Login to DockerHub Registry
+              run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+
+##### Command to set the tag for the full superbuild Docker image (without version) #####
+            - name: set builder tag for Superbuild unstable full
+              run: echo "icubteamcode/superbuild:master-unstable_sources" > SB_DOCKER_TAG_FULL
+#########################################################################################
+
+##### Command to set the tag for the thin superbuild Docker image (without version) #####
+            - name: set builder tag for Superbuild unstable thin
+              run: echo "icubteamcode/superbuild:master-unstable_binaries" > SB_DOCKER_TAG_PROD
+#########################################################################################
+
+######## Command to set the tag for the starting image argument for full Image ##########
+            - name: set starting image argument for Docker build
+              run: |
+                echo "SUPERBUILD_FULL_NAME=$(cat SB_DOCKER_TAG_FULL)" > SUPERBUILD_IMAGE_FULL
+                echo $(cat SUPERBUILD_IMAGE_FULL)
+#########################################################################################
+                
+######## Command to set the tag for the starting image argument for thin Image ##########
+            - name: set starting image argument for Docker build
+              run: |
+                echo "SUPERBUILD_THIN_NAME=$(cat SB_DOCKER_TAG_PROD)" > SUPERBUILD_IMAGE_THIN
+                echo $(cat SUPERBUILD_IMAGE_THIN)
+#########################################################################################
+
+####### wait a bit to allow the other job to use the port and finish dlib download ######
+            - name: Sleep for 60 seconds
+              uses: jakejarvis/wait-action@master
+              with:
+                time: '60s'
+#########################################################################################
+
+
+############## build the unstable version of yarpOpenFace ##############
+            - name: Build yarpOpenFace Docker full image
+              run: docker build --build-arg $(cat SUPERBUILD_IMAGE_FULL) --build-arg $(cat SUPERBUILD_IMAGE_THIN) ./dockerfile_images/demos/openFace --file ./dockerfile_images/demos/openFace/Dockerfile --tag icubteamcode/yarpopenface:master-unstable_sources
+            - name: Push yarpOpenFace Docker full image
+              run: docker push icubteamcode/yarpopenface:master-unstable_sources
+
+#########################################################################################
+
+##### Command to set the tag for the full superbuild Docker image (without version) #####
+            - name: set builder tag for Superbuild unstable thin
+              run: echo "icubteamcode/yarpopenface:master-unstable_sources" > YOF_DOCKER_TAG_FULL
+              
+#########################################################################################
+              
+ ######## Command to set the tag for the starting image argument for full Image ##########
+            - name: set starting image argument for Docker build
+              run: |
+                echo "START_IMAGE_FULL_NAME=$(cat YOF_DOCKER_TAG_FULL)" > START_IMAGE_FULL
+                echo $(cat START_IMAGE_FULL)
+#########################################################################################
+              
+############## build the unstable version of yarpOpenFace ##############
+            - name: Build yarpOpenFace Docker thin image
+              run: docker build --build-arg $(cat START_IMAGE_FULL) --build-arg $(cat SUPERBUILD_IMAGE_THIN) ./dockerfile_images/demos/openFace --file ./dockerfile_images/demos/openFace/Dockerfile4Production --tag icubteamcode/yarpopenface:master-unstable_binaries
+            - name: Push yarpOpenFace Docker thin image
+              run: docker push icubteamcode/yarpopenface:master-unstable_binaries
+              
+              
+    build-stable:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+            - name: Login to DockerHub Registry
+              run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+
+##### Command to set the tag for the full superbuild Docker image (without version) #####
+            - name: set builder tag for Superbuild stable full
+              run: echo "icubteamcode/superbuild:master-stable_sources" > SB_DOCKER_TAG_FULL_STAB
+#########################################################################################
+
+##### Command to set the tag for the thin superbuild Docker image (without version) #####
+            - name: set builder tag for Superbuild stable thin
+              run: echo "icubteamcode/superbuild:master-stable_binaries" > SB_DOCKER_TAG_PROD_STAB
+#########################################################################################
+
+######## Command to set the tag for the starting image argument for full Image ##########
+            - name: set starting image argument for Docker build
+              run: |
+                echo "SUPERBUILD_FULL_NAME=$(cat SB_DOCKER_TAG_FULL_STAB)" > SUPERBUILD_IMAGE_FULL_STAB
+                echo $(cat SUPERBUILD_IMAGE_FULL_STAB)
+#########################################################################################
+                
+######## Command to set the tag for the starting image argument for thin Image ##########
+            - name: set starting image argument for Docker build
+              run: |
+                echo "SUPERBUILD_THIN_NAME=$(cat SB_DOCKER_TAG_PROD_STAB)" > SUPERBUILD_IMAGE_THIN_STAB
+                echo $(cat SUPERBUILD_IMAGE_THIN_STAB)
+#########################################################################################
+
+############## build the stable version of yarpOpenFace ##############
+            - name: Build yarpOpenFace Docker thin image
+              run: docker build --build-arg $(cat SUPERBUILD_IMAGE_FULL_STAB) --build-arg $(cat SUPERBUILD_IMAGE_THIN_STAB) ./dockerfile_images/demos/openFace --file ./dockerfile_images/demos/openFace/Dockerfile --tag icubteamcode/yarpopenface:master-stable_sources
+            - name: Push yarpOpenFace Docker thin image
+              run: docker push icubteamcode/yarpopenface:master-stable_sources
+
+
+

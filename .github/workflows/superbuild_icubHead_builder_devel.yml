@@ -1,0 +1,157 @@
+# this workflow will generate the containers on push. These containers are for test only, so ideally they should be uploaded to a private repo, not available to the public. tag=superbuild-icubhead_devel (?)
+# for the stable versions, use superbuild_icubHead_builder_stable.yml, triggered on release
+
+name: SBIH_builder_devel
+
+on: 
+    push:
+        paths:
+            - 'dockerfile_images/basic/superbuild-icubhead/**' # trigger if there are changes to the demo itself
+            - '.github/workflows/superbuild_icubHead_builder_devel.yml'
+            #- 'dockerfile_images/basic/superbuild**' # trigger if there are changes to the superbuild
+            #- 'dockerfile_images/basic/ubuntu1804mesa/**' # trigger if there are changes to the ubuntu container
+            #- '!no_change_folder/**' # this can be used to ignore subfolders of the ones mentioned above
+    # Testing webhooks here #
+    repository_dispatch:
+        types: [superbuild_release, AppsAway_update]
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+            - name: Login to DockerHub Registry
+              run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+
+            - name: Check AppsAway version
+              run: if [ "${{ github.event.client_payload.type }}" == "AppsAway_update" ]; then echo '${{ github.event.client_payload.version }}'; fi
+
+
+##### Command to set the tag for the full superbuild Docker image (without version) #####
+            - name: set builder tag for Superbuild full
+              run: echo "icubteamcode/superbuild-icubhead:master-unstable_sources" > SBIH_DOCKER_TAG_FULL
+#########################################################################################
+
+##### Command to set the tag for the thin superbuild Docker image (without version) #####
+            - name: set builder tag for Superbuild full
+              run: echo "icubteamcode/superbuild-icubhead:master-unstable_binaries" > SBIH_DOCKER_TAG_PROD
+#########################################################################################
+
+######## Command to set the tag for the starting image argument for full Image ##########
+            - name: set starting image argument for Docker build
+              run: |
+                echo "SUPERBUILD_FULL_NAME=$(cat SBIH_DOCKER_TAG_FULL)" > SUPERBUILD_ICUBHEAD_IMAGE_FULL
+                echo $(cat SUPERBUILD_ICUBHEAD_IMAGE_FULL)
+#########################################################################################
+
+######## Command to set the tag for the starting image argument for thin Image ##########
+            - name: set starting image argument for Docker build
+              run: |
+                echo "SUPERBUILD_THIN_NAME=$(cat SBIH_DOCKER_TAG_PROD)" > SUPERBUILD_ICUBHEAD_IMAGE_THIN
+                echo $(cat SUPERBUILD_ICUBHEAD_IMAGE_THIN)
+#########################################################################################
+
+
+######## Command to set the tag for the ubuntu  image argument for full Image ##########
+            - name: set starting image argument for Docker build
+              run: |
+                echo "UBUNTU_IMG_NAME=icubteamcode/ubuntu1804mesa:latest" > UBUNTU_IMAGE_TAG
+                echo $(cat UBUNTU_IMAGE_TAG)
+#########################################################################################
+
+##################### Command to set the tag for the date argument ######################
+            - name: set date argument for Docker build
+              run: |
+                echo "$(date +'%d/%m/%Y')" > DATE_
+                echo "metadata=$(cat DATE_)" > DATE_TAG
+                echo $(cat DATE_TAG)
+#########################################################################################
+
+#########################################################################################
+## THIS IS THE IMPLEMENTATION WITH STABLE/UNSTABLE VERSION (JUST TESTING UNSTABLE NOW) ##
+#########################################################################################
+
+########### This command sets the stable/unstable variable ##############################
+            - name: set stable/unstable argument for Docker build
+              run: |
+                echo "Unstable" > SBTAG
+                echo "sbtag=$(cat SBTAG)" > SBTAG_ARG
+                echo $(cat SBTAG_ARG)
+#########################################################################################
+
+######## This command sets the release version (not used for the unstable version) ######            
+#            - name: set release argument for Docker build
+#              run: |
+#                echo "release=$(cat VERSION_FILE)" > RELEASE_ARG
+#                echo $(cat RELEASE_ARG)
+#########################################################################################
+
+######## Command to build the full Docker image, using only stable/unstable tag #########
+            - name: Build superbuild-icubhead Docker full image
+              run: docker build --build-arg $(cat UBUNTU_IMAGE_TAG) --build-arg $(cat DATE_TAG) --build-arg $(cat SBTAG_ARG) ./dockerfile_images/basic/superbuild-icubhead --file ./dockerfile_images/basic/superbuild-icubhead/Dockerfile --tag $(cat SBIH_DOCKER_TAG_FULL)
+#########################################################################################
+
+######### Command to push the full Docker Image online ##################################
+            - name: Push superbuild-icubhead Docker full image
+              run: docker push $(cat SBIH_DOCKER_TAG_FULL)
+#########################################################################################
+
+######## Command to build the thin Docker image, using only stable/unstable tag #########
+            - name: Build superbuild-icubhead Docker thin image
+              run: docker build  --build-arg $(cat SUPERBUILD_ICUBHEAD_IMAGE_FULL) --build-arg $(cat UBUNTU_IMAGE_TAG) ./dockerfile_images/basic/superbuild-icubhead --file ./dockerfile_images/basic/superbuild-icubhead/Dockerfile4Production --tag $(cat SBIH_DOCKER_TAG_PROD)
+#########################################################################################
+
+######### Command to push the full Docker Image online ##################################
+            - name: Push superbuild-icubhead Docker thin image
+              run: docker push $(cat SBIH_DOCKER_TAG_PROD)
+#########################################################################################
+
+#########################################################################################
+#################################### BUILD THE DEMOS ####################################
+#########################################################################################
+
+#            - name: Build graspTheBall Docker image
+#              run: docker build  ./dockerfile_images/demos/graspTheBall --file ./dockerfile_images/demos/graspTheBall/Dockerfile --tag icubteamcode/grasptheball:devel_full
+#            - name: Push graspTheBall Docker image
+#              run: docker push icubteamcode/grasptheball:devel_full
+#
+
+##### Command to set the tag for the full superbuild Docker image (without version) #####
+            - name: set builder tag for Superbuild full
+              run: echo "icubteamcode/superbuild:master-unstable_sources" > SB_DOCKER_TAG_FULL
+#########################################################################################
+
+##### Command to set the tag for the thin superbuild Docker image (without version) #####
+            - name: set builder tag for Superbuild full
+              run: echo "icubteamcode/superbuild:master-unstable_binaries" > SB_DOCKER_TAG_PROD
+#########################################################################################
+
+######## Command to set the tag for the starting image argument for full Image ##########
+            - name: set starting image argument for Docker build
+              run: |
+                echo "SUPERBUILD_FULL_NAME=$(cat SB_DOCKER_TAG_FULL)" > SUPERBUILD_IMAGE_FULL
+                echo $(cat SUPERBUILD_IMAGE_FULL)
+#########################################################################################
+
+######## Command to set the tag for the starting image argument for thin Image ##########
+            - name: set starting image argument for Docker build
+              run: |
+                echo "SUPERBUILD_THIN_NAME=$(cat SB_DOCKER_TAG_PROD)" > SUPERBUILD_IMAGE_THIN
+                echo $(cat SUPERBUILD_IMAGE_THIN)
+#########################################################################################
+
+            - name: Build graspTheBall Docker thin image
+              run: docker build --build-arg $(cat SUPERBUILD_IMAGE_FULL) --build-arg $(cat SUPERBUILD_IMAGE_THIN) ./dockerfile_images/demos/graspTheBall --file ./dockerfile_images/demos/graspTheBall/Dockerfile4Production --tag icubteamcode/grasptheball:master_binaries
+            - name: Push graspTheBall Docker thin image
+              run: docker push icubteamcode/grasptheball:master_binaries
+
+# THIS IS THE DEFAULT DOCKER BUILD COMMAND WE HAD RUNNING
+#            - name: Build superbuild_icubHead Docker full image
+#              run: docker build  ./dockerfile_images/basic/superbuild-icubhead --file ./dockerfile_images/basic/superbuild-icubhead/Dockerfile --tag icubteamcode/superbuild-icubhead:devel_full
+#            - name: Push superbuild_icubHead Docker full image
+#              run: docker push icubteamcode/superbuild-icubhead:devel_full
+#
+#            - name: Build superbuild_icubHead Docker thin image
+#              run: docker build  ./dockerfile_images/basic/superbuild-icubhead --file ./dockerfile_images/basic/superbuild-icubhead/Dockerfile4Production --tag icubteamcode/superbuild-icubhead:devel_prod
+#            - name: Push superbuild_icubHead Docker thin image
+#              run: docker push icubteamcode/superbuild-icubhead:devel_prod
