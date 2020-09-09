@@ -22,21 +22,21 @@ jobs:
 
 ######## Command to build the full Docker image, using only stable/unstable tag #########
             - name: Build superbuild Docker full image
-              run: docker build ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.grazpgazebotag_full }}
+              run: docker build ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.graspgazebotag_full }}
 #########################################################################################
 
 ######### Command to push the full Docker Image online ##################################
             - name: Push superbuild Docker full image
-              run: docker push ${{ github.event.client_payload.grazpgazebotag_full }}
+              run: docker push ${{ github.event.client_payload.graspgazebotag_full }}
 #########################################################################################
 
 ######## Command to build the thin Docker image, using only stable/unstable tag #########
             - name: Build superbuild Docker thin image
-              run: docker build --build-arg ${{ github.event.client_payload.start_image_full }} --build-arg ${{ github.event.client_payload.start_image_thin }} ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile4production --tag ${{ github.event.client_payload.grazpgazebotag_thin }}
+              run: docker build --build-arg ${{ github.event.client_payload.start_image_full }} --build-arg ${{ github.event.client_payload.start_image_thin }} ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile4production --tag ${{ github.event.client_payload.graspgazebotag_thin }}
 #########################################################################################
 
 ######### Command to push the thin Docker Image online ##################################
             - name: Push superbuild Docker thin image
-              run: docker push ${{ github.event.client_payload.grazpgazebotag_thin }}
+              run: docker push ${{ github.event.client_payload.graspgazebotag_thin }}
 #########################################################################################
 
