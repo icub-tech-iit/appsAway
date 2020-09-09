@@ -6,53 +6,31 @@
 
 name: GTB_builder_release
 
-on:
-    release:
-        types: [published, created, edited]
-# other types can include unpublished, deleted, prereleased
+on: 
+    repository_dispatch:
+        types: [GTB_build_stable]
 
 jobs:
     build:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v2
-            - name: Get the version
-              id: get_version
-              run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3)
+              with:
+                  repository: icub-tech-iit/code
+                  token: ${{ secrets.CODE_REPO_ACCSS_TOKEN }}
+
             - name: Login to DockerHub Registry
               run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
 
-########################## Command to set the Superbuild version ########################
-            - name: set Superbuild version
-              run: if [ "${{ github.event.client_payload.type }}" == "superbuild_release" ]; then $(echo ${{ github.event.client_payload.version }} > VERSION_FILE); else echo "./SB_version.json" > VERSIONFILE_NAME && cat $(cat VERSIONFILE_NAME) | grep -Pio 'v[1-9]{1,}.{1,}(?=\"\})' > VERSION_FILE; fi
-#########################################################################################
+############## build the unstable version of graspTheBall ##############
+            - name: Build graspTheBall Docker full image
+              run: docker build --build-arg ${{ github.event.client_payload.superbuild_image_full }} --build-arg ${{ github.event.client_payload.superbuild_image_thin }} ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.grasptheball_tag_full }}
+            - name: Push graspTheBall Docker full image
+              run: docker push ${{ github.event.client_payload.grasptheball_tag_full }}
 
-##### Command to set the tag for the full superbuild Docker image (without version) #####
-            - name: set builder tag for Superbuild full
-              run: echo "icubteamcode/superbuild:${VERSION_FILE}_sources" > SB_DOCKER_TAG_FULL
-#########################################################################################
-
-##### Command to set the tag for the thin superbuild Docker image (without version) #####
-            - name: set builder tag for Superbuild full
-              run: echo "icubteamcode/superbuild:${VERSION_FILE}_binaries" > SB_DOCKER_TAG_PROD
-#########################################################################################
-
-######## Command to set the tag for the starting image argument for full Image ##########
-            - name: set starting image argument for Docker build
-              run: |
-                echo "SUPERBUILD_FULL_NAME=$(cat SB_DOCKER_TAG_FULL)" > SUPERBUILD_IMAGE_FULL
-                echo $(cat SUPERBUILD_IMAGE_FULL)
-#########################################################################################
-                
-######## Command to set the tag for the starting image argument for thin Image ##########
-            - name: set starting image argument for Docker build
-              run: |
-                echo "SUPERBUILD_THIN_NAME=$(cat SB_DOCKER_TAG_PROD)" > SUPERBUILD_IMAGE_THIN
-                echo $(cat SUPERBUILD_IMAGE_THIN)
-#########################################################################################
-#
-
+############## build the unstable version of graspTheBall ##############
             - name: Build graspTheBall Docker thin image
-              run: docker build --build-arg $(cat SUPERBUILD_IMAGE_FULL) --build-arg $(cat SUPERBUILD_IMAGE_THIN) ./dockerfile_images/demos/graspTheBall --file ./dockerfile_images/demos/graspTheBall/Dockerfile4Production --tag icubteamcode/grasptheball:${{ steps.get_version.outputs.VERSION }}_binaries
+              run: docker build --build-arg ${{ github.event.client_payload.start_image_full }} --build-arg ${{ github.event.client_payload.superbuild_image_thin }} ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile4Production --tag ${{ github.event.client_payload.grasptheball_tag_thin }}
             - name: Push graspTheBall Docker thin image
-              run: docker push icubteamcode/grasptheball:${{ steps.get_version.outputs.VERSION }}_binaries
+              run: docker push ${{ github.event.client_payload.grasptheball_tag_thin }}
+

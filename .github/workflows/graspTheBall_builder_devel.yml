@@ -19,103 +19,32 @@ jobs:
             - name: Login to DockerHub Registry
               run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
 
-##### Command to set the tag for the full superbuild Docker image (without version) #####
-            - name: set builder tag for Superbuild unstable full
-              run: echo "icubteamcode/superbuild:master-unstable_sources" > SB_DOCKER_TAG_FULL
-#########################################################################################
-
-##### Command to set the tag for the thin superbuild Docker image (without version) #####
-            - name: set builder tag for Superbuild unstable thin
-              run: echo "icubteamcode/superbuild:master-unstable_binaries" > SB_DOCKER_TAG_PROD
-#########################################################################################
-
-##### Command to set the tag for the full superbuild Docker image (without version) #####
-            - name: set builder tag for Superbuild stable full
-              run: echo "icubteamcode/superbuild:master-stable_sources" > SB_DOCKER_TAG_FULL_STAB
-#########################################################################################
-
-##### Command to set the tag for the thin superbuild Docker image (without version) #####
-            - name: set builder tag for Superbuild stable thin
-              run: echo "icubteamcode/superbuild:master-stable_binaries" > SB_DOCKER_TAG_PROD_STAB
-#########################################################################################
-
-######## Command to set the tag for the starting image argument for full Image ##########
-            - name: set starting image argument for Docker build
-              run: |
-                echo "SUPERBUILD_FULL_NAME=$(cat SB_DOCKER_TAG_FULL)" > SUPERBUILD_IMAGE_FULL
-                echo $(cat SUPERBUILD_IMAGE_FULL)
-#########################################################################################
-                
-######## Command to set the tag for the starting image argument for thin Image ##########
-            - name: set starting image argument for Docker build
-              run: |
-                echo "SUPERBUILD_THIN_NAME=$(cat SB_DOCKER_TAG_PROD)" > SUPERBUILD_IMAGE_THIN
-                echo $(cat SUPERBUILD_IMAGE_THIN)
-#########################################################################################
-
-######## Command to set the tag for the starting image argument for full Image ##########
-            - name: set starting image argument for Docker build
-              run: |
-                echo "SUPERBUILD_FULL_NAME=$(cat SB_DOCKER_TAG_FULL_STAB)" > SUPERBUILD_IMAGE_FULL_STAB
-                echo $(cat SUPERBUILD_IMAGE_FULL_STAB)
-#########################################################################################
-                
-######## Command to set the tag for the starting image argument for thin Image ##########
-            - name: set starting image argument for Docker build
-              run: |
-                echo "SUPERBUILD_THIN_NAME=$(cat SB_DOCKER_TAG_PROD_STAB)" > SUPERBUILD_IMAGE_THIN_STAB
-                echo $(cat SUPERBUILD_IMAGE_THIN_STAB)
-#########################################################################################
 
 ############## build the unstable version of graspTheBall ##############
             - name: Build graspTheBall Docker full image
-              run: docker build --build-arg $(cat SUPERBUILD_IMAGE_FULL) --build-arg $(cat SUPERBUILD_IMAGE_THIN) ./dockerfile_images/demos/graspTheBall --file ./dockerfile_images/demos/graspTheBall/Dockerfile --tag icubteamcode/grasptheball:master-unstable_sources
+              run: docker build --build-arg ${{ github.event.client_payload.superbuild_image_full }} --build-arg ${{ github.event.client_payload.superbuild_image_thin }} ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.grasptheball_tag_full }}
             - name: Push graspTheBall Docker full image
-              run: docker push icubteamcode/grasptheball:master-unstable_sources
+              run: docker push ${{ github.event.client_payload.grasptheball_tag_full }}
 
 ############## build the stable version of graspTheBall ##############
             - name: Build graspTheBall Docker full image
-              run: docker build --build-arg $(cat SUPERBUILD_IMAGE_FULL_STAB) --build-arg $(cat SUPERBUILD_IMAGE_THIN_STAB) ./dockerfile_images/demos/graspTheBall --file ./dockerfile_images/demos/graspTheBall/Dockerfile --tag icubteamcode/grasptheball:master-stable_sources
+              run: docker build --build-arg ${{ github.event.client_payload.superbuild_image_full_stab }} --build-arg ${{ github.event.client_payload.superbuild_image_thin_stab }} ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.grasptheball_tag_full_stab }}
             - name: Push graspTheBall Docker full image
-              run: docker push icubteamcode/grasptheball:master-stable_sources
+              run: docker push ${{ github.event.client_payload.grasptheball_tag_full_stab }}
  
 #########################################################################################
 
-##### Command to set the tag for the full superbuild Docker image (without version) #####
-            - name: set builder tag for Superbuild unstable full
-              run: echo "icubteamcode/grasptheball:master-unstable_sources" > GTB_DOCKER_TAG_FULL
-#########################################################################################
-
-##### Command to set the tag for the full superbuild Docker image (without version) #####
-            - name: set builder tag for Superbuild stable full
-              run: echo "icubteamcode/grasptheball:master-stable_sources" > GTB_DOCKER_TAG_FULL_STAB
-#########################################################################################
-
-######## Command to set the tag for the starting image argument for full Image ##########
-            - name: set starting image argument for Docker build
-              run: |
-                echo "START_IMAGE_FULL=$(cat GTB_DOCKER_TAG_FULL)" > START_IMAGE_UNST
-                echo $(cat START_IMAGE_UNST)
-#########################################################################################
-
-######## Command to set the tag for the starting image argument for full Image ##########
-            - name: set starting image argument for Docker build
-              run: |
-                echo "START_IMAGE_FULL=$(cat GTB_DOCKER_TAG_FULL_STAB)" > START_IMAGE_STAB
-                echo $(cat START_IMAGE_STAB)
-#########################################################################################
-
 ############## build the unstable version of graspTheBall ##############
             - name: Build graspTheBall Docker thin image
-              run: docker build --build-arg $(cat START_IMAGE_UNST) --build-arg $(cat SUPERBUILD_IMAGE_THIN) ./dockerfile_images/demos/graspTheBall --file ./dockerfile_images/demos/graspTheBall/Dockerfile4Production --tag icubteamcode/grasptheball:master-unstable_binaries
+              run: docker build --build-arg ${{ github.event.client_payload.start_image_full }} --build-arg ${{ github.event.client_payload.superbuild_image_thin }} ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile4Production --tag ${{ github.event.client_payload.grasptheball_tag_thin }}
             - name: Push graspTheBall Docker thin image
-              run: docker push icubteamcode/grasptheball:master-unstable_binaries
+              run: docker push ${{ github.event.client_payload.grasptheball_tag_thin }}
 
 ############## build the stable version of graspTheBall ##############
             - name: Build graspTheBall Docker thin image
-              run: docker build --build-arg $(cat START_IMAGE_STAB) --build-arg $(cat SUPERBUILD_IMAGE_THIN_STAB) ./dockerfile_images/demos/graspTheBall --file ./dockerfile_images/demos/graspTheBall/Dockerfile4Production --tag icubteamcode/grasptheball:master-stable_binaries
+              run: docker build --build-arg ${{ github.event.client_payload.start_image_full_stab }} --build-arg ${{ github.event.client_payload.superbuild_image_thin_stab }} ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile4Production --tag ${{ github.event.client_payload.grasptheball_tag_thin_stab }}
             - name: Push graspTheBall Docker thin image
-              run: docker push icubteamcode/grasptheball:master-stable_binaries
+              run: docker push ${{ github.event.client_payload.grasptheball_tag_thin_stab }}
 #########################################################################################
 
 
