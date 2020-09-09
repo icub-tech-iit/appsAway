@@ -4,19 +4,17 @@
 name: GTB_builder_devel
 
 on: 
-    push:
-        paths:
-            - 'dockerfile_images/demos/graspTheBall/**' # trigger if there are changes to the demo itself
-            - '.github/workflows/graspTheBall_builder_devel.yml'
-            #- 'dockerfile_images/basic/superbuild**' # trigger if there are changes to the superbuild
-            #- 'dockerfile_images/basic/ubuntu1804mesa/**' # trigger if there are changes to the ubuntu container
-            #- '!no_change_folder/**' # this can be used to ignore subfolders of the ones mentioned above
+    repository_dispatch:
+        types: [GTB_build_devel]
 
 jobs:
     build:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v2
+              with:
+                  repository: icub-tech-iit/code
+                  token: ${{ secrets.CODE_REPO_ACCSS_TOKEN }}
             - name: Login to DockerHub Registry
               run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
 
@@ -70,13 +68,13 @@ jobs:
 
 ############## build the unstable version of graspTheBall ##############
             - name: Build graspTheBall Docker full image
-              run: docker build --build-arg $(cat SUPERBUILD_IMAGE_FULL) --build-arg $(cat SUPERBUILD_IMAGE_THIN) ./dockerfile_images/demos/graspTheBall --file ./dockerfile_images/demos/graspTheBall/Dockerfile --tag icubteamcode/grasptheball:master-unstable_sources
+              run: docker build --build-arg $(cat SUPERBUILD_IMAGE_FULL) --build-arg $(cat SUPERBUILD_IMAGE_THIN) ./code/dockerfile_images/demos/graspTheBall --file ./code/dockerfile_images/demos/graspTheBall/Dockerfile --tag icubteamcode/grasptheball:master-unstable_sources
             - name: Push graspTheBall Docker full image
               run: docker push icubteamcode/grasptheball:master-unstable_sources
 
 ############## build the stable version of graspTheBall ##############
             - name: Build graspTheBall Docker full image
-              run: docker build --build-arg $(cat SUPERBUILD_IMAGE_FULL_STAB) --build-arg $(cat SUPERBUILD_IMAGE_THIN_STAB) ./dockerfile_images/demos/graspTheBall --file ./dockerfile_images/demos/graspTheBall/Dockerfile --tag icubteamcode/grasptheball:master-stable_sources
+              run: docker build --build-arg $(cat SUPERBUILD_IMAGE_FULL_STAB) --build-arg $(cat SUPERBUILD_IMAGE_THIN_STAB) ./code/dockerfile_images/demos/graspTheBall --file ./code/dockerfile_images/demos/graspTheBall/Dockerfile --tag icubteamcode/grasptheball:master-stable_sources
             - name: Push graspTheBall Docker full image
               run: docker push icubteamcode/grasptheball:master-stable_sources
  
@@ -108,13 +106,13 @@ jobs:
 
 ############## build the unstable version of graspTheBall ##############
             - name: Build graspTheBall Docker thin image
-              run: docker build --build-arg $(cat START_IMAGE_UNST) --build-arg $(cat SUPERBUILD_IMAGE_THIN) ./dockerfile_images/demos/graspTheBall --file ./dockerfile_images/demos/graspTheBall/Dockerfile4Production --tag icubteamcode/grasptheball:master-unstable_binaries
+              run: docker build --build-arg $(cat START_IMAGE_UNST) --build-arg $(cat SUPERBUILD_IMAGE_THIN) ./code/dockerfile_images/demos/graspTheBall --file ./code/dockerfile_images/demos/graspTheBall/Dockerfile4Production --tag icubteamcode/grasptheball:master-unstable_binaries
             - name: Push graspTheBall Docker thin image
               run: docker push icubteamcode/grasptheball:master-unstable_binaries
 
 ############## build the stable version of graspTheBall ##############
             - name: Build graspTheBall Docker thin image
-              run: docker build --build-arg $(cat START_IMAGE_STAB) --build-arg $(cat SUPERBUILD_IMAGE_THIN_STAB) ./dockerfile_images/demos/graspTheBall --file ./dockerfile_images/demos/graspTheBall/Dockerfile4Production --tag icubteamcode/grasptheball:master-stable_binaries
+              run: docker build --build-arg $(cat START_IMAGE_STAB) --build-arg $(cat SUPERBUILD_IMAGE_THIN_STAB) ./code/dockerfile_images/demos/graspTheBall --file ./code/dockerfile_images/demos/graspTheBall/Dockerfile4Production --tag icubteamcode/grasptheball:master-stable_binaries
             - name: Push graspTheBall Docker thin image
               run: docker push icubteamcode/grasptheball:master-stable_binaries
 #########################################################################################
