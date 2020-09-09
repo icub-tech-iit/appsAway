@@ -16,34 +16,30 @@ jobs:
               run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
 
 
-
-####### wait a bit to allow the other job to use the port and finish dlib download ######
-            - name: Sleep for 60 seconds
-              uses: jakejarvis/wait-action@master
-              with:
-                time: '60s'
-
-
 ############## build the unstable version of yarpOpenFace ##############
             - name: Build yarpOpenFace Docker full image
-              run: docker build --build-arg ${{ github.event.client_payload.start_unstable_image_full }} --build-arg ${{ github.event.client_payload.start_unstable_image_thin }} ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.yarpOpenFace_unstable_tag_full }}
+              run: docker build --build-arg ${{ github.event.client_payload.extra_payload.start_unstable_image_full }} --build-arg ${{ github.event.client_payload.extra_payload.start_unstable_image_thin }} ${{ github.event.client_payload.extra_payload.docker_path }} --file ${{ github.event.client_payload.extra_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.extra_payload.yarpOpenFace_unstable_tag_full }}
             - name: Push yarpOpenFace Docker full image
-              run: docker push ${{ github.event.client_payload.yarpOpenFace_unstable_tag_full }}
+              run: docker push ${{ github.event.client_payload.extra_payload.yarpOpenFace_unstable_tag_full }}
 
 
             
 ############## build the unstable version of yarpOpenFace ##############
             - name: Build yarpOpenFace Docker thin image
-              run: docker build --build-arg ${{ github.event.client_payload.start_yarpOpenFace_full }} --build-arg ${{ github.event.client_payload.start_unstable_image_thin }} ${{ github.event.client_payload.docker_path }}--file ${{ github.event.client_payload.docker_path }}/Dockerfile4Production --tag ${{ github.event.client_payload.yarpOpenFace_unstable_tag_full }}
+              run: docker build --build-arg ${{ github.event.client_payload.extra_payload.start_yarpOpenFace_unstable_full }} --build-arg ${{ github.event.client_payload.extra_payload.start_unstable_image_thin }} ${{ github.event.client_payload.extra_payload.docker_path }}--file ${{ github.event.client_payload.extra_payload.docker_path }}/Dockerfile4Production --tag ${{ github.event.client_payload.extra_payload.yarpOpenFace_unstable_tag_thin }}
             - name: Push yarpOpenFace Docker thin image
-              run: docker push ${{ github.event.client_payload.yarpOpenFace_unstable_tag_full }}
+              run: docker push ${{ github.event.client_payload.extra_payload.yarpOpenFace_unstable_tag_thin }}
               
 
 ############## build the stable version of yarpOpenFace ##############
             - name: Build yarpOpenFace Docker thin image
-              run: docker build --build-arg ${{ github.event.client_payload.start_stable_image_full }} --build-arg ${{ github.event.client_payload.start_stable_image_thin }} ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.yarpOpenFace_stable_tag_full }}
+              run: docker build --build-arg ${{ github.event.client_payload.extra_payload.start_stable_image_full }} --build-arg ${{ github.event.client_payload.extra_payload.start_stable_image_thin }} ${{ github.event.client_payload.extra_payload.docker_path }} --file ${{ github.event.client_payload.extra_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.extra_payload.yarpOpenFace_stable_tag_full }}
             - name: Push yarpOpenFace Docker thin image
-              run: docker push ${{ github.event.client_payload.yarpOpenFace_stable_tag_full }}
+              run: docker push ${{ github.event.client_payload.extra_payload.yarpOpenFace_stable_tag_full }}
 
-
+############## build the stable version of yarpOpenFace ##############
+            - name: Build yarpOpenFace Docker thin image
+              run: docker build --build-arg ${{ github.event.client_payload.extra_payload.start_yarpOpenFace_stable_full }} --build-arg ${{ github.event.client_payload.extra_payload.start_stable_image_thin }} ${{ github.event.client_payload.extra_payload.docker_path }}--file ${{ github.event.client_payload.extra_payload.docker_path }}/Dockerfile4Production --tag ${{ github.event.client_payload.extra_payload.yarpOpenFace_stable_tag_thin }}
+            - name: Push yarpOpenFace Docker thin image
+              run: docker push ${{ github.event.client_payload.extra_payload.yarpOpenFace_stable_tag_thin }}
 

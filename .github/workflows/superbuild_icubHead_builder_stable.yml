@@ -30,16 +30,6 @@ jobs:
             - name: Login to DockerHub Registry
               run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
 
-            - name: Check AppsAway version
-              run: if [ "${{ github.event.client_payload.type }}" == "AppsAway_release" ]; then echo '${{ github.event.client_payload.version }}'; fi
-
-########################## Command to set the Superbuild version ########################
-            - name: set Superbuild version
-              run: if [ "${{ github.event.client_payload.type }}" == "superbuild_release" ]; then $(echo ${{ github.event.client_payload.version }} > VERSION_FILE); else echo "./SB_version.json" > VERSIONFILE_NAME && cat $(cat VERSIONFILE_NAME) | grep -Pio 'v[1-9]{1,}.{1,}(?=\"\})' > VERSION_FILE; fi
-#########################################################################################
-
-
-
 
 # this block will generate the image and push it to dockerhub
             - name: Build superbuild-icubhead Docker full image
@@ -49,9 +39,9 @@ jobs:
 
 # this block will generate the thin image and push it to dockerhub
             - name: Build superbuild-icubhead Docker thin image
-              run: docker build ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile4Production --tag ${{ github.event.client_payload.superbuild_icubHead_stable_tag_full }}
+              run: docker build ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile4Production --tag ${{ github.event.client_payload.superbuild_icubHead_stable_tag_thin }}
             - name: Push superbuild-icubhead Docker thin image
-              run: docker push ${{ github.event.client_payload.superbuild_icubHead_stable_tag_full }}
+              run: docker push ${{ github.event.client_payload.superbuild_icubHead_stable_tag_thin }}
 
 
 

@@ -22,29 +22,29 @@ jobs:
 
 ############## build the unstable version of graspTheBall ##############
             - name: Build graspTheBall Docker full image
-              run: docker build --build-arg ${{ github.event.client_payload.superbuild_image_full }} --build-arg ${{ github.event.client_payload.superbuild_image_thin }} ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.grasptheball_tag_full }}
+              run: docker build --build-arg ${{ github.event.client_payload.extra_payload.superbuild_image_full }} --build-arg ${{ github.event.client_payload.extra_payload.superbuild_image_thin }} ${{ github.event.client_payload.extra_payload.docker_path }} --file ${{ github.event.client_payload.extra_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.extra_payload.grasptheball_tag_full }}
             - name: Push graspTheBall Docker full image
-              run: docker push ${{ github.event.client_payload.grasptheball_tag_full }}
+              run: docker push ${{ github.event.client_payload.extra_payload.grasptheball_tag_full }}
 
 ############## build the stable version of graspTheBall ##############
             - name: Build graspTheBall Docker full image
-              run: docker build --build-arg ${{ github.event.client_payload.superbuild_image_full_stab }} --build-arg ${{ github.event.client_payload.superbuild_image_thin_stab }} ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.grasptheball_tag_full_stab }}
+              run: docker build --build-arg ${{ github.event.client_payload.extra_payload.superbuild_image_full_stab }} --build-arg ${{ github.event.client_payload.extra_payload.superbuild_image_thin_stab }} ${{ github.event.client_payload.extra_payload.docker_path }} --file ${{ github.event.client_payload.extra_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.extra_payload.grasptheball_tag_full_stab }}
             - name: Push graspTheBall Docker full image
-              run: docker push ${{ github.event.client_payload.grasptheball_tag_full_stab }}
+              run: docker push ${{ github.event.client_payload.extra_payload.grasptheball_tag_full_stab }}
  
 #########################################################################################
 
 ############## build the unstable version of graspTheBall ##############
             - name: Build graspTheBall Docker thin image
-              run: docker build --build-arg ${{ github.event.client_payload.start_image_full }} --build-arg ${{ github.event.client_payload.superbuild_image_thin }} ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile4Production --tag ${{ github.event.client_payload.grasptheball_tag_thin }}
+              run: docker build --build-arg ${{ github.event.client_payload.extra_payload.start_image_full }} --build-arg ${{ github.event.client_payload.extra_payload.superbuild_image_thin }} ${{ github.event.client_payload.extra_payload.docker_path }} --file ${{ github.event.client_payload.extra_payload.docker_path }}/Dockerfile4Production --tag ${{ github.event.client_payload.extra_payload.grasptheball_tag_thin }}
             - name: Push graspTheBall Docker thin image
-              run: docker push ${{ github.event.client_payload.grasptheball_tag_thin }}
+              run: docker push ${{ github.event.client_payload.extra_payload.grasptheball_tag_thin }}
 
 ############## build the stable version of graspTheBall ##############
             - name: Build graspTheBall Docker thin image
-              run: docker build --build-arg ${{ github.event.client_payload.start_image_full_stab }} --build-arg ${{ github.event.client_payload.superbuild_image_thin_stab }} ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile4Production --tag ${{ github.event.client_payload.grasptheball_tag_thin_stab }}
+              run: docker build --build-arg ${{ github.event.client_payload.extra_payload.start_image_full_stab }} --build-arg ${{ github.event.client_payload.extra_payload.superbuild_image_thin_stab }} ${{ github.event.client_payload.extra_payload.docker_path }} --file ${{ github.event.client_payload.extra_payload.docker_path }}/Dockerfile4Production --tag ${{ github.event.client_payload.extra_payload.grasptheball_tag_thin_stab }}
             - name: Push graspTheBall Docker thin image
-              run: docker push ${{ github.event.client_payload.grasptheball_tag_thin_stab }}
+              run: docker push ${{ github.event.client_payload.extra_payload.grasptheball_tag_thin_stab }}
 #########################################################################################
 
 
