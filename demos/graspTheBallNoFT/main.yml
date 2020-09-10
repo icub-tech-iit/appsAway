@@ -120,14 +120,15 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "yarp wait /icub/camcalib/left/out; yarp wait /iKinGazeCtrl/rpc; yarp wait /icub/cartesianController/right_arm/state:o; yarp wait /icub/cartesianController/left_arm/state:o; pf3dTracker --from graspTheBall_pf3dTracker.ini"
+    command: sh -c "yarp wait /iKinGazeCtrl/rpc; yarp wait /icub/cartesianController/right_arm/state:o; yarp wait /icub/cartesianController/left_arm/state:o; pf3dTracker --from graspTheBall_pf3dTracker.ini"
 
   yDemoRedBall:
     <<: *yarp-base
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "yarp wait /icub/camcalib/left/out; yarp wait /iKinGazeCtrl/rpc; yarp wait /icub/cartesianController/right_arm/state:o; yarp wait /icub/cartesianController/left_arm/state:o; demoRedBall --from graspTheBall_demoRedBall.ini"
+    command: sh -c "yarp wait /iKinGazeCtrl/rpc; demoRedBall --from graspTheBall_demoRedBall.ini"
+    #yarp wait /icub/camcalib/left/out; yarp wait /icub/cartesianController/right_arm/state:o; yarp wait /icub/cartesianController/left_arm/state:o;
 
   yConnectCam2Traker:
     <<: *yarp-base
