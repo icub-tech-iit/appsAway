@@ -553,10 +553,10 @@ class WidgetGallery(QDialog):
         for var_l in var_list:
           not_found=True
           for i in range(len(env_list)):
-            if env_list[i].find(var_l + "=") != -1 and os.environ.get(var_l) != None:
+            if env_list[i].find(var_l + "=") != -1 and os.environ.get(var_l) != None and os.environ.get(var_l) != "":
               env_list[i] = var_l + "=" + os.environ.get(var_l)
               not_found=False 
-          if not_found and os.environ.get(var_l) != None:
+          if not_found and os.environ.get(var_l) != None and os.environ.get(var_l) != "":
             env_list.insert(len(env_list), var_l + "=" + os.environ.get(var_l))
 
           #if env_list[i].find("APPSAWAY_OPTIONS") != -1 and os.environ.get('APPSAWAY_OPTIONS') != None:
