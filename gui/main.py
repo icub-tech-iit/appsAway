@@ -445,14 +445,19 @@ class WidgetGallery(QDialog):
         PAUSED = True
 
         for buttonOption in self.button_list:
-          if buttonOption.varType == 'googleInput':
+          if buttonOption.varType == 'textEdit':
+            for obj in self.input_list:
+              if buttonOption.varName == obj.placeholderText():
+                obj.setText("")#we set the associated QLine object empty 
+                os.environ[buttonOption.varName] = obj.text() #we set the CUSTOM_PORT variable empty, otherwise if we restart the application with robot camera the .env will keep the previous value of CUSTOM_PORT and it won't work;
+                buttonOption.button.setEnabled(True)
+          elif buttonOption.varType == 'googleInput':
             buttonOption.button.setEnabled(False)
           else:
             if buttonOption.varType == 'googleProcessInput':
               buttonOption.button.setChecked(False)
             buttonOption.button.setEnabled(True)
           
-
         rc = subprocess.call("./appsAway_stopApp.sh")
         #self.rc = subprocess.Popen("./appsAway_stopApp.sh")
 
@@ -553,10 +558,10 @@ class WidgetGallery(QDialog):
         for var_l in var_list:
           not_found=True
           for i in range(len(env_list)):
-            if env_list[i].find(var_l + "=") != -1 and os.environ.get(var_l) != None and os.environ.get(var_l) != "":
+            if env_list[i].find(var_l + "=") != -1 and os.environ.get(var_l) != None:
               env_list[i] = var_l + "=" + os.environ.get(var_l)
               not_found=False 
-          if not_found and os.environ.get(var_l) != None and os.environ.get(var_l) != "":
+          if not_found and os.environ.get(var_l) != None:
             env_list.insert(len(env_list), var_l + "=" + os.environ.get(var_l))
 
           #if env_list[i].find("APPSAWAY_OPTIONS") != -1 and os.environ.get('APPSAWAY_OPTIONS') != None:

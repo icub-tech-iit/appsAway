@@ -20,7 +20,6 @@ services:
     devices: 
       - "/dev/video0:/dev/video0"
     container_name: yGrabberCameras
-    command: sh -c "if ! set|grep '^CUSTOM_PORT=' >/dev/null; then yarpdev --from camera/ServerGrabberDualDragon.ini --split true; fi"
-
+    command: sh -c "if [ -z ${CUSTOM_PORT} ]; then yarpdev --from camera/ServerGrabberDualDragon.ini --split true; fi" 
 
 

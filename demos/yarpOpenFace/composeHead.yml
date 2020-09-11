@@ -1,7 +1,7 @@
 version: "3.7"
 
 x-yarp-head: &yarp-head
-  image: icubteamcode/superbuild-icubhead:master-unstable_binaries
+  image: icubteamcode/superbuild-icubhead:master-unstable_sources
   environment:
     - YARP_FORWARD_LOG_ENABLE=1
     - YARP_ROBOT_NAME
@@ -27,5 +27,5 @@ services:
     devices: 
       - "/dev/video0:/dev/video0"
     container_name: yGrabberCameras
-    command: sh -c "if ! set|grep '^CUSTOM_PORT=' >/dev/null; then yarpdev --from camera/ServerGrabberDualDragon.ini --split true; fi"
+    command: sh -c "if [ -z ${CUSTOM_PORT} ]; then yarpdev --from camera/ServerGrabberDualDragon.ini --split true; fi"
 

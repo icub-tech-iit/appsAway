@@ -1,7 +1,7 @@
 version: "3.7"
 
 x-yarp-base: &yarp-base
-  image: icubteamcode/humansensing:master-unstable_sources
+  image: icubteamcode/humansensing:master-unstable_binaries
   environment:
     - YARP_FORWARD_LOG_ENABLE=1
     - CUSTOM_PORT
@@ -41,14 +41,14 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "if ! set|grep '^CUSTOM_PORT=' >/dev/null; then camCalib --context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_LEFT --name /icub/camcalib/left; fi"
+    command: sh -c "if [ -z ${CUSTOM_PORT} ]; then camCalib --context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_LEFT --name /icub/camcalib/left; fi"
 
   yCamCalib_r:
     <<: *yarp-base
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "if ! set|grep '^CUSTOM_PORT=' >/dev/null; then camCalib --context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_RIGHT --name /icub/camcalib/right; fi"
+    command: sh -c "if [ -z ${CUSTOM_PORT} ]; then camCalib --context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_RIGHT --name /icub/camcalib/right; fi"
 
   yConnectCam_l:
     <<: *yarp-base
@@ -57,7 +57,7 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "if ! set|grep '^CUSTOM_PORT=' >/dev/null; then yarp wait /icub/cam/left; yarp wait /icub/camcalib/left/in; yarp connect /icub/cam/left /icub/camcalib/left/in; fi"
+    command: sh -c "if [ -z ${CUSTOM_PORT} ]; then yarp wait /icub/cam/left; yarp wait /icub/camcalib/left/in; yarp connect /icub/cam/left /icub/camcalib/left/in; fi"
 
   yConnectCam_r:
     <<: *yarp-base
@@ -66,7 +66,7 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "if ! set|grep '^CUSTOM_PORT=' >/dev/null; then yarp wait /icub/cam/right; yarp wait /icub/camcalib/right/in; yarp connect /icub/cam/right /icub/camcalib/right/in; fi"
+    command: sh -c "if [ -z ${CUSTOM_PORT} ]; then yarp wait /icub/cam/right; yarp wait /icub/camcalib/right/in; yarp connect /icub/cam/right /icub/camcalib/right/in; fi"
 
 
 #------------------------------------------------------------------------------------------------
@@ -85,7 +85,7 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "if set|grep '^CUSTOM_PORT=' >/dev/null; then yarp wait $CUSTOM_PORT ; yarp wait /faceLandmarks/image:i ; yarp connect $CUSTOM_PORT /faceLandmarks/image:i tcp ; else yarp wait /icub/camcalib/left/out; yarp wait /faceLandmarks/image:i ; yarp connect /icub/camcalib/left/out /faceLandmarks/image:i tcp; fi"
+    command: sh -c "if [ ! -z ${CUSTOM_PORT} ]; then yarp wait $CUSTOM_PORT ; yarp wait /faceLandmarks/image:i ; yarp connect $CUSTOM_PORT /faceLandmarks/image:i tcp ; else yarp wait /icub/camcalib/left/out; yarp wait /faceLandmarks/image:i ; yarp connect /icub/camcalib/left/out /faceLandmarks/image:i tcp; fi"
 
 #------------------------------------------------------------------------------------------------
 
