@@ -22,15 +22,15 @@ jobs:
 
 ############## build the unstable full version of humanSensing ##############
             - name: Build humanSensing Docker full image
-              run: docker build --build-arg ${{ github.event.client_payload.superbuild_image_full }} --build-arg ${{ github.event.client_payload.superbuild_image_thin }} ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.humansensingtag_full }}
+              run: docker build --build-arg ${{ github.event.client_payload.starting_image }} ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.humansensingtag_full }}
             - name: Push humanSensing Docker full image
               run: docker push ${{ github.event.client_payload.humansensingtag_full }}
               
 #########################################################################################
 
 ############## build the unstable thin version of humanSensing ##############
-            - name: Build humanSensing Docker thin image
-              run: docker build --build-arg ${{ github.event.client_payload.start_image_full }} --build-arg ${{ github.event.client_payload.start_image_thin }} ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile4Production --tag ${{ github.event.client_payload.humansensingtag_thin }}
-            - name: Push humanSensing Docker thin image
-              run: docker push ${{ github.event.client_payload.humansensingtag_thin }}
+#            - name: Build humanSensing Docker thin image
+#              run: docker build --build-arg ${{ github.event.client_payload.start_image_full }} --build-arg ${{ github.event.client_payload.start_image_thin }} ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile4Production --tag ${{ github.event.client_payload.humansensingtag_thin }}
+#            - name: Push humanSensing Docker thin image
+#              run: docker push ${{ github.event.client_payload.humansensingtag_thin }}
 
