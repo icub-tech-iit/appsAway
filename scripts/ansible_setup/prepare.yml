@@ -65,6 +65,20 @@
         warn: no
       when: ansible_distribution != 'MacOSX'
 
+    - name: Setting up GPUs for Cuda nodes
+      hosts: cuda
+      shell: GPU_ID=`nvidia-smi -a | grep UUID | awk '{print substr($3,0,12)}'` && echo "[Service]" > /etc/systemd/system/docker.service.d/docker.conf && echo "ExecStart=" >> /etc/systemd/system/docker.service.d/docker.conf && echo "ExecStart=/usr/bin/dockerd --default-runtime=nvidia --node-generic-resource gpu=${GPU_ID}" >> /etc/systemd/system/docker.service.d/docker.conf
+      args:
+        warn: no
+      when: ansible_distribution != 'MacOSX'
+
+    - name: Restart docker daemon after cuda configuration
+      hosts: cuda
+      shell: systemctl daemon-reload && systemctl start docker
+      args:
+        warn: no
+      when: ansible_distribution != 'MacOSX'
+
     - name: Finishing up with needed packages 
       apt: 
         name:
