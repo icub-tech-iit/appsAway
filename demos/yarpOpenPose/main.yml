@@ -1,4 +1,4 @@
-version: "3.7"
+version: "3.8"
 
 x-yarp-base: &yarp-base
   image: icubteamcode/superbuild:master-unstable_sources
@@ -42,7 +42,7 @@ services:
         constraints: [node.labels.type == cuda]
       resources:
         reservations:
-          generic-resources:
+          generic_resources:
             - discrete_resource_spec:
               kind: 'gpu'
               value: all #does this work? or do we have to specify a particular number?
