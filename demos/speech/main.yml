@@ -37,6 +37,13 @@ services:
         constraints: [node.labels.type != head]
     command: sh -c "yarp wait /microphone/audio:o; googleSpeech --language_code ${LANGUAGE_INPUT}"
 
+  yConnectToGoogleSpeechProcess:
+      <<: *yarp-base
+      deploy:
+        placement:
+          constraints: [node.labels.type != head]
+      command: sh -c "yarp wait /googleSpeech/result:o; yarp wait /googleSpeechProcess/text:i; yarp connect /googleSpeech/result:o /googleSpeechProcess/text:i;"
+
   yDemoGoogleSpeechProcess:
     <<: *yarp-base
     deploy:
