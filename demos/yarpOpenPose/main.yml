@@ -1,4 +1,4 @@
-version: "3.8"
+version: "3.7"
 
 x-yarp-base: &yarp-base
   image: icubteamcode/superbuild:master-unstable_sources
@@ -45,7 +45,7 @@ services:
           generic_resources:
             - discrete_resource_spec:
               kind: 'gpu'
-              value: all #does this work? or do we have to specify a particular number?
+              value: 1 #does this work? or do we have to specify a particular number? - answer, I do...
     command: yarpOpenPose
 
   yserver:

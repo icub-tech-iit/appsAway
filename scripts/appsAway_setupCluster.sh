@@ -212,6 +212,10 @@ set_hardware_labels()
   if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
     ${_DOCKER_BIN} ${_DOCKER_PARAMS} node update --label-add type=gui $(ip2hostname $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR)
   fi
+
+  if [ "$APPSAWAY_CUDANODE_ADDR" != "" ]; then
+    ${_DOCKER_BIN} ${_DOCKER_PARAMS} node update --label-add type=cuda $(ip2hostname $APPSAWAY_CUDANODE_USERNAME $APPSAWAY_CUDANODE_ADDR)
+  fi
 }
 
 create_yarp_config_files()
