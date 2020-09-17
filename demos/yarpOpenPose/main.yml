@@ -44,8 +44,8 @@ services:
         reservations:
           generic_resources:
             - discrete_resource_spec:
-              kind: 'gpu'
-              value: 1 #does this work? or do we have to specify a particular number? - answer, I do...
+                kind: 'gpu'
+                value: 1 #does this work? or do we have to specify a particular number? - answer, I do...
     command: yarpOpenPose
 
   yserver:
