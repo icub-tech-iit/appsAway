@@ -1,0 +1,36 @@
+# this workflow will generate the containers on push. These containers are for test only, so ideally they should be uploaded to a private repo, not available to the public. tag=graspTheBall_devel (?)
+# for the stable versions, use graspTheBall_builder_stable.yml, triggered on release
+
+name: HS_onCodeRelease
+
+on: 
+    repository_dispatch:
+        types: [HS_onCodeRelease]
+
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+              with:
+                  repository: icub-tech-iit/code
+                  token: ${{ secrets.CODE_REPO_ACCSS_TOKEN }}
+
+            - name: Login to DockerHub Registry
+              run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+
+############## build the unstable full version of humanSensing ##############
+            - name: Build humanSensing Docker full image
+              run: docker build --build-arg ${{ github.event.client_payload.ase_image_for_HS_src}} ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.humansensing_src}}
+            - name: Push humanSensing Docker full image
+              run: docker push ${{ github.event.client_payload.humansensing_src }}
+              
+#########################################################################################
+
+############## build the unstable thin version of humanSensing ##############
+            - name: Build humanSensing Docker thin image
+              run: docker build --build-arg ${{ github.event.client_payload.base_image_for_HS_bin }} --build-arg ${{ github.event.client_payload.sb_base_image_for_HS_bin }} ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile4Production --tag ${{ github.event.client_payload.humansensing_bin}}
+            - name: Push humanSensing Docker thin image
+              run: docker push ${{ github.event.client_payload.humansensing_bin }}
+
