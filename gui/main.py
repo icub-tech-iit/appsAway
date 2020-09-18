@@ -48,6 +48,9 @@ class MyHandler(FileSystemEventHandler):
           curVal = int(line)
           maxVal = self.progressBar.maximum()
           self.progressBar.setValue(curVal + (maxVal - curVal) / 100)
+          if curVal == 100:
+            self.progressBar.setFormat("Application is being deployed!")
+            PAUSED = True
           pipe_file.close()
 
 class WidgetGallery(QDialog):
