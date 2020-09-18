@@ -1,11 +1,11 @@
-# this workflow will generate the containers on push. These containers are for test only, so ideally they should be uploaded to a private repo, not available to the public. tag=superbuild_devel (?)
+# this workflow will generate the containers of superbuild-gazebo on push. These containers are for test only, so ideally they should be uploaded to a private repo, not available to the public. tag=superbuild_devel (?)
 # for the stable versions, use superbuild_builder_stable.yml, triggered on release
 
-name: SBGZ_builder_devel
+name: SB_GZ_onCodeRelease
 
 on: 
     repository_dispatch:
-        types: [SBGZ_build_devel, SBGZ_build_stable]
+        types: [SB_GZ_onCodeRelease]
 
 jobs:
     build:
@@ -18,22 +18,22 @@ jobs:
             - name: Login to DockerHub Registry
               run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
 
-######## Command to build the full Docker image, using only stable/unstable tag #########
+######## Command to build the full Docker image#########
             - name: Build superbuild Docker full image
-              run: docker build ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.superbuildtag_full }}
+              run: docker build ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.superbuild_gazebo_src}}
 #########################################################################################
 
 ######### Command to push the full Docker Image online ##################################
             - name: Push superbuild Docker full image
-              run: docker push ${{ github.event.client_payload.superbuildtag_full }}
+              run: docker push ${{ github.event.client_payload.superbuild_gazebo_src }}
 #########################################################################################
 
-######## Command to build the thin Docker image, using only stable/unstable tag #########
+######## Command to build the thin Docker image#########
             - name: Build superbuild Docker thin image
-              run: docker build ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile4Production --tag ${{ github.event.client_payload.superbuildtag_thin }}
+              run: docker build ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile4Production --tag ${{ github.event.client_payload.superbuild_gazebo_bin}}
 #########################################################################################
 
 ######### Command to push the full Docker Image online ##################################
             - name: Push superbuild Docker thin image
-              run: docker push ${{ github.event.client_payload.superbuildtag_thin }}
+              run: docker push ${{ github.event.client_payload.superbuild_gazebo_bin}}
 #########################################################################################
