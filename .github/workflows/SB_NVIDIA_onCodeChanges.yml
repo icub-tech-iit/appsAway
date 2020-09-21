@@ -1,11 +1,11 @@
 # this workflow will generate the containers on push. These containers are for test only, so ideally they should be uploaded to a private repo, not available to the public. tag=superbuild_devel (?)
 # for the stable versions, use superbuild_builder_stable.yml, triggered on release
 
-name: SBNV_builder_devel
+name: SB_NVIDIA_onCodeChanges
 
 on: 
     repository_dispatch:
-        types: [SBNV_build_devel, SBNV_build_stable]
+        types: [SB_NVIDIA_onCodeChanges, SB_NVIDIA_onSBRelease]
 
 jobs:
     build:
@@ -48,41 +48,41 @@ jobs:
 
 ######## Command to build the full Docker image, using only stable tag #########
             - name: Build nvidia-superbuild Docker stable full image
-              run: docker build --build-arg ${{ github.event.client_payload.start_image_ubuntu }} --build-arg $(cat DATE_TAG) --build-arg $(cat RELEASE_ARG) ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.superbuildtag_full_stab }}
+              run: docker build --build-arg ${{ github.event.client_payload.base_image_for_SB_NVIDIA_src }} --build-arg $(cat DATE_TAG) --build-arg $(cat RELEASE_ARG) ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.superbuild_nvidia_stab_src}}
 #########################################################################################
 
 ######## Command to build the full Docker image, using only unstable tag #########
             - name: Build nvidia-superbuild Docker unstable full image
-              run: docker build --build-arg ${{ github.event.client_payload.start_image_ubuntu }} --build-arg $(cat DATE_TAG) --build-arg $(cat SBTAG_ARG) --build-arg $(cat RELEASE_ARG) ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.superbuildtag_full_unst }}
+              run: docker build --build-arg ${{ github.event.client_payload.base_image_for_SB_NVIDIA_src }} --build-arg $(cat DATE_TAG) --build-arg $(cat SBTAG_ARG) --build-arg $(cat RELEASE_ARG) ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.superbuild_nvidia_unst_src }}
 #########################################################################################
 
 ######### Command to push the full stable Docker Image online ##################################
             - name: Push nvidia-superbuild Docker stable full image
-              run: docker push ${{ github.event.client_payload.superbuildtag_full_stab }}
+              run: docker push ${{ github.event.client_payload.superbuild_nvidia_stab_src }}
 #########################################################################################
 
 ######### Command to push the full unstable Docker Image online ##################################
             - name: Push nvidia-superbuild Docker unstable full image
-              run: docker push ${{ github.event.client_payload.superbuildtag_full_unst }}
+              run: docker push ${{ github.event.client_payload.superbuild_nvidia_unst_src }}
 #########################################################################################
 
 ######## Command to build the thin Docker image, using only stable tag #########
 #            - name: Build nvidia-superbuild Docker stable thin image
-#              run: docker build  --build-arg ${{ github.event.client_payload.superbuild_image_full_stab }} --build-arg ${{ github.event.client_payload.start_image_ubuntu }} ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile4Production --tag ${{ github.event.client_payload.superbuildtag_thin_stab }}
+#              run: docker build  --build-arg ${{ github.event.client_payload.stab_base_image_for_SB_NVIDIA_bin }} --build-arg ${{ github.event.client_payload.stab_base_image_for_SB_NVIDIA_src }} ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile4Production --tag ${{ github.event.client_payload.superbuild_nvidia_stab_bin }}
 #########################################################################################
 
 ######## Command to build the thin Docker image, using only unstable tag #########
 #            - name: Build nvidia-superbuild Docker unstable thin image
-#              run: docker build  --build-arg ${{ github.event.client_payload.superbuild_image_full_unst }} --build-arg ${{ github.event.client_payload.start_image_ubuntu }} ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile4Production --tag ${{ github.event.client_payload.superbuildtag_thin_unst }}
+#              run: docker build  --build-arg ${{ github.event.client_payload.unst_base_image_for_SB_NVIDIA_bin }} --build-arg ${{ github.event.client_payload.unst_base_image_for_SB_NVIDIA_src }} ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile4Production --tag ${{ github.event.client_payload.superbuild_nvidia_unst_bin }}
 #########################################################################################
 
 ######### Command to push the thin stable Docker Image online ##################################
 #            - name: Push nvidia-superbuild Docker stable thin image
-#              run: docker push ${{ github.event.client_payload.superbuildtag_thin_stab }}
+#              run: docker push ${{ github.event.client_payload.superbuild_nvidia_stab_bin }}
 #########################################################################################
 
 ######### Command to push the thin unstable Docker Image online ##################################
 #            - name: Push nvidia-superbuild Docker unstable thin image
-#              run: docker push ${{ github.event.client_payload.superbuildtag_thin_unst }}
+#              run: docker push ${{ github.event.client_payload.superbuild_nvidia_unst_bin }}
 #########################################################################################
 
