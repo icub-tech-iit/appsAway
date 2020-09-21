@@ -4,11 +4,11 @@
 #              run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3)
 #              ${{ steps.get_version.outputs.VERSION }}
 
-name: Ubuntu_build_release
+name: U1804M_onCodeRelease
 
 on: 
     repository_dispatch:
-        types: [UM_build_stable]
+        types: [U1804M_onCodeRelease]
 
 jobs:
     build:
@@ -22,8 +22,8 @@ jobs:
               run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
 
             - name: Build ubuntu1804mesa Docker image
-              run: docker build ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.ubuntu_mesa_stable_tag }}
+              run: docker build ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.ubuntu_mesa_stab }}
             - name: Push ubuntu1804mesa Docker image
-              run: docker push ${{ github.event.client_payload.ubuntu_mesa_stable_tag }}
+              run: docker push ${{ github.event.client_payload.ubuntu_mesa_stab }}
 
 

@@ -5,7 +5,7 @@ name: Ubuntu_build_latest
 
 on: 
     repository_dispatch:
-        types: [UM_build_devel]
+        types: [U1804M_onCodeChanges]
 
 jobs:
     build:
@@ -23,8 +23,8 @@ jobs:
               run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
 
             - name: Build ubuntu1804mesa Docker image
-              run: docker build ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.ubuntu_mesa_devel_tag }}
+              run: docker build ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.ubuntu_mesa_unst }}
             - name: Push ubuntu1804mesa Docker image
-              run: docker push ${{ github.event.client_payload.ubuntu_mesa_devel_tag }}
+              run: docker push ${{ github.event.client_payload.ubuntu_mesa_unst }}
 
 
