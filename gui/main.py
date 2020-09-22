@@ -502,7 +502,7 @@ class WidgetGallery(QDialog):
                   image_line = main_list[i+1]
                   image_line = image_line.split(':')
                   for f in range(len(list_images)):
-                    if image_line[1] == list_images[f]: # if the name is correct
+                    if image_line[1] == ' '+list_images[f]: # if the name is correct
                       image_line[2] = list_versions[f] # we update the version
                       break
                   main_list[i+1] = image_line[0] + ':' + image_line[1] + ':' + image_line[2]
