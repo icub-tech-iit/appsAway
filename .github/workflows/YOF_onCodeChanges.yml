@@ -44,4 +44,3 @@ jobs:
               run: docker build --build-arg ${{ github.event.client_payload.extra_payload.stab_sb_base_image_for_YOF_bin }} --build-arg ${{ github.event.client_payload.extra_payload.stab_base_image_for_YOF_bin }} ${{ github.event.client_payload.extra_payload.docker_path }} --file ${{ github.event.client_payload.extra_payload.docker_path }}/Dockerfile4Production --tag ${{ github.event.client_payload.extra_payload.yarpopenface_stab_bin }}
             - name: Push yarpOpenFace Docker thin image
               run: docker push ${{ github.event.client_payload.extra_payload.yarpopenface_stab_bin }}
-
