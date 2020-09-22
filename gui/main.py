@@ -443,6 +443,7 @@ class WidgetGallery(QDialog):
         print("stopping application\n\n")
         self.pushStartButton.setEnabled(True)
         self.pushStopButton.setEnabled(False)
+        self.progressBar.setFormat("%p%")
         self.timer.stop()  
         self.progressBar.setValue(0)
         PAUSED = True
@@ -483,14 +484,36 @@ class WidgetGallery(QDialog):
           custom_option_found = False
           end_environ_set = False
 
-          for i in range(len(main_list)):
-            if main_list[i].find("x-yarp-base") != -1 or main_list[i].find("x-yarp-head") != -1 or main_list[i].find("x-yarp-gui") != -1:
-              if main_list[i+1].find("image") != -1:
-                image_line = main_list[i+1]
-                image_line = image_line.split(':')
-                image_line[2] = os.environ.get('APPSAWAY_REPO_VERSION') + "_" + os.environ.get('APPSAWAY_REPO_TAG')
-                main_list[i+1] = image_line[0] + ':' + image_line[1] + ':' + image_line[2]
+          #for i in range(len(main_list)):
+          #  if main_list[i].find("x-yarp-base") != -1 or main_list[i].find("x-yarp-head") != -1 or main_list[i].find("x-yarp-gui") != -1:
+          #    if main_list[i+1].find("image") != -1:
+          #      image_line = main_list[i+1]
+          #      image_line = image_line.split(':')
+          #      image_line[2] = os.environ.get('APPSAWAY_REPO_VERSION') + "_" + os.environ.get('APPSAWAY_REPO_TAG')
+          #      main_list[i+1] = image_line[0] + ':' + image_line[1] + ':' + image_line[2]
 
+          if os.environ.get('APPSAWAY_IMAGES') != '':
+            list_images = os.environ.get('APPSAWAY_IMAGES').split(' ')
+            list_versions = os.environ.get('APPSAWAY_VERSIONS').split(' ')
+
+            for i in range(len(main_list)):
+              if main_list[i].find("x-yarp-") != -1:
+                if main_list[i+1].find("image") != -1:
+                  image_line = main_list[i+1]
+                  image_line = image_line.split(':')
+                  for f in range(len(list_images)):
+                    if image_line[1] == list_images[f]: # if the name is correct
+                      image_line[2] = list_versions[f] # we update the version
+                      break
+                  main_list[i+1] = image_line[0] + ':' + image_line[1] + ':' + image_line[2]
+          else:
+            for i in range(len(main_list)):
+              if main_list[i].find("x-yarp-base") != -1 or main_list[i].find("x-yarp-head") != -1 or main_list[i].find("x-yarp-gui") != -1:
+                if main_list[i+1].find("image") != -1:
+                  image_line = main_list[i+1]
+                  image_line = image_line.split(':')
+                  image_line[2] = os.environ.get('APPSAWAY_REPO_VERSION') + "_" + os.environ.get('APPSAWAY_REPO_TAG')
+                  main_list[i+1] = image_line[0] + ':' + image_line[1] + ':' + image_line[2]
 
             #if main_list[i].find("APPSAWAY_OPTIONS") != -1 and os.environ.get('APPSAWAY_OPTIONS') != None:
             #    main_list[i] = "    - APPSAWAY_OPTIONS=" + "\"" + os.environ.get('APPSAWAY_OPTIONS') + "\""
