@@ -1,0 +1,104 @@
+version: "3.7"
+
+x-yarp-base: &yarp-base
+  image: icubteamcode/speech:master-unstable_sources
+  environment:
+    - YARP_FORWARD_LOG_ENABLE=1
+    - FILE_INPUT
+    - LANGUAGE_INPUT
+    - GOOGLE_PROCESS_INPUT
+  volumes:
+    - type: volume
+      source: yarp-config
+      target: /root/.config/yarp
+      volume:
+        nocopy: true
+    - "${FILE_INPUT_PATH}:/root/authorization"
+  networks:
+    - hostnet
+
+#note: following services that need yarpRobotinterface is running, I write yarp wait /yarpRobotInterface;
+#just to remember us to solve thi issue. Such yarp port doesn't exist.
+
+services:
+#following service are configured in icub-main/app/iCubStartup/scripts/iCubStartup.xml.template
+  yserver:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+    command: yarpserver --write
+  
+#------------------------------------------------------------------------------------------------
+  yDemoGoogleSpeech:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "if [ ${GOOGLE_INPUT} = 'True' ]; then yarp wait /microphone/audio:o; googleSpeech --language_code ${LANGUAGE_SPEECH_INPUT}"
+
+  yDemoStartAsk:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "start-ask"
+
+  yConnectToStartAsk:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "yarp wait /googleSpeech/result:o; yarp wait /start-ask/speech:i; yarp connect /googleSpeech/result:o /start-ask/speech:i;"
+
+  yDemoGoogleSynthesis:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "if [ ${GOOGLE_SYNTHESIS_INPUT} = 'True' ];then googleSynthesis --language ${LANGUAGE_SYNTHESIS_INPUT} --voice ${VOICE_INPUT}; fi"
+
+    command: sh -c "start-ask"
+
+  yConnectToGoogleSynthesis:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "yarp wait /start-ask/start:o; yarp wait /googleSynthesis/text:i; yarp connect /start-ask/start:o /googleSynthesis/text:i;"
+
+#------------------------------------------------------------------------------------------------
+
+  #use network.peer ip address and port 8080 to see the containers status in browser
+  visualizer:
+    image: dockersamples/visualizer:stable
+    ports:
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+
+networks:
+  hostnet:
+    external: true
+    name: host
+
+volumes:
+  yarp-config:
+    driver: vieux/sshfs
+    driver_opts:
+      sshcmd: ${USER_NAME}@${MASTER_ADDR}:${YARP_CONF_PATH}
+      password: ${USER_PASSWORD}
+      allow_other: ""
+
+
+
+
+
+
+
+
+
