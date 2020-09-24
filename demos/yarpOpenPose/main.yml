@@ -62,7 +62,7 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "yarp wait /icub/camcalib/left; yarp wait /yarpOpenPose/image:i; yarp connect /icub/camcalib/left /yarpOpenPose/image:i udp"
+    command: sh -c "yarp wait /icub/camcalib/left/out; yarp wait /yarpOpenPose/image:i; yarp connect /icub/camcalib/left/out /yarpOpenPose/image:i udp"
     restart: on-failure
 
   yconnect_output:
@@ -78,7 +78,7 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "yarp wait /icub/camcalib/left ; yarp wait /view/input_image ; yarp connect /icub/camcalib/left /view/input_image udp"
+    command: sh -c "yarp wait /icub/camcalib/left/out ; yarp wait /view/input_image ; yarp connect /icub/camcalib/left/out /view/input_image udp"
     restart: on-failure
 
  
