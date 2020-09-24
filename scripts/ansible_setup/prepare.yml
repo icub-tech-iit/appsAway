@@ -90,7 +90,7 @@
       when: ansible_distribution != 'MacOSX'
 
     - name: Setting up GPUs for Cuda nodes docker configuration
-      shell: GPU_ID=`nvidia-smi -a | grep UUID | awk '{print substr($4,0,12)}'` && set -- $GPU_ID && GPU_actual=$1 && echo "{" > /etc/docker/daemon.json && echo "  \"runtimes\": {" >> /etc/docker/daemon.json && echo "    \"nvidia\": {" >> /etc/docker/daemon.json && echo "      \"path\": \"/usr/bin/nvidia-container-runtime\"," >> /etc/docker/daemon.json && echo "      \"runtimeArgs\": []" >> /etc/docker/daemon.json && echo "    }" >> /etc/docker/daemon.json && echo "  }," >> /etc/docker/daemon.json && echo "  \"default-runtime\": \"nvidia\"," >> /etc/docker/daemon.json && echo "  \"node-generic-resources\": [" >> /etc/docker/daemon.json && echo "    \"gpu=$GPU_actual\"" >> /etc/docker/daemon.json && echo "    ]" >> /etc/docker/daemon.json && echo "}" >> /etc/docker/daemon.json
+      shell: "GPU_ID=`nvidia-smi -a | grep UUID | awk '{print substr($4,0,12)}'` && set -- $GPU_ID && GPU_actual=$1 && echo '{' > /etc/docker/daemon.json && echo '  \"runtimes\": {' >> /etc/docker/daemon.json && echo '    \"nvidia\": {' >> /etc/docker/daemon.json && echo '      \"path\": \"/usr/bin/nvidia-container-runtime\",' >> /etc/docker/daemon.json && echo '      \"runtimeArgs\": []' >> /etc/docker/daemon.json && echo '    }' >> /etc/docker/daemon.json && echo '  },' >> /etc/docker/daemon.json && echo '  \"default-runtime\": \"nvidia\",' >> /etc/docker/daemon.json && echo '  \"node-generic-resources\": [' >> /etc/docker/daemon.json && echo '    \"gpu=$GPU_actual\"' >> /etc/docker/daemon.json && echo '    ]' >> /etc/docker/daemon.json && echo '}' >> /etc/docker/daemon.json"
       args:
         warn: no
       when: ansible_distribution != 'MacOSX'
