@@ -492,7 +492,7 @@ class WidgetGallery(QDialog):
           #      image_line[2] = os.environ.get('APPSAWAY_REPO_VERSION') + "_" + os.environ.get('APPSAWAY_REPO_TAG')
           #      main_list[i+1] = image_line[0] + ':' + image_line[1] + ':' + image_line[2]
 
-          if os.environ.get('APPSAWAY_IMAGES') != '':
+          if os.environ.get('APPSAWAY_IMAGES') != '' and os.environ.get('APPSAWAY_IMAGES') != None:
             list_images = os.environ.get('APPSAWAY_IMAGES').split(' ')
             list_versions = os.environ.get('APPSAWAY_VERSIONS').split(' ')
 
