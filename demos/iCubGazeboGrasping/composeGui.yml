@@ -1,7 +1,7 @@
 version: "3.7"
 
 x-yarp-base: &yarp-base
-  image: icubteamcode/icubgraspgazebo:master-unstable_binaries
+  image: icubteamcode/icubgraspgazebo:master_master-unstable_sources
   environment:
     - DISPLAY=${DISPLAY}
     - XAUTHORITY=/root/.Xauthority
@@ -19,9 +19,40 @@ x-yarp-base: &yarp-base
 
 services:
 
-  yDemo:
+# yarp manager handles all the connections, so we don't need to create services for each of them  echo 'before'
+#  ymanager:
+#    <<: *yarp-base
+#    command: sh -c "yarp wait /icubSim/torso/state:o ; yarp wait /icubSim/head/state:o ; yarp wait /icubSim/left_arm/state:o ; yarp wait /icubSim/right_arm/state:o ; yarp wait /icubSim/cam/left/rgbImage:o ; yarp wait /icub-grasp/world/eraser:o ; yarp wait /world/model-eraser/model-name:i; yarp wait /iKinGazeCtrl/rpc; yarp wait /view/left ; yarpmanager-console --application /workspace/iCubContrib/share/ICUBcontrib/applications/icub-grasp.xml --connect --exit "
+
+  gazebo:
     <<: *yarp-base
-    command: /workspace/iCubContrib/bin/icub-grasp.sh
+    command: sh -c "sleep 10; gazebo -e dart /workspace/iCubContrib/share/gazebo/worlds/icub-gazebo-grasping-sandbox.sdf"
+
+  find-superquadric:
+    <<: *yarp-base
+    container_name: find-superquadric
+    command: sh -c "yarp wait /view/left; find-superquadric --remove-outliers '(0.01 10)' --random-sample 0.2 --disable-viewer"
+
+  yview:
+    <<: *yarp-base
+    container_name: yview
+    command: yarpview --name /view/left --compact --p 10 --x 20 --y 20
+
+  icub-gazebo-grasping-sandbox:
+    <<: *yarp-base
+    container_name: icub-gazebo-grasping-sandbox
+    command: sh -c "yarp wait /iKinGazeCtrl/rpc; yarp wait /icubSim/cartesianController/right_arm/state:o; yarp wait /icubSim/cartesianController/left_arm/state:o; icub-gazebo-grasping-sandbox"
+
+#  icub-gazebo-grasping-sandbox:
+#    <<: *yarp-base
+#    container_name: icub-gazebo-grasping-sandbox
+#    depends_on:
+#      - yrobotinterface
+#    command: sh -c "yarp wait /icubSim/torso/state:o ; yarp wait /icubSim/left_arm/state:o ; yarp wait /icubSim/right_arm/state:o ; ( yarprobotinterface --context gazeboCartesianControl --config no_legs.xml & ) ; checkRobotInterface --robot icubSim ; yarp wait /icubSim/torso/state:o ; yarp wait /icubSim/right_arm/state:o ; ( iKinCartesianSolver --context gazeboCartesianControl --part right_arm & ) ; yarp wait /icubSim/torso/state:o ; yarp wait /icubSim/left_arm/state:o ; ( iKinCartesianSolver --context gazeboCartesianControl --part left_arm & ) ; yarp wait /icubSim/torso/state:o ; yarp wait /icubSim/head/state:o ; yarp wait /icubSim/inertial ; (iKinGazeCtrl --context gazeboCartesianControl --from iKinGazeCtrl.ini &) ; yarp wait /iKinGazeCtrl/rpc; yarp wait /icubSim/cartesianController/right_arm/state:o; yarp wait /icubSim/cartesianController/left_arm/state:o; sleep 20; icub-gazebo-grasping-sandbox"
+
+#  yDemo:
+#    <<: *yarp-base
+#    command: /workspace/iCubContrib/bin/icub-grasp.sh
 
 
 
