@@ -18,10 +18,10 @@ jobs:
         run: |
             git clone https://github.com/icub-tech-iit/appsAway
             mkdir -p ../test/
-            mv -v ./user_changes/*.json ../test/
-            mv -v ./user_changes/images/*.png ../test/
-            mv -v ./user_changes/images/*.jpg ../test/
-            mv -v ./user_changes/images/*.jpeg ../test/
+            mv -v ./user_changes/*.json ../test/ 2>/dev/null || :
+            mv -v ./user_changes/images/*.png ../test/ 2>/dev/null || :
+            mv -v ./user_changes/images/*.jpg ../test/ 2>/dev/null || :
+            mv -v ./user_changes/images/*.jpeg ../test/ 2>/dev/null || :
             git config --local user.email "actions@github.com"
             git config --local user.name "GitHub Action"
             git commit -m "removing user_changes from appsAway" -a
