@@ -78,6 +78,7 @@ jobs:
         with:
           github_token: ${{ secrets.CODE_REPO_ACCSS_TOKEN }}
           directory: "/home/runner/work/appsAway/appsAway/code"
+          repository: icub-tech-iit/code
           
   placeholder:
     runs-on: ubuntu-latest
