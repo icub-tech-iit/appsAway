@@ -5,8 +5,12 @@ x-yarp-base: &yarp-base
   environment:
     - YARP_FORWARD_LOG_ENABLE=1
     - FILE_INPUT
-    - LANGUAGE_INPUT
+    - GOOGLE_INPUT
+    - LANGUAGE_SPEECH_INPUT
     - GOOGLE_PROCESS_INPUT
+    - GOOGLE_SYNTHESIS_INPUT
+    - LANGUAGE_SYNTHESIS_INPUT
+    - VOICE_NAME_INPUT
   volumes:
     - type: volume
       source: yarp-config
@@ -35,37 +39,35 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "if [ ${GOOGLE_INPUT} = 'True' ]; then yarp wait /microphone/audio:o; googleSpeech --language_code ${LANGUAGE_SPEECH_INPUT}"
+    command: sh -c "if [ ${GOOGLE_INPUT} = 'True' ]; then yarp wait /microphone/audio:o; googleSpeech --language_code ${LANGUAGE_SPEECH_INPUT}; fi"
 
   yDemoStartAsk:
     <<: *yarp-base
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "start-ask"
+    command: sh -c "speech-start-ask"
 
   yConnectToStartAsk:
     <<: *yarp-base
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "yarp wait /googleSpeech/result:o; yarp wait /start-ask/speech:i; yarp connect /googleSpeech/result:o /start-ask/speech:i;"
+    command: sh -c ""if [ ${GOOGLE_INPUT} = 'True' ]; then yarp wait /googleSpeech/result:o; yarp wait /start-ask/speech:i; yarp connect /googleSpeech/result:o /start-ask/speech:i; fi"
 
   yDemoGoogleSynthesis:
     <<: *yarp-base
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "if [ ${GOOGLE_SYNTHESIS_INPUT} = 'True' ];then googleSynthesis --language ${LANGUAGE_SYNTHESIS_INPUT} --voice ${VOICE_INPUT}; fi"
-
-    command: sh -c "start-ask"
+    command: sh -c "if [ ${GOOGLE_SYNTHESIS_INPUT} = 'True' ];then googleSynthesis --language ${LANGUAGE_SYNTHESIS_INPUT} --voice ${VOICE_NAME_INPUT}; fi"
 
   yConnectToGoogleSynthesis:
     <<: *yarp-base
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "yarp wait /start-ask/start:o; yarp wait /googleSynthesis/text:i; yarp connect /start-ask/start:o /googleSynthesis/text:i;"
+    command: sh -c "if [ ${GOOGLE_SYNTHESIS_INPUT} = 'True' ];then yarp wait /start-ask/start:o; yarp wait /googleSynthesis/text:i; yarp connect /start-ask/start:o /googleSynthesis/text:i; fi"
 
 #------------------------------------------------------------------------------------------------
 
