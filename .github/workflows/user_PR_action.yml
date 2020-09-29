@@ -15,7 +15,7 @@ jobs:
     - name: get usernames
       id: get_usernames
       run: |
-            file_list=${{ github.event.client-payload.files }}
+            file_list=$(ls -p ./appsAway/user_changes | grep -v / )
             len_list=${#file_list[@]}
             for (( i=0; i<${len_list}; i++ ));
             do
