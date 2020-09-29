@@ -58,4 +58,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: placeholder job
-        run: echo "I'm here so there are no errors"
+        run: echo ${{ github.event.pull_request }}
