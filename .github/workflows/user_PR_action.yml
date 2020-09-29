@@ -22,7 +22,7 @@ jobs:
             iter=0
             for file in $file_list
             do
-              if [ $iiter != 0 ];
+              if [ $iter != 0 ];
               then
                 user_list="$user_list,"
               fi
