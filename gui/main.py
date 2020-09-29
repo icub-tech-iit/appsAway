@@ -4,16 +4,20 @@ from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QDateTimeEdit,
         QDial, QDialog, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit,
         QProgressBar, QPushButton, QRadioButton, QScrollBar, QSizePolicy,
         QSlider, QSpinBox, QStyleFactory, QTableWidget, QTabWidget, QTextEdit,
-        QVBoxLayout, QWidget, QLineEdit, QFileDialog)
+        QVBoxLayout, QWidget, QLineEdit, QFileDialog )
 
 from PyQt5.QtGui import QIcon, QPixmap
-from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtCore import pyqtSlot, QSize, QUrl, QRect
 from itertools import chain
+from PyQt5.QtMultimedia import QMediaContent, QMediaPlayer
 
 import sys
 import time
 import subprocess
-import os
+import os 
+
+import pygame
+from pygame import mixer 
 
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
@@ -74,6 +78,8 @@ class WidgetGallery(QDialog):
 
         # read from .ini file here
         self.button_name_list = []
+        global find_startAskInput #to have access from stop Application 
+        find_startAskInput = False
         conf_file = open(self.gui_dir + "/gui_conf.ini", "r")
         for line in conf_file:
           if line.find("title") != -1:
@@ -108,23 +114,21 @@ class WidgetGallery(QDialog):
             self.input_list[-1].setPlaceholderText(var_name)
         # try to make a list of buttons so we can have multiple
 
-          if line.find("languageInput") != -1:
-            var_name = line.split('" ')[1].split(' ')[0] #e.g., FILE_INPUT
-            requisite = line.split(" ")[-1] # can be True or False
-            self.button_list = self.button_list + [optionButton(line.split(' "')[0], QComboBox(self), var_name, requisite)]
-            self.button_list[-1].button.addItem("language en-US")
-            self.button_list[-1].button.addItem("language it-IT")
-            self.button_list[-1].button.move(50, 250)
-          
           if line.find("googleInput") != -1:
             button_text = line.split('"')[1] #text inside the button 
             var_name = line.split('" ')[1].split(' ')[0] #e.g., GOOGLE_INPUT
             requisite = line.split(" ")[-1] # can be True or False
             self.button_list = self.button_list + [optionButton(line.split(' "')[0], QCheckBox(self), var_name, requisite)]
             self.button_list[-1].button.setText(button_text)
-            self.button_list[-1].button.setChecked(True)
-            self.button_list[-1].button.setEnabled(False)
 
+          if line.find("languageSpeechInput") != -1:
+            var_name = line.split('" ')[1].split(' ')[0] #e.g., FILE_INPUT
+            requisite = line.split(" ")[-1] # can be True or False
+            self.button_list = self.button_list + [optionButton(line.split(' "')[0], QComboBox(self), var_name, requisite)]
+            self.button_list[-1].button.setEnabled(False)
+            self.button_list[-1].button.addItem("language en-US")
+            self.button_list[-1].button.addItem("language it-IT")
+            self.button_list[-1].button.move(50, 250)
 
           if line.find("googleProcessInput") != -1:
             button_text = line.split('"')[1] #text inside the button 
@@ -132,6 +136,72 @@ class WidgetGallery(QDialog):
             requisite = line.split(" ")[-1] # can be True or False
             self.button_list = self.button_list + [optionButton(line.split(' "')[0], QCheckBox(self), var_name, requisite)]
             self.button_list[-1].button.setText(button_text)
+
+
+          if line.find("startAskInput") != -1:
+            find_startAskInput = True
+            button_text = line.split('"')[1] #text inside the button 
+            var_name = line.split('" ')[1].split(' ')[0] #e.g., START_ASK_INPUT
+            requisite = line.split(" ")[-1] # can be True or False
+            self.button_list = self.button_list + [optionButton(line.split(' "')[0], QCheckBox(self), var_name, requisite)]
+            self.button_list[-1].button.setText(button_text)
+
+          if line.find("languageSynthesisInput") != -1:
+            var_name = line.split('" ')[1].split(' ')[0] #e.g., LANGUAGE_SYNTHESIS_INPUT
+            requisite = line.split(" ")[-1] # can be True or False
+            self.button_list = self.button_list + [optionButton(line.split(' "')[0], QComboBox(self), var_name, requisite)]
+            self.button_list[-1].button.setEnabled(False)
+            self.button_list[-1].button.addItem("language en-US")
+            self.button_list[-1].button.addItem("language it-IT")
+            self.button_list[-1].button.addItem("language pt-PT")
+            self.button_list[-1].button.addItem("language fr-FR")
+            self.button_list[-1].button.addItem("language en-GB")
+            self.button_list[-1].button.move(50, 250)
+
+          if line.find("voiceNameInput") != -1:
+            var_name = line.split('" ')[1].split(' ')[0] 
+            requisite = line.split(" ")[-1] # can be True or False
+            self.button_list = self.button_list + [optionButton(line.split(' "')[0], QComboBox(self), var_name, requisite)]
+            self.button_list[-1].button.setEnabled(False)
+            self.button_list[-1].button.addItem("en-US-Wavenet-A")
+            self.button_list[-1].button.addItem("en-US-Wavenet-B")
+            self.button_list[-1].button.addItem("en-US-Wavenet-C")
+            self.button_list[-1].button.addItem("en-US-Wavenet-D")
+            self.button_list[-1].button.addItem("en-US-Wavenet-E")
+            self.button_list[-1].button.addItem("en-US-Wavenet-F")
+            self.button_list[-1].button.addItem("en-US-Wavenet-G")
+            self.button_list[-1].button.addItem("en-US-Wavenet-H")
+            self.button_list[-1].button.addItem("en-US-Wavenet-I")
+            self.button_list[-1].button.addItem("en-US-Wavenet-J")
+            self.button_list[-1].button.move(50, 250)
+
+          if line.find("googleSynthesisInput") != -1:
+            button_text = line.split('"')[1] #text inside the button 
+            var_name = line.split('" ')[1].split(' ')[0] #e.g., GOOGLE_SYNTHESIS_INPUT
+            requisite = line.split(" ")[-1] # can be True or False
+            self.button_list = self.button_list + [optionButton(line.split(' "')[0], QCheckBox(self), var_name, requisite)]
+            self.button_list[-1].button.setText(button_text)
+
+          if line.find("audioInput") != -1:
+            button_text = line.split('"')[1] #text inside the button 
+            var_name = line.split('" ')[1].split(' ')[0] 
+            requisite = line.split(" ")[-1] # can be True or False
+            self.button_list = self.button_list + [optionButton(line.split(' "')[0], QPushButton(button_text), var_name, requisite)]
+            self.button_list[-1].button.setEnabled(False)
+            self.button_list[-1].button.setGeometry(200, 150, 50, 50) 
+            pixmap = QPixmap('/home/laura/teamcode/appsAway/demos/synthesis/audioicon.png')
+            self.button_list[-1].button.setIcon(QIcon(pixmap))
+            self.button_list[-1].button.setIconSize(QSize(50, 50))
+        
+        for buttonOption in self.button_list: #when we have just googleSpeech and googleSpeechProcess options (speech demo) we want googleSpeech greyed out; when we also have speech-start-ask (synthesis demo) we want speech-start-ask greyed out.
+          if (find_startAskInput):
+            if buttonOption.varType == 'startAskInput' :
+              buttonOption.button.setChecked(True)
+              buttonOption.button.setEnabled(False)
+          else:
+            if buttonOption.varType == 'googleInput' :
+              buttonOption.button.setChecked(True)
+              buttonOption.button.setEnabled(False)
 
 
         self.pushUpdateButton = QPushButton("Everything is Up to Date!")
@@ -244,9 +314,20 @@ class WidgetGallery(QDialog):
             buttonOption.button.clicked.connect(self.on_click(buttonOption))
             # buttonOption.textInput.setEnabled(False)
             #layout.addWidget(buttonOption.textInput)
+          
+          if buttonOption.varType == 'googleInput':
+            buttonOption.button.stateChanged.connect(self.checkGoogleButtonState(buttonOption))
 
-          #if buttonOption.varType == 'languageInput':
-          #  buttonOption.button.view().pressed.connect(self.showItem(buttonOption))
+          if buttonOption.varType == 'googleSynthesisInput':
+            buttonOption.button.stateChanged.connect(self.checkButtonState(buttonOption))
+
+          if buttonOption.varType == 'languageSynthesisInput':
+            lang_for_synth = buttonOption.button
+            buttonOption.button.activated.connect(self.checkSelectedLanguage(lang_for_synth))
+
+          if buttonOption.varType == 'audioInput':
+            buttonOption.button.clicked.connect(self.playAudio())
+
           
 
         #if len(self.button_list) >= 1:
@@ -262,12 +343,103 @@ class WidgetGallery(QDialog):
     #@pyqtSlot()
     #def showItem(self, buttonOption):
     #  def printItem():
-        #if buttonOption.varType == 'languageInput':
+        #if buttonOption.varType == 'languageSpeechInput':
     #      print(buttonOption.varType)
     #      print(buttonOption.button)
           #return buttonOption.button.currentText()
     #  return printItem
-     
+    
+
+    @pyqtSlot()
+    def checkGoogleButtonState(self,buttonOption):
+      def checkGoogleState():
+        if buttonOption.button.isChecked() : 
+          lang_enable = [el.button.setEnabled(True) for el in list(filter(lambda x: x.varType == 'languageSpeechInput', self.button_list))]
+        else:
+          lang_enable = [el.button.setEnabled(False) for el in list(filter(lambda x: x.varType == 'languageSpeechInput', self.button_list))]
+      return checkGoogleState
+
+    @pyqtSlot()
+    def checkButtonState(self,buttonOption):
+      def checkState():
+        if buttonOption.button.isChecked() : 
+          lang_enable = [el.button.setEnabled(True) for el in list(filter(lambda x: x.varType == 'languageSynthesisInput', self.button_list))]
+          voice_enable = [el.button.setEnabled(True) for el in list(filter(lambda x: x.varType == 'voiceNameInput', self.button_list))]
+          audio_enable = [el.button.setEnabled(True) for el in list(filter(lambda x: x.varType == 'audioInput', self.button_list))]
+        else:
+          lang_enable = [el.button.setEnabled(False) for el in list(filter(lambda x: x.varType == 'languageSynthesisInput', self.button_list))]
+          voice_enable = [el.button.setEnabled(False) for el in list(filter(lambda x: x.varType == 'voiceNameInput', self.button_list))]
+          audio_enable = [el.button.setEnabled(False) for el in list(filter(lambda x: x.varType == 'audioInput', self.button_list))]
+      return checkState
+
+    @pyqtSlot()
+    def playAudio(self):
+      def play():
+        sel_voice=[el.button.currentText() for el in list(filter(lambda x: x.varType == 'voiceNameInput', self.button_list)) ] #to avoid another for loop on all the buttons, we do a filter 
+        sel_lang=[el.button.currentText() for el in list(filter(lambda x: x.varType == 'languageSynthesisInput', self.button_list)) ] #here we have the selected voice
+        
+        pygame.mixer.pre_init(24000, -16, 1, 2048)
+        pygame.init()
+        mixer.init()
+        mixer.music.load('/home/laura/teamcode/appsAway/demos/synthesis/Archive/'+ sel_lang[0] + '_' + sel_voice[0] + '.mp3')
+        mixer.music.play()
+        mixer.stop()
+      return play
+
+    @pyqtSlot()
+    def checkSelectedLanguage(self,lang_for_synth):
+      def checkLanguage():
+        if lang_for_synth.currentText() == 'language en-US':
+          for buttonOption in self.button_list:
+            if buttonOption.varType == 'voiceNameInput':
+               buttonOption.button.clear()
+               buttonOption.button.addItem("en-US-Wavenet-A")
+               buttonOption.button.addItem("en-US-Wavenet-B")
+               buttonOption.button.addItem("en-US-Wavenet-C")
+               buttonOption.button.addItem("en-US-Wavenet-D")
+               buttonOption.button.addItem("en-US-Wavenet-E")
+               buttonOption.button.addItem("en-US-Wavenet-F")
+               buttonOption.button.addItem("en-US-Wavenet-G")
+               buttonOption.button.addItem("en-US-Wavenet-H")
+               buttonOption.button.addItem("en-US-Wavenet-I")
+               buttonOption.button.addItem("en-US-Wavenet-J")
+        elif lang_for_synth.currentText() == 'language fr-FR':
+          for buttonOption in self.button_list:
+            if buttonOption.varType == 'voiceNameInput':
+               buttonOption.button.clear()
+               buttonOption.button.addItem("fr-FR-Wavenet-A")
+               buttonOption.button.addItem("fr-FR-Wavenet-B")
+               buttonOption.button.addItem("fr-FR-Wavenet-C")
+               buttonOption.button.addItem("fr-FR-Wavenet-D")
+        elif lang_for_synth.currentText() == 'language en-GB':
+          for buttonOption in self.button_list:
+            if buttonOption.varType == 'voiceNameInput':
+               buttonOption.button.clear()
+               buttonOption.button.addItem("en-GB-Wavenet-A")
+               buttonOption.button.addItem("en-GB-Wavenet-B")
+               buttonOption.button.addItem("en-GB-Wavenet-C")
+               buttonOption.button.addItem("en-GB-Wavenet-D")
+        elif lang_for_synth.currentText() == 'language pt-PT':
+          for buttonOption in self.button_list:
+            if buttonOption.varType == 'voiceNameInput':
+               buttonOption.button.clear()
+               buttonOption.button.addItem("pt-PT-Wavenet-A")
+               buttonOption.button.addItem("pt-PT-Wavenet-B")
+               buttonOption.button.addItem("pt-PT-Wavenet-C")
+               buttonOption.button.addItem("pt-PT-Wavenet-D")
+        else: 
+          if lang_for_synth.currentText() == 'language it-IT':
+            for buttonOption in self.button_list:
+              if buttonOption.varType == 'voiceNameInput':
+                buttonOption.button.clear()
+                buttonOption.button.addItem("it-IT-Wavenet-A")
+                buttonOption.button.addItem("it-IT-Wavenet-B")
+                buttonOption.button.addItem("it-IT-Wavenet-C")
+                buttonOption.button.addItem("it-IT-Wavenet-D")
+      return checkLanguage
+
+
+
     @pyqtSlot()
     def openFile(self, buttonOption):
       def takeFile():
@@ -396,12 +568,13 @@ class WidgetGallery(QDialog):
 
     def startApplication(self):
         print("starting application")
-
+        global googleSynthesis_found
+        googleSynthesis_found = False
         #self.custom_option = "";
         for buttonOption in self.button_list:
             #if (buttonOption.button.isChecked()):
             if (buttonOption.button.isEnabled):
-              #if buttonOption.varType != 'languageInput': # Combo has no attribute text
+              #if buttonOption.varType != 'languageSpeechInput': # Combo has no attribute text
               #  print(buttonOption.button.text()+" is enabled")
 
               if buttonOption.varType == 'fileInput':
@@ -412,19 +585,34 @@ class WidgetGallery(QDialog):
                     file_input_path = file_input_path[:file_input_path.rfind('/')]  # file path without the filename          
                     os.environ[buttonOption.varName] = file_input
                     os.environ[buttonOption.varName + '_PATH'] = file_input_path
-              elif buttonOption.varType == 'languageInput':
+              elif buttonOption.varType == 'languageSpeechInput':
                     #language = self.showItem(buttonOption).split(' ')[1] #to have just it-IT 
-                    language = buttonOption.button.currentText().split(' ')[1] #to have just it-IT 
-                    os.environ[buttonOption.varName] = language
+                    languageSpeech = buttonOption.button.currentText().split(' ')[1] #to have just it-IT 
+                    os.environ[buttonOption.varName] = languageSpeech
+              elif buttonOption.varType == 'googleInput':
+                  if buttonOption.button.isChecked():
+                    os.environ[buttonOption.varName] = "True"
+                  else:
+                    os.environ[buttonOption.varName] = "False"
               elif buttonOption.varType == 'googleProcessInput':
                   if buttonOption.button.isChecked():
                     os.environ[buttonOption.varName] = "True"
                   else:
                     os.environ[buttonOption.varName] = "False"
-
+              elif buttonOption.varType == 'googleSynthesisInput':
+                  if buttonOption.button.isChecked():
+                    googleSynthesis_found = True
+                    os.environ[buttonOption.varName] = "True"
+                  else:
+                    os.environ[buttonOption.varName] = "False"
+              elif buttonOption.varType == 'languageSynthesisInput' and googleSynthesis_found:
+                  languageSynthesis = buttonOption.button.currentText().split(' ')[1] #to have just it-IT 
+                  os.environ[buttonOption.varName] = languageSynthesis
+              elif buttonOption.varType == 'voiceNameInput' and googleSynthesis_found:
+                  os.environ[buttonOption.varName] = buttonOption.button.currentText()#e.g. en-US-Standard-B
               else:
                 # we set the environment variables here. 
-                os.environ['APPSAWAY_OPTIONS'] = buttonOption.button.text()
+                #os.environ['APPSAWAY_OPTIONS'] = buttonOption.button.text()
                 if buttonOption.varType == 'textEdit':
                   for obj in self.input_list:
                     if buttonOption.varName == obj.placeholderText():
@@ -455,13 +643,27 @@ class WidgetGallery(QDialog):
                 obj.setText("")#we set the associated QLine object empty 
                 os.environ[buttonOption.varName] = obj.text() #we set the CUSTOM_PORT variable empty, otherwise if we restart the application with robot camera the .env will keep the previous value of CUSTOM_PORT and it won't work;
                 buttonOption.button.setEnabled(True)
-          elif buttonOption.varType == 'googleInput':
+          elif buttonOption.varType == 'googleInput' and find_startAskInput: #if we have speechStartAsk, googleInput is not greyed out 
+            buttonOption.button.setChecked(False) #removing tick 
+            buttonOption.button.setEnabled(True)
+          elif buttonOption.varType == 'googleInput' and not find_startAskInput: #if we do not have speechStartAsk, googleInput is greyed out 
+            buttonOption.button.setChecked(True) 
             buttonOption.button.setEnabled(False)
+          elif buttonOption.varType == 'googleSynthesisInput':
+            buttonOption.button.setChecked(False) 
+            buttonOption.button.setEnabled(True)
+          elif buttonOption.varType == 'speechStartAsk':
+            buttonOption.button.setEnabled(False) #removing tick but keeping greyed out 
+          elif buttonOption.varType == 'voiceNameInput':
+            buttonOption.button.setEnabled(False) 
+          elif buttonOption.varType == 'languageSynthesisInput':
+            buttonOption.button.setEnabled(False) 
           else:
             if buttonOption.varType == 'googleProcessInput':
               buttonOption.button.setChecked(False)
-            buttonOption.button.setEnabled(True)
-          
+              buttonOption.button.setEnabled(True)
+      
+
         rc = subprocess.call("./appsAway_stopApp.sh")
         #self.rc = subprocess.Popen("./appsAway_stopApp.sh")
 
@@ -492,7 +694,8 @@ class WidgetGallery(QDialog):
           #      image_line[2] = os.environ.get('APPSAWAY_REPO_VERSION') + "_" + os.environ.get('APPSAWAY_REPO_TAG')
           #      main_list[i+1] = image_line[0] + ':' + image_line[1] + ':' + image_line[2]
 
-          if os.environ.get('APPSAWAY_IMAGES') != '' and os.environ.get('APPSAWAY_IMAGES') != None:
+          if os.environ.get('APPSAWAY_IMAGES') != '':
+            print(os.environ.get('APPSAWAY_IMAGES'))
             list_images = os.environ.get('APPSAWAY_IMAGES').split(' ')
             list_versions = os.environ.get('APPSAWAY_VERSIONS').split(' ')
 
@@ -572,13 +775,22 @@ class WidgetGallery(QDialog):
         textEd_list=list(filter(lambda x: x.varType == 'textEdit', self.button_list)) #list of button of type 'textEdit'
         textEd_var_list=[el.varName for el in textEd_list]#for each button of type 'textEdit' we need to add el.varName (e.g. CUSTOM_PORT)
 
-        language_list=list(filter(lambda x: x.varType == 'languageInput', self.button_list)) #list of button of type 'languageInput'
-        lanIn_var_list=[el.varName for el in language_list]#for each button of type 'textEdit' we need to add el.varName (e.g. LANGUAGE_INPUT)
+        language_list=list(filter(lambda x: x.varType == 'languageSpeechInput', self.button_list)) #list of button of type 'languageSpeechInput'
+        lanIn_var_list=[el.varName for el in language_list]#for each button of type 'textEdit' we need to add el.varName (e.g. LANGUAGE_SPEECH_INPUT)
 
-        process_list=list(filter(lambda x: x.varType == 'googleProcessInput', self.button_list)) #list of button of type 'languageInput'
-        proc_var_list=[el.varName for el in process_list]#for each button of type 'textEdit' we need to add el.varName (e.g. LANGUAGE_INPUT)
+        process_list=list(filter(lambda x: x.varType == 'googleProcessInput', self.button_list)) 
+        proc_var_list=[el.varName for el in process_list]
+
+        synt_var_list=[el.varName for el in list(filter(lambda x: x.varType == 'googleSynthesisInput', self.button_list)) ]
+
+        spch_var_list=[el.varName for el in list(filter(lambda x: x.varType == 'googleInput', self.button_list)) ]
+  
+        lanSy_var_list=[el.varName for el in list(filter(lambda x: x.varType == 'languageSynthesisInput', self.button_list)) ]
+
+        voice_var_list=[el.varName for el in list(filter(lambda x: x.varType == 'voiceNameInput', self.button_list)) ]
+
         
-        var_list=["APPSAWAY_OPTIONS"] + fileIn_var_list + textEd_var_list + lanIn_var_list +  proc_var_list #list of enviroment variables
+        var_list=["APPSAWAY_OPTIONS"] + fileIn_var_list + textEd_var_list + lanIn_var_list +  proc_var_list + synt_var_list + lanSy_var_list + voice_var_list + spch_var_list #list of enviroment variables
 
         # Checking if we already have all the environment variables in the .env; if yes we overwrite them, if not we add them 
         for var_l in var_list:
