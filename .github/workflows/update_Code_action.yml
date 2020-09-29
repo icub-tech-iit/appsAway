@@ -14,10 +14,12 @@ jobs:
       # we checkout appsAway code
       - uses: actions/checkout@v2
         with:
-          path: "."
+          path: "./appsAway"
           
       - name: check working directory
-        run: ls
+        run: |
+            ls
+            pwd
 
       - name: copies user_changes to temporary folder
         run: |
@@ -46,10 +48,12 @@ jobs:
         with:
             repository: icub-tech-iit/code
             token: ${{ secrets.CODE_REPO_ACCSS_TOKEN }}
-            path: "."
+            path: "./code"
           
       - name: check working directory
-        run: ls
+        run: |
+            ls
+            pwd
 
       - name: copies user_changes folder
         run: |
