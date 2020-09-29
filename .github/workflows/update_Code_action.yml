@@ -10,6 +10,7 @@ on:
 
 jobs:
   update_code:
+    runs-on: ubuntu-latest
     if: github.event.pull_request.merged == true
     steps: 
       # we checkout appsAway code
@@ -54,3 +55,8 @@ jobs:
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.CODE_REPO_ACCSS_TOKEN }}
+  placeholder:
+    runs-on: ubuntu-latest
+    steps:
+      - name: placeholder job
+        run: echo "I'm here so there are no errors"
