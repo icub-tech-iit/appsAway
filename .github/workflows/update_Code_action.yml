@@ -21,6 +21,7 @@ jobs:
 
       - name: copies user_changes to temporary folder
         run: |
+            cd appsAway
             git clone https://github.com/icub-tech-iit/appsAway
             mkdir -p ../test/
             mv -v ./user_changes/*.json ../test/ 2>/dev/null || :
@@ -35,10 +36,10 @@ jobs:
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          directory: "./appsAway/"
 
 #      - name: remove appsAway
 #        run: |
-#            cd ..
 #            rm -rf ./appsAway
 
       - uses: actions/checkout@v2
@@ -52,11 +53,12 @@ jobs:
 
       - name: copies user_changes folder
         run: |
-            mkdir -p test/
-            mv -v ../test/* ./test/
+            mkdir -p ./code/test/
+            mv -v ./test/* ./code/test/
 
       - name: Commit changes
         run: |
+            cd code
             git config --local user.email "actions@github.com"
             git config --local user.name "GitHub Action"
             git add -A
@@ -66,6 +68,8 @@ jobs:
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.CODE_REPO_ACCSS_TOKEN }}
+          directory: "./code/"
+          
   placeholder:
     runs-on: ubuntu-latest
     steps:
