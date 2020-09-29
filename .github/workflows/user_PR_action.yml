@@ -15,7 +15,8 @@ jobs:
     - name: get usernames
       id: get_usernames
       run: |
-            file_list=$(ls -p ./appsAway/user_changes | grep -v / )
+            cd user_changes
+            file_list=$(ls -p | grep -v / )
             len_list=${#file_list[@]}
             for (( i=0; i<${len_list}; i++ ));
             do
