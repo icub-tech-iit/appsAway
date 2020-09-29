@@ -50,6 +50,7 @@ jobs:
         run: |
             git config --local user.email "actions@github.com"
             git config --local user.name "GitHub Action"
+            git add -A
             git commit -m "Merged user changes in code" -a
         
       - name: push changes
