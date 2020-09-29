@@ -1,0 +1,72 @@
+name: Creating changes branch
+
+on: 
+    repository_dispatch:
+        types: [user_changes]
+
+
+#            mv -v ./appsAway/user_changes/* ./icub-tech-apps/dist/database/upgrade/
+#            mv -v ./appsAway/user_changes/images/* ./icub-tech-apps/dist/express/images/
+
+jobs:
+  update_code:
+    runs-on: ubuntu-latest
+    steps: 
+      # we checkout appsAway code
+      - name: cloning code
+        run: git clone https://github.com/icub-tech-iit/code
+            
+          
+      - name: check working directory
+        run: |
+            ls
+            pwd
+
+      - name: copies user_changes to temporary folder
+        run: |
+            cd code
+            git checkout ${{ github.event.client-payload.branch_name }}
+            mkdir -p ../test/
+            mv -v ./icub-tech-apps/dist/express/evaluate/*.* ../test/ 2>/dev/null || :
+
+      - name: cloning appsAway
+        run: |
+            git clone https://github.com/icub-tech-iit/appsAway
+
+      - uses: peterjgrainger/action-create-branch@v1.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          branch: ${{ github.event.client-payload.branch_name }}
+
+#            git branch ${{ github.event.client-payload.branch_name }}
+#            git checkout ${{ github.event.client-payload.branch_name }}
+          
+      - name: check working directory
+        run: |
+            ls
+            pwd
+
+      - name: copies user_changes folder
+        run: |
+            mkdir -p ./appsAway/user_changes/
+            mv -v ./test/* ./appsAway/user_changes/
+
+      - name: Commit changes
+        run: |
+            cd appsAway
+            pwd
+            git checkout ${{ github.event.client-payload.branch_name }}
+            git status
+            git config --local user.email "actions@github.com"
+            git config --local user.name "GitHub Action"
+            git add -A
+            git commit -m "Merged user changes in appsAway" -a
+        
+      - name: push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.event.client-payload.branch_name }}
+          directory: "./appsAway/"
+
