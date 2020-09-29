@@ -1,7 +1,5 @@
 on:
   pull_request:
-    branches:
-      - 'user_changes*'
     types: [closed]
 
 
