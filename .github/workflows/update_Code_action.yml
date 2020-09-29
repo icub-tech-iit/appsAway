@@ -31,10 +31,10 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: remove appsAway
-        run: |
-            cd ..
-            rm -rf ./appsAway
+#      - name: remove appsAway
+#        run: |
+#            cd ..
+#            rm -rf ./appsAway
 
       - uses: actions/checkout@v2
         with:
