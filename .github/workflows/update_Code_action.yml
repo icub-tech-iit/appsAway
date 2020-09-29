@@ -12,9 +12,12 @@ jobs:
     if: github.event.pull_request.merged == true && contains(github.event.pull_request.head.ref, 'user_changes')
     steps: 
       # we checkout appsAway code
-      - uses: actions/checkout@v2
-        with:
-          path: "./appsAway"
+      #- uses: actions/checkout@v2
+      #  with:
+      #    path: "./appsAway"
+      - name: cloning appsAway
+        run: git clone https://github.com/icub-tech-iit/appsAway
+            
           
       - name: check working directory
         run: |
