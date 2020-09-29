@@ -1,0 +1,35 @@
+name: user_input_PR
+
+
+on:
+  push:
+      branches:
+          - 'user_changes*'
+
+jobs:
+  pull-request:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: get usernames
+      id: get_usernames
+      run: |
+            file_list=${{ github.event.client-payload.files }}
+            len_list=${#file_list[@]}
+            for (( i=0; i<${len_list}; i++ ));
+            do
+              if [ $i -gt 0 ];
+              then
+                user_list="$user_list,"
+              fi
+              user_list="$user_list$(head -1 ${file_list[$i]} | awk -F'//' '{print $2}')"
+            done
+            echo ::set-output name=user_list::$user_list
+
+    - name: pull-request
+      uses: repo-sync/pull-request@v2
+      with:
+        pr_title: "Adding user changes into the website."
+        pr_assignee: ${{ steps.get_usernames.outputs.user_list }}
+        github_token: ${{ secrets.GITHUB_TOKEN }}
