@@ -12,6 +12,28 @@ jobs:
   update_code:
     if: github.event.pull_request.merged == true
     steps: 
+      # we checkout appsAway code
+      - uses: actions/checkout@v2
+
+      - name: copies user_changes to temporary folder
+        run: |
+            git clone https://github.com/icub-tech-iit/appsAway
+            mkdir -p ../test/
+            mv -v ./user_changes/* ../test/
+            mv -v ./user_changes/images/* ../test/
+            git config --local user.email "actions@github.com"
+            git config --local user.name "GitHub Action"
+            git commit -m "removing user_changes from appsAway" -a
+
+      - name: push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: remove appsAway
+            cd ..
+            rm -rf ./appsAway
+
       - uses: actions/checkout@v2
         with:
             repository: icub-tech-iit/code
@@ -19,11 +41,8 @@ jobs:
 
       - name: copies user_changes folder
         run: |
-            git clone https://github.com/icub-tech-iit/appsAway
             mkdir -p test/
-            mv -v ./appsAway/user_changes/* ./test/
-            mv -v ./appsAway/user_changes/images/* ./test/
-            rm -rf appsAway
+            mv -v ../test/* ./test/
 
       - name: Commit changes
         run: |
