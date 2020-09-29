@@ -9,7 +9,7 @@ on:
 jobs:
   update_code:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.merged == true && contains(github.event.pull_request.branches, 'user_changes')
+    if: github.event.pull_request.merged == true && contains(github.event.pull_request.head.ref, 'user_changes')
     steps: 
       # we checkout appsAway code
       - uses: actions/checkout@v2
@@ -58,4 +58,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: placeholder job
-        run: echo ${{ toJson(github.event.pull_request) }}
+        run: |
+            echo "${{ toJson(github.event.pull_request) }}"
+            echo "${{ contains(github.event.pull_request.head.ref, 'user_changes') }}"
+            echo "${{ contains(github.event.pull_request.head.ref, 'user_changes*') }}"
