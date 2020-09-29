@@ -1,0 +1,37 @@
+on:
+  pull_request:
+    branches:
+      - 'user_changes*'
+    types: [closed]
+
+
+#            mv -v ./appsAway/user_changes/* ./icub-tech-apps/dist/database/upgrade/
+#            mv -v ./appsAway/user_changes/images/* ./icub-tech-apps/dist/express/images/
+
+jobs:
+  update_code:
+    if: github.event.pull_request.merged == true
+    steps: 
+      - uses: actions/checkout@v2
+        with:
+            repository: icub-tech-iit/code
+            token: ${{ secrets.CODE_REPO_ACCSS_TOKEN }}
+
+      - name: copies user_changes folder
+        run: |
+            git clone https://github.com/icub-tech-iit/appsAway
+            mkdir -p test/
+            mv -v ./appsAway/user_changes/* ./test/
+            mv -v ./appsAway/user_changes/images/* ./test/
+            rm -rf appsAway
+
+      - name: Commit changes
+        run: |
+            git config --local user.email "actions@github.com"
+            git config --local user.name "GitHub Action"
+            git commit -m "Merged user changes in code" -a
+        
+      - name: push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.CODE_REPO_ACCSS_TOKEN }}
