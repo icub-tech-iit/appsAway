@@ -72,7 +72,7 @@ jobs:
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.CODE_REPO_ACCSS_TOKEN }}
-          directory: "./code/"
+          directory: "/home/runner/work/appsAway/appsAway"
           
   placeholder:
     runs-on: ubuntu-latest
