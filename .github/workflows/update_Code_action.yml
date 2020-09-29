@@ -11,7 +11,7 @@ on:
 jobs:
   update_code:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.merged == true
+    if: github.event.pull_request.merged == true && contains(github.event.pull_request.branches, 'user_changes')
     steps: 
       # we checkout appsAway code
       - uses: actions/checkout@v2
