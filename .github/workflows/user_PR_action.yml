@@ -6,6 +6,7 @@ on:
       branches:
           - 'user_changes*'
 
+
 jobs:
   pull-request:
     runs-on: ubuntu-latest
@@ -15,21 +16,26 @@ jobs:
     - name: get usernames
       id: get_usernames
       run: |
-            file_list=${{ github.event.client-payload.files }}
+            cd user_changes
+            file_list=$(ls -p | grep -v / )
             len_list=${#file_list[@]}
-            for (( i=0; i<${len_list}; i++ ));
+            iter=0
+            for file in $file_list
             do
-              if [ $i -gt 0 ];
+              if [ $iter != 0 ];
               then
                 user_list="$user_list,"
               fi
-              user_list="$user_list$(head -1 ${file_list[$i]} | awk -F'//' '{print $2}')"
+              user_list="$user_list$(head -1 $file | awk -F'//' '{print $2}')"
+              iter=$((iter+1))
             done
+            echo $user_list
             echo ::set-output name=user_list::$user_list
 
     - name: pull-request
       uses: repo-sync/pull-request@v2
       with:
         pr_title: "Adding user changes into the website."
+        pr_reviewer: "AlexAntn,vtikha,ilaria-carlini"
         pr_assignee: ${{ steps.get_usernames.outputs.user_list }}
         github_token: ${{ secrets.GITHUB_TOKEN }}
