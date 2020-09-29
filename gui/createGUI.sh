@@ -43,7 +43,7 @@ source venv/bin/activate
 
 #pip3 install pyqt5 
 #pip install -q fbs  watchdog
-pip install fbs PyQt5==5.9.2 watchdog
+pip install fbs pygame PyQt5==5.9.2 watchdog
 
 # start the project. We pipe the name of the app, "appGUI" into the command to avoid user prompts. The output is quite verbose so we make it run silent.
 (echo appGUI ; echo '' ; echo '') | fbs startproject #> /dev/null
