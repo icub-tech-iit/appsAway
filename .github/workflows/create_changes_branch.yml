@@ -42,14 +42,15 @@ jobs:
       #  run: |
       #      git clone https://github.com/icub-tech-iit/appsAway
 
-      - uses: peterjgrainger/action-create-branch@v1.0.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          branch: ${{ github.event.client_payload.branch_name }}
-
-#            git branch ${{ github.event.client_payload.branch_name }}
-#            git checkout ${{ github.event.client_payload.branch_name }}
+      #- uses: peterjgrainger/action-create-branch@v1.0.0
+      #  env:
+      #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #  with:
+      #    branch: ${{ github.event.client_payload.branch_name }}
+      - name: Create branch
+        run: |
+            cd appsAway
+            git branch ${{ github.event.client_payload.branch_name }}
           
       - name: check working directory
         run: |
