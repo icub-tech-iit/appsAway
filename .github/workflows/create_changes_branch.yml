@@ -102,14 +102,14 @@ jobs:
               echo $user_list
               echo ::set-output name=user_list::$user_list
 
-      #- name: pull-request
-      #  uses: peter-evans/create-pull-request@v3
-      #  with:
-      #    title: "Adding user changes into the website."
-      #    reviewers: "AlexAntn,vtikha,ilaria-carlini"
-      #    assignees: ${{ steps.get_usernames.outputs.user_list }}
-      #    token: ${{ secrets.GITHUB_TOKEN }}
-      #    branch: master
-      #    base: ${{ github.event.client_payload.branch_name }}
-      #    delete-branch: true
-      #    path: appsAway
+      - name: pull-request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          title: "Adding user changes into the website."
+          reviewers: "AlexAntn,vtikha,ilaria-carlini"
+          assignees: ${{ steps.get_usernames.outputs.user_list }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: master
+          base: ${{ github.event.client_payload.branch_name }}
+          delete-branch: true
+          path: appsAway
