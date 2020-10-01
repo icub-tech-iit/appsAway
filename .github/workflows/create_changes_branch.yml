@@ -58,7 +58,7 @@ jobs:
       - name: checkout created branch
         run: |
             cd appsAway
-            git checkout ${{ github.event.client_payload.branch_name }}
+            git checkout -b ${{ github.event.client_payload.branch_name }}
 
       - name: copies user_changes folder
         run: |
