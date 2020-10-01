@@ -3,7 +3,7 @@ name: user_input_PR
 
 on:
   push:
-    paths: user_changes/
+    paths: 'user_changes/**'
 #      branches:
 #          - 'user_changes*'
 
