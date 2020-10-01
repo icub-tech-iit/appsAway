@@ -33,9 +33,11 @@ jobs:
             mv -v ./user_changes/images/*.png ../test/ 2>/dev/null || :
             mv -v ./user_changes/images/*.jpg ../test/ 2>/dev/null || :
             mv -v ./user_changes/images/*.jpeg ../test/ 2>/dev/null || :
+            ls
             git config --local user.email "actions@github.com"
             git config --local user.name "GitHub Action"
-            git commit -m "removing user_changes from appsAway" -a
+            git add -A
+            git commit -am "removing user_changes from appsAway" 
 
       - name: push changes
         uses: ad-m/github-push-action@master
