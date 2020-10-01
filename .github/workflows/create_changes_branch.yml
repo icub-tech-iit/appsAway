@@ -107,5 +107,5 @@ jobs:
             pr_title: "Adding user changes into the website."
             pr_reviewer: "AlexAntn,vtikha,ilaria-carlini"
             pr_assignee: ${{ steps.get_usernames.outputs.user_list }}
-            branch: ${{ github.event.client_payload.branch_name }}
+            source_branch: ${{ github.event.client_payload.branch_name }}
             github_token: ${{ secrets.GITHUB_TOKEN }}
