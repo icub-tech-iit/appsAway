@@ -18,7 +18,7 @@ jobs:
           repository: icub-tech-iit/code
           token: ${{ secrets.CODE_REPO_ACCSS_TOKEN }}
           path: code
-          ref: ${{ github.event.client-payload.branch_name }}
+          ref: ${{ github.event.client_payload.branch_name }}
       #- name: cloning code
       #  run: git clone https://github.com/icub-tech-iit/code
             
@@ -46,10 +46,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          branch: ${{ github.event.client-payload.branch_name }}
+          branch: ${{ github.event.client_payload.branch_name }}
 
-#            git branch ${{ github.event.client-payload.branch_name }}
-#            git checkout ${{ github.event.client-payload.branch_name }}
+#            git branch ${{ github.event.client_payload.branch_name }}
+#            git checkout ${{ github.event.client_payload.branch_name }}
           
       - name: check working directory
         run: |
@@ -58,7 +58,7 @@ jobs:
       - name: checkout created branch
         run: |
             cd appsAway
-            git checkout ${{ github.event.client-payload.branch_name }}
+            git checkout ${{ github.event.client_payload.branch_name }}
 
       - name: copies user_changes folder
         run: |
@@ -79,6 +79,6 @@ jobs:
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.event.client-payload.branch_name }}
+          branch: ${{ github.event.client_payload.branch_name }}
           directory: "./appsAway/"
 
