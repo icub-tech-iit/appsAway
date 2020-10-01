@@ -37,8 +37,7 @@ jobs:
 
       - uses: actions/checkout@v2
         with:
-          repository: icub-tech-iit/code
-          token: ${{ secrets.CODE_REPO_ACCSS_TOKEN }}
+          path: appsAway
       #- name: cloning appsAway
       #  run: |
       #      git clone https://github.com/icub-tech-iit/appsAway
