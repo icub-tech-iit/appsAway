@@ -110,5 +110,6 @@ jobs:
           assignees: ${{ steps.get_usernames.outputs.user_list }}
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.event.client_payload.branch_name }}
+          base: master
           delete-branch: true
           path: appsAway
