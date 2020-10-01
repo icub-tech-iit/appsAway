@@ -82,11 +82,21 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.event.client_payload.branch_name }}
           directory: "./appsAway/"
+      - name: clean working directory
+        run: |
+            rm -rf appsAway
+            rm -rf code
+
+      - uses: actions/checkout@v2
+        with:
+          repository: icub-tech-iit/appsAway
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.event.client_payload.branch_name }}
 
       - name: get usernames
         id: get_usernames
         run: |
-              cd appsAway/user_changes
+              cd user_changes
               file_list=$(ls -p | grep -v / )
               len_list=${#file_list[@]}
               iter=0
@@ -101,6 +111,7 @@ jobs:
               done
               echo $user_list
               echo ::set-output name=user_list::$user_list
+              
       - name: pull-request
         uses: repo-sync/pull-request@v2
         with:
