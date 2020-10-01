@@ -13,8 +13,14 @@ jobs:
     runs-on: ubuntu-latest
     steps: 
       # we checkout appsAway code
-      - name: cloning code
-        run: git clone https://github.com/icub-tech-iit/code
+      - uses: actions/checkout@v2
+        with:
+          repository: icub-tech-iit/code
+          token: ${{ secrets.CODE_REPO_ACCSS_TOKEN }}
+          path: code
+          ref: ${{ github.event.client-payload.branch_name }}
+      #- name: cloning code
+      #  run: git clone https://github.com/icub-tech-iit/code
             
           
       - name: check working directory
@@ -22,16 +28,20 @@ jobs:
             ls
             pwd
 
+      #      git checkout ${{ github.event.client-payload.branch_name }}
       - name: copies user_changes to temporary folder
         run: |
             cd code
-            git checkout ${{ github.event.client-payload.branch_name }}
             mkdir -p ../test/
             mv -v ./icub-tech-apps/dist/express/evaluate/*.* ../test/ 2>/dev/null || :
 
-      - name: cloning appsAway
-        run: |
-            git clone https://github.com/icub-tech-iit/appsAway
+      - uses: actions/checkout@v2
+        with:
+          repository: icub-tech-iit/code
+          token: ${{ secrets.CODE_REPO_ACCSS_TOKEN }}
+      #- name: cloning appsAway
+      #  run: |
+      #      git clone https://github.com/icub-tech-iit/appsAway
 
       - uses: peterjgrainger/action-create-branch@v1.0.0
         env:
@@ -46,6 +56,10 @@ jobs:
         run: |
             ls
             pwd
+      - name: checkout created branch
+        run: |
+            cd appsAway
+            git checkout ${{ github.event.client-payload.branch_name }}
 
       - name: copies user_changes folder
         run: |
@@ -56,7 +70,6 @@ jobs:
         run: |
             cd appsAway
             pwd
-            git checkout ${{ github.event.client-payload.branch_name }}
             git status
             git config --local user.email "actions@github.com"
             git config --local user.name "GitHub Action"
