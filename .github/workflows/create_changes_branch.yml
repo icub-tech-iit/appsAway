@@ -103,10 +103,11 @@ jobs:
               echo ::set-output name=user_list::$user_list
 
       - name: pull-request
-        uses: repo-sync/pull-request@v2
+        uses: peter-evans/create-pull-request@v3
         with:
-          pr_title: "Adding user changes into the website."
-          pr_reviewer: "AlexAntn,vtikha,ilaria-carlini"
-          pr_assignee: ${{ steps.get_usernames.outputs.user_list }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          title: "Adding user changes into the website."
+          reviewesr: "AlexAntn,vtikha,ilaria-carlini"
+          assignees: ${{ steps.get_usernames.outputs.user_list }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.event.client_payload.branch_name }}
+          delete-branch: true
