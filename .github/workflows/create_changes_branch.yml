@@ -101,15 +101,11 @@ jobs:
               done
               echo $user_list
               echo ::set-output name=user_list::$user_list
-
       - name: pull-request
-        uses: peter-evans/create-pull-request@v3
+        uses: repo-sync/pull-request@v2
         with:
-          title: "Adding user changes into the website."
-          reviewers: "AlexAntn,vtikha,ilaria-carlini"
-          assignees: ${{ steps.get_usernames.outputs.user_list }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: master
-          base: ${{ github.event.client_payload.branch_name }}
-          delete-branch: true
-          path: appsAway
+            pr_title: "Adding user changes into the website."
+            pr_reviewer: "AlexAntn,vtikha,ilaria-carlini"
+            pr_assignee: ${{ steps.get_usernames.outputs.user_list }}
+            branch: ${{ github.event.client_payload.branch_name }}
+            github_token: ${{ secrets.GITHUB_TOKEN }}
