@@ -192,6 +192,14 @@ class WidgetGallery(QDialog):
             pixmap = QPixmap('/home/laura/teamcode/appsAway/demos/synthesis/audioicon.png')
             self.button_list[-1].button.setIcon(QIcon(pixmap))
             self.button_list[-1].button.setIconSize(QSize(50, 50))
+
+          #Button to use with toggle options
+          if line.find("toggleButton") != -1:
+            button_text = line.split('"')[1]
+            var_name = line.split('" ')[1].split(' ')[0]
+            requisite = line.split(" ")[-1] # last element, True or False
+            self.button_list = self.button_list + [optionButton(line.split(' "')[0], QCheckBox(self), var_name, requisite)]
+            self.button_list[-1].button.setText(button_text)
         
         for buttonOption in self.button_list: #when we have just googleSpeech and googleSpeechProcess options (speech demo) we want googleSpeech greyed out; when we also have speech-start-ask (synthesis demo) we want speech-start-ask greyed out.
           if (find_startAskInput):
@@ -202,6 +210,9 @@ class WidgetGallery(QDialog):
             if buttonOption.varType == 'googleInput' :
               buttonOption.button.setChecked(True)
               buttonOption.button.setEnabled(False)
+          if buttonOption.varType == 'toggleButton': # all toggle buttons start unchecked
+            buttonOption.button.setChecked(False)
+            buttonOption.button.setEnabled(True)
 
 
         self.pushUpdateButton = QPushButton("Everything is Up to Date!")
@@ -605,6 +616,11 @@ class WidgetGallery(QDialog):
                     os.environ[buttonOption.varName] = "True"
                   else:
                     os.environ[buttonOption.varName] = "False"
+              elif buttonOption.varType == 'toggleButton':
+                  if buttonOption.button.isChecked():
+                    os.environ[buttonOption.varName] = "true"
+                  else:
+                    os.environ[buttonOption.varName] = "false"
               elif buttonOption.varType == 'languageSynthesisInput' and googleSynthesis_found:
                   languageSynthesis = buttonOption.button.currentText().split(' ')[1] #to have just it-IT 
                   os.environ[buttonOption.varName] = languageSynthesis
@@ -636,7 +652,13 @@ class WidgetGallery(QDialog):
         self.progressBar.setValue(0)
         PAUSED = True
 
+        for b in self.button_list:
+          if b.is_required.find("True") != -1: 
+            self.pushStartButton.setEnabled(False)
+
         for buttonOption in self.button_list:
+          if buttonOption.is_required.find("True") != -1: 
+            self.pushStartButton.setEnabled(False)
           if buttonOption.varType == 'textEdit':
             for obj in self.input_list:
               if buttonOption.varName == obj.placeholderText():
@@ -652,15 +674,19 @@ class WidgetGallery(QDialog):
           elif buttonOption.varType == 'googleSynthesisInput':
             buttonOption.button.setChecked(False) 
             buttonOption.button.setEnabled(True)
+          elif buttonOption.varType == 'toggleButton':
+            buttonOption.button.setChecked(False) 
+            buttonOption.button.setEnabled(True)
           elif buttonOption.varType == 'speechStartAsk':
             buttonOption.button.setEnabled(False) #removing tick but keeping greyed out 
           elif buttonOption.varType == 'voiceNameInput':
             buttonOption.button.setEnabled(False) 
           elif buttonOption.varType == 'languageSynthesisInput':
             buttonOption.button.setEnabled(False) 
-          else:
-            if buttonOption.varType == 'googleProcessInput':
+          elif buttonOption.varType == 'googleProcessInput':
               buttonOption.button.setChecked(False)
+              buttonOption.button.setEnabled(True)
+          else: # all other unspecified buttons, e.g. radioButton
               buttonOption.button.setEnabled(True)
       
 
@@ -791,6 +817,10 @@ class WidgetGallery(QDialog):
 
         
         var_list=["APPSAWAY_OPTIONS"] + fileIn_var_list + textEd_var_list + lanIn_var_list +  proc_var_list + synt_var_list + lanSy_var_list + voice_var_list + spch_var_list #list of enviroment variables
+
+        for button in self.button_list:
+          if button.varType == "toggleButton":
+            var_list = var_list + [button.varName]
 
         # Checking if we already have all the environment variables in the .env; if yes we overwrite them, if not we add them 
         for var_l in var_list:
