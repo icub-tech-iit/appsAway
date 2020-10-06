@@ -68,7 +68,7 @@ jobs:
       - name: copies user_changes folder
         run: |
             mkdir -p ./code/test/
-            mv -v ./test/* ./code/test/
+            mv -v ./test/* ./code/icub-tech-apps/dist/express/evaluate/
 
       - name: Commit changes
         run: |
