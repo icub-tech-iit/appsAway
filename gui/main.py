@@ -147,9 +147,10 @@ class WidgetGallery(QDialog):
             inputButton = QLineEdit(self)
             inputButton.setPlaceholderText(var_name)
             initial_setting = line.split('" ')[1].split(' ')[2]
+            button = QLabel(button_text)
             if initial_setting == "off":
               inputButton.setEnabled(False)
-            self.button_list = self.button_list + [optionButton(button_type, None, var_name, requisite, inputButton, None)]
+            self.button_list = self.button_list + [optionButton(button_type, button, var_name, requisite, inputButton, None)]
 
           # file input (text box)
           if line.find("fileInput") != -1:
@@ -357,6 +358,7 @@ class WidgetGallery(QDialog):
 
           # This adds the radiobutton and the corresponding text box
           if buttonOption.varType == 'textEditBox':
+            layout.addWidget(buttonOption.button)
             layout.addWidget(buttonOption.inputBox)
             buttonOption.inputBox.textChanged.connect(self.checkToggleState(buttonOption))
 
