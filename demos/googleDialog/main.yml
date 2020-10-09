@@ -48,13 +48,6 @@ services:
         constraints: [node.labels.type != head]
     command: sh -c "googleDialog --project ${INPUT_BOX}"
 
-  yDemoGoogleSynthesis:
-    <<: *yarp-base
-    deploy:
-      placement:
-        constraints: [node.labels.type != head]
-    command: sh -c "if [ ${GOOGLE_SYNTHESIS_INPUT} = 'True' ];then googleSynthesis --language ${LANGUAGE_SYNTHESIS_INPUT} --voice ${VOICE_NAME_INPUT}; fi"
-
   yConnectToGoogleSynthesis:
     <<: *yarp-base
     deploy:
