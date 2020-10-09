@@ -353,10 +353,12 @@ class WidgetGallery(QDialog):
             layout.addWidget(buttonOption.button)
             layout.addWidget(buttonOption.inputBox)
             buttonOption.button.clicked.connect(self.on_click(buttonOption))
+            buttonOption.inputBox.textChanged.connect(self.checkToggleState(buttonOption))
 
           # This adds the radiobutton and the corresponding text box
           if buttonOption.varType == 'textEditBox':
             layout.addWidget(buttonOption.inputBox)
+            buttonOption.inputBox.textChanged.connect(self.checkToggleState(buttonOption))
 
           if buttonOption.varType == 'fileInput':
             layout.addWidget(buttonOption.button)
@@ -535,7 +537,10 @@ class WidgetGallery(QDialog):
         self.pushStartButton.setEnabled(False)
 
         for buttonOption in self.button_list:
-          buttonOption.button.setEnabled(False)
+          if buttonOption.button != None:
+            buttonOption.button.setEnabled(False)
+          if buttonOption.inputBox != None:
+            buttonOption.inputBox.setEnabled(False)
 
         PAUSED = False
         
@@ -638,6 +643,8 @@ class WidgetGallery(QDialog):
         for buttonOption in self.button_list:
           if buttonOption.button != None:
             buttonOption.button.setEnabled(True)
+          if buttonOption.inputBox != None:
+            buttonOption.inputBox.setEnabled(True)
           self.checkDependencies(buttonOption)      
 
         rc = subprocess.call("./appsAway_stopApp.sh")
