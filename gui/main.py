@@ -203,7 +203,7 @@ class WidgetGallery(QDialog):
             var_name = line.split('" ')[1].split(' ')[0] 
             requisite = line.split(" ")[-1].replace('\n', '').replace('\r','').replace(' ','') # can be True or False
             var_value = line.split('" ')[1].split(' ')[1]
-            pixmap = QPixmap('/home/laura/teamcode/appsAway/demos/synthesis/audioicon.png')
+            pixmap = QPixmap('images/audioicon.png')
             pushButton = QPushButton(button_text)
             pushButton.setGeometry(200, 150, 50, 50) 
             pushButton.setIcon(QIcon(pixmap))
@@ -220,7 +220,7 @@ class WidgetGallery(QDialog):
             var_name = line.split('" ')[1].split(' ')[0] 
             requisite = line.split(" ")[-1].replace('\n', '').replace('\r','').replace(' ','') # can be True or False
             var_value = line.split('" ')[1].split(' ')[1]
-            pixmap = QPixmap('/home/laura/teamcode/appsAway/demos/synthesis/audioicon.png')
+            pixmap = QPixmap('images/audioicon.png')
             pushButton = QPushButton(button_text)
             pushButton.setGeometry(200, 150, 50, 50) 
             pushButton.setIcon(QIcon(pixmap))
@@ -398,9 +398,14 @@ class WidgetGallery(QDialog):
                     dep_temp = dependency[2][dependency[1].index(button.button.currentText())] # we want the set of options corresponding to the correct trigger
                     dep_list = dep_temp.split('/')
                     if buttonOption.varType == 'dropdownList': # we change the options of the button dropwdown
-                      buttonOption.button.clear()
-                      for option in dep_list:
-                        buttonOption.button.addItem(option)
+                      prev_dep = []
+                      for i in range(buttonOption.button.count()):
+                        prev_dep = prev_dep + [buttonOption.button.itemText(i)]
+                      if dep_list != prev_dep:
+                        print("item list cleared")
+                        buttonOption.button.clear()
+                        for option in dep_list:
+                          buttonOption.button.addItem(option)
                   elif dependency[2] == 'enable':
                     if buttonOption.button != None:
                       buttonOption.button.setEnabled(True)
@@ -458,19 +463,19 @@ class WidgetGallery(QDialog):
       def checkButtonState():
         for button in self.button_list: # check the status of all buttons
           self.checkDependencies(button)
-          self.checkRequirements()
+        self.checkRequirements()
       return checkButtonState
 
     @pyqtSlot()
     def playAudio(self):
       def play():
-        sel_voice=[el.button.currentText() for el in list(filter(lambda x: x.varType == 'voiceNameInput', self.button_list)) ] #to avoid another for loop on all the buttons, we do a filter 
-        sel_lang=[el.button.currentText() for el in list(filter(lambda x: x.varType == 'languageSynthesisInput', self.button_list)) ] #here we have the selected voice
+        sel_voice=[el.button.currentText() for el in list(filter(lambda x: x.varName == 'VOICE_NAME_INPUT', self.button_list)) ] #to avoid another for loop on all the buttons, we do a filter 
+        sel_lang=[el.button.currentText() for el in list(filter(lambda x: x.varName == 'LANGUAGE_SYNTHESIS_INPUT', self.button_list)) ] #here we have the selected voice
         
         pygame.mixer.pre_init(24000, -16, 1, 2048)
         pygame.init()
         mixer.init()
-        mixer.music.load('/home/laura/teamcode/appsAway/demos/synthesis/Archive/'+ sel_lang[0] + '_' + sel_voice[0] + '.mp3')
+        mixer.music.load('../gui/target/appGUI/Archive/language '+ sel_lang[0] + '_' + sel_voice[0] + '.mp3')
         mixer.music.play()
         mixer.stop()
         self.checkRequirements()
