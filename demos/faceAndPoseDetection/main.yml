@@ -5,6 +5,8 @@ x-yarp-base: &yarp-base
   environment:
     - YARP_FORWARD_LOG_ENABLE=1
     - CUSTOM_PORT
+    - YOP_INPUT
+    - FL_INPUT
   volumes:
     - type: volume
       source: yarp-config
@@ -16,10 +18,12 @@ x-yarp-base: &yarp-base
 
 
 x-yarp-demo: &yarp-demo
-  image: icubteamcode/humansensing:master_master-unstable_sources
+  image: icubteamcode/humansensing:master_master-unstable_sources #this image name still need to be changed into face-and-pose-detection
   environment:
     - YARP_FORWARD_LOG_ENABLE=1
     - CUSTOM_PORT
+    - YOP_INPUT
+    - FL_INPUT
   volumes:
     - type: volume
       source: yarp-config
@@ -46,9 +50,24 @@ services:
             - discrete_resource_spec:
                 kind: 'gpu'
                 value: 1 #does this work? or do we have to specify a particular number? - answer, number...
-    command: yarpOpenPose --hand_enable $USE_HANDS --face_enable $USE_FACE --num_gpu 1
+    command: sh -c "if [ ${YOP_INPUT} = 'True' ]; yarpOpenPose --hand_enable $USE_HANDS --face_enable $USE_FACE --num_gpu 1; fi"
 
+  yDemofaceLandmarks:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "if [ ${FL_INPUT} = 'True' ]; faceLandmarks; fi"
 
+  yConnectCamToFL_l:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "if [ ! -z ${CUSTOM_PORT} ]; then yarp wait $CUSTOM_PORT ; yarp wait /faceLandmarks/image:i ; yarp connect $CUSTOM_PORT /faceLandmarks/image:i tcp ; else yarp wait /icub/camcalib/left/out; yarp wait /faceLandmarks/image:i ; yarp connect /icub/camcalib/left/out /faceLandmarks/image:i tcp; fi"
+  
   yserver:
     <<: *yarp-base
     deploy:
