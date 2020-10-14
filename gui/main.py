@@ -40,7 +40,8 @@ class optionButton():
 
         # Buttons it depends on (is only enabled if other button are selected) - structure: [[GOOGLE_check, on, off], [...], ... ]
         # [var_name of the external button, status of the external button, effect on the current button]
-        self.dependencies = []
+        self.dependencies = ""
+        self.options = []
 
 
 class MyHandler(FileSystemEventHandler):
@@ -99,7 +100,7 @@ class WidgetGallery(QDialog):
         self.button_name_list = []
         global find_startAskInput #to have access from stop Application 
         find_startAskInput = False
-        conf_file = open(self.gui_dir + "/gui_conf.ini", "r")
+        conf_file = open(os.path.join(self.gui_dir, "gui_conf.ini"), "r")
 
 # TODO: put sanity checks on the inputs from the .ini file, just in case
 
@@ -108,7 +109,7 @@ class WidgetGallery(QDialog):
           if line.find("title") != -1:
             self.title = line.split('"')[1]
           if line.find("ImageName") != -1:
-            self.image = self.gui_dir + "/" + line.split('"')[1]
+            self.image = os.path.join(self.gui_dir, line.split('"')[1])
 
           # radioButton option
           if line.find("radioButton") != -1:
@@ -121,7 +122,7 @@ class WidgetGallery(QDialog):
             initial_setting = line.split('" ')[1].split(' ')[2]
             if initial_setting == "off":
               radioButton.setEnabled(False)
-            self.button_list = self.button_list + [optionButton(button_type, radioButton, var_name, requisite, None, var_value)]
+            self.button_list.append(optionButton(button_type, radioButton, var_name, requisite, None, var_value))
 
           # text input with corresponding radioButton
           if line.find("textEditButton") != -1: 
@@ -136,7 +137,7 @@ class WidgetGallery(QDialog):
             if initial_setting == "off":
               radioButton.setEnabled(False)
               inputButton.setEnabled(False)
-            self.button_list = self.button_list + [optionButton(button_type, radioButton, var_name, requisite, inputButton, None)]
+            self.button_list.append(optionButton(button_type, radioButton, var_name, requisite, inputButton, None))
 
           # text input without a radioButton
           if line.find("textEditBox") != -1: 
@@ -150,7 +151,7 @@ class WidgetGallery(QDialog):
             button = QLabel(button_text)
             if initial_setting == "off":
               inputButton.setEnabled(False)
-            self.button_list = self.button_list + [optionButton(button_type, button, var_name, requisite, inputButton, None)]
+            self.button_list.append(optionButton(button_type, button, var_name, requisite, inputButton, None))
 
           # file input (text box)
           if line.find("fileInput") != -1:
@@ -165,7 +166,7 @@ class WidgetGallery(QDialog):
             if initial_setting == "off":
               pushButton.setEnabled(False)
               inputButton.setEnabled(False)
-            self.button_list = self.button_list + [optionButton(button_type, pushButton, var_name, requisite, inputButton, None)]
+            self.button_list.append(optionButton(button_type, pushButton, var_name, requisite, inputButton, None))
 
           # checkbox/toggleButton input
           if line.find("toggleButton") != -1:
@@ -178,7 +179,7 @@ class WidgetGallery(QDialog):
             initial_setting = line.split('" ')[1].split(' ')[2]
             if initial_setting == "off":
               checkBox.setEnabled(False)
-            self.button_list = self.button_list + [optionButton(button_type, checkBox, var_name, requisite, None, var_value)]
+            self.button_list.append(optionButton(button_type, checkBox, var_name, requisite, None, var_value))
 
           # dropDown lists input
           if line.find("dropdownList") != -1:
@@ -194,7 +195,7 @@ class WidgetGallery(QDialog):
             initial_setting = line.split('" ')[1].split(' ')[2]
             if initial_setting == "off":
               dropdownButton.setEnabled(False)
-            self.button_list = self.button_list + [optionButton(button_type, dropdownButton, var_name, requisite, None, var_value)]
+            self.button_list.append(optionButton(button_type, dropdownButton, var_name, requisite, None, var_value))
             
           # push button input
           if line.find("pushButton") != -1:
@@ -211,7 +212,7 @@ class WidgetGallery(QDialog):
             initial_setting = line.split('" ')[1].split(' ')[2]
             if initial_setting == "off":
               pushButton.setEnabled(False)
-            self.button_list = self.button_list + [optionButton(button_type, pushButton, var_name, requisite, None, var_value)]
+            self.button_list.append(optionButton(button_type, pushButton, var_name, requisite, None, var_value))
 
           # audio button input
           if line.find("audioInput") != -1:
@@ -228,7 +229,7 @@ class WidgetGallery(QDialog):
             initial_setting = line.split('" ')[1].split(' ')[2]
             if initial_setting == "off":
               pushButton.setEnabled(False)
-            self.button_list = self.button_list + [optionButton(button_type, pushButton, var_name, requisite, None, var_value)]
+            self.button_list.append(optionButton(button_type, pushButton, var_name, requisite, None, var_value))
 
           # this will add the dependencies to the respective buttons in the class
           # dependencies should be written in the following format: "Dependency - INPUT_FILE - GOOGLE_INPUT on on - ..."
@@ -236,20 +237,39 @@ class WidgetGallery(QDialog):
             dependency_list = line.replace('\n', '').split(' - ')
             for button in self.button_list:
               if button.varName == dependency_list[1]:
-                for dep in range(2, len(dependency_list)):
-                  temp_dep = dependency_list[dep].split(' ')
-                  if temp_dep[1].find('[') != -1:
-                    temp_dep[1]=temp_dep[1].replace('[','').replace(']','').split('/')
-                  if temp_dep[2].find('[') != -1:
-                    temp_dep[2] = temp_dep[2].replace('[','').replace(']','').split(',')
-                  button.dependencies = button.dependencies + [[temp_dep[0], temp_dep[1], temp_dep[2]]]
+                button.dependencies = dependency_list[2]
+
+          if line.find("OptionList") != -1:
+            option_list = line.replace('\n', '').split(' - ')
+            for button in self.button_list:
+              if button.varName == option_list[1]:
+                temp_opt = option_list[2].split(' ')
+                if temp_opt[1].find('[') != -1:
+                  temp_opt[1]=temp_opt[1].replace('[','').replace(']','').split('/')
+                if temp_opt[2].find('[') != -1:
+                  temp_opt[2] = temp_opt[2].replace('[','').replace(']','').split(',')
+                button.options = button.options + [[temp_opt[0], temp_opt[1], temp_opt[2]]]
+
+
+
+          #if line.find("Dependency") != -1:
+          #  dependency_list = line.replace('\n', '').split(' - ')
+          #  for button in self.button_list:
+          #    if button.varName == dependency_list[1]:
+          #      for dep in range(2, len(dependency_list)):
+          #        temp_dep = dependency_list[dep].split(' ')
+          #        if temp_dep[1].find('[') != -1:
+          #          temp_dep[1]=temp_dep[1].replace('[','').replace(']','').split('/')
+          #        if temp_dep[2].find('[') != -1:
+          #          temp_dep[2] = temp_dep[2].replace('[','').replace(']','').split(',')
+          #        button.dependencies = button.dependencies + [[temp_dep[0], temp_dep[1], temp_dep[2]]]
 
 
         self.pushUpdateButton = QPushButton("Everything is Up to Date!")
         self.pushStartButton = QPushButton("Start the Application")
         self.pushStopButton = QPushButton("Stop the Application")
 
-        os.chdir(os.environ.get('HOME') + "/teamcode/appsAway/scripts/")
+        os.chdir(os.path.join(os.environ.get('HOME'),"teamcode","appsAway","scripts"))
         if os.path.isfile("PIPE"):
           os.remove("PIPE")
 
@@ -386,14 +406,137 @@ class WidgetGallery(QDialog):
         layout.addStretch(1)
         self.bottomRightGroupBox.setLayout(layout)   
 
+    def recursion(self, statement):
+      #statement = statement.replace(' ', '')
+      for i in range(len(statement)):
+        if i >= len(statement):
+          break;
+        if statement[i] == '(':
+          statement = statement[:i] + self.recursion(statement[i+1:])
+          print("statement after recursion: ", statement)
+        if statement[i] == ')':
+          statement = self.solve(statement[:i]) + statement[i+1:]
+          print("statement after solve: ", statement)
+          return statement
+      return statement    
+
+
+    def solve(self, statement):
+      expression_tmp = statement.split('{')
+      expression = []
+      for elem in expression_tmp:
+        expression = expression + elem.split('}')
+      has_operator = False
+      for i in range(len(expression)):
+        if expression[i] == '' or expression[i] == ' ':
+          continue
+        if expression[i].find('&&') == -1 and expression[i].find('||') == -1: # if it is not an operator
+          if has_operator:
+            if expression[i-1].find('&&') != -1: # if it was an and
+              if expression[i] == 'True':
+                intermediate_result = intermediate_result and True
+              elif expression[i] == 'False':
+                intermediate_result = intermediate_result and False
+              else:
+                intermediate_result = intermediate_result and self.evaluate_button(expression[i]) # TODO: I have to create this function
+            else:
+              if expression[i] == 'True':
+                intermediate_result = intermediate_result or True
+              elif expression[i] == 'False':
+                intermediate_result = intermediate_result or False
+              else:
+                intermediate_result = intermediate_result or self.evaluate_button(expression[i]) # TODO: I have to create this function
+            has_operator = False
+          else:
+            if expression[i] == 'True':
+              intermediate_result = True
+            elif expression[i] == 'False':
+              intermediate_result = False
+            else:
+              intermediate_result = self.evaluate_button(expression[i]) # TODO: I have to create this function
+        elif expression[i].find('&&') != -1 or expression[i].find('||') != -1: # if it IS an operator
+          has_operator = True
+        else:
+          return False
+      if intermediate_result:
+        return "{True}"
+      else:
+        return "{False}"
+
+
+    def evaluate_button(self, statement): # statement should be in the form of "BUTTON_NAME status effect"
+      print("statement in button: ", statement)
+      statement_list = statement.split(' ')
+      for button in self.button_list:
+        if button.varName == statement_list[0]:
+          if (((button.varType == "radioButton" or button.varType == "toggleButton") and 
+            ((statement_list[1] == "selected" and button.button.isChecked()) or 
+            (statement_list[1] == "unselected" and not button.button.isChecked()))) or 
+            ((button.varType == "textEditBox" or (button.varType == "textEditButton" and button.button.isChecked())) and button.inputBox.text() == statement_list[1]) or
+            (button.varType == "fileInput" and button.inputBox.text() != "") or 
+            (button.varType == "dropdownList" and (statement_list[1].find(button.button.currentText()) != -1))):
+            if statement_list[2] == 'enable':
+              return True
+            else: 
+              return False
+          else:
+            if statement_list[2] == 'enable':
+              return False
+            else: 
+              return True
+          
+
+    def checkDependencies(self, buttonOption):
+      result = self.recursion(buttonOption.dependencies)
+      print("result for button",buttonOption.varName,"was: ", result)
+      if result == "{True}":
+        print("is it True?")
+        if buttonOption.button != None:
+          buttonOption.button.setEnabled(True)
+        if buttonOption.inputBox != None:
+          buttonOption.inputBox.setEnabled(True)
+      elif result == "{False}":
+        print("is it false?")
+        if buttonOption.button != None:
+          buttonOption.button.setEnabled(False)
+        if buttonOption.inputBox != None:
+          buttonOption.inputBox.setEnabled(False)
+      else:
+        print("is it something else?")
+        if buttonOption.button != None:
+          buttonOption.button.setEnabled(True)
+        if buttonOption.inputBox != None:
+          buttonOption.inputBox.setEnabled(True)
+
+      # now we handle the options
+      if buttonOption.varType == 'dropdownList': # we change the options of the button dropwdown
+        for option in buttonOption.options:
+          for button in self.button_list:
+            if button != buttonOption:
+              if button.varName == option[0]:
+                opt_temp = option[2][option[1].index(button.button.currentText())] # we want the set of options corresponding to the correct trigger
+                opt_list = opt_temp.split('/')
+                prev_opt = []
+                for i in range(buttonOption.button.count()):
+                  prev_opt = prev_opt + [buttonOption.button.itemText(i)]
+                if opt_list != prev_opt:
+                  print("item list cleared")
+                  buttonOption.button.clear()
+                  for new_item in opt_list:
+                    buttonOption.button.addItem(new_item)
 
     # function to check all dependencies and verify if button should be enabled or not
-    def checkDependencies(self, buttonOption):
+    def _checkDependencies(self, buttonOption):
       for dependency in buttonOption.dependencies:
         for button in self.button_list:
           if button != buttonOption:
             if button.varName == dependency[0]:
-              if ((button.varType == "radioButton" or button.varType == "toggleButton") and ((dependency[1] == "selected" and button.button.isChecked()) or (dependency[1] == "unselected" and not button.button.isChecked()))) or ((button.varType == "textEditBox" or (button.varType == "textEditButton" and button.button.isChecked())) and button.inputBox.text() == dependency[1]) or (button.varType == "fileInput" and button.inputBox.text() != "") or (button.varType == "dropdownList" and (button.button.currentText() in dependency[1])):
+              if (((button.varType == "radioButton" or button.varType == "toggleButton") and 
+                ((dependency[1] == "selected" and button.button.isChecked()) or 
+                (dependency[1] == "unselected" and not button.button.isChecked()))) or 
+                ((button.varType == "textEditBox" or (button.varType == "textEditButton" and button.button.isChecked())) and button.inputBox.text() == dependency[1]) or
+                (button.varType == "fileInput" and button.inputBox.text() != "") or 
+                (button.varType == "dropdownList" and (button.button.currentText() in dependency[1]))):
                   if type(dependency[2]) == list:
                     dep_temp = dependency[2][dependency[1].index(button.button.currentText())] # we want the set of options corresponding to the correct trigger
                     dep_list = dep_temp.split('/')
@@ -475,7 +618,7 @@ class WidgetGallery(QDialog):
         pygame.mixer.pre_init(24000, -16, 1, 2048)
         pygame.init()
         mixer.init()
-        mixer.music.load('../gui/target/appGUI/Archive/language '+ sel_lang[0] + '_' + sel_voice[0] + '.mp3')
+        mixer.music.load(os.path.join('..','gui','target','appGUI','Archive','language '+ sel_lang[0] + '_' + sel_voice[0] + '.mp3'))
         mixer.music.play()
         mixer.stop()
         self.checkRequirements()
@@ -586,11 +729,11 @@ class WidgetGallery(QDialog):
         self.pushUpdateButton.setText("Installing....")
         # then we change working directory
         #os.chdir("ansible_setup") 
-        os.chdir(os.environ.get('HOME') + "/teamcode/appsAway/scripts/ansible_setup")
+        os.chdir(os.path.join(os.environ.get('HOME'),"teamcode","appsAway","scripts","ansible_setup"))
         rc = subprocess.call("./setup_hosts_ini.sh")
         self.ansible = subprocess.Popen(['make', 'prepare'])
         #os.chdir("..") 
-        os.chdir(os.environ.get('HOME') + "/teamcode/appsAway/scripts/")
+        os.chdir(os.path.join(os.environ.get('HOME'),"teamcode","appsAway","scripts"))
 
     def startApplication(self):
         print("starting application")
@@ -606,6 +749,11 @@ class WidgetGallery(QDialog):
                 proceed_flag = True
               else: # if the button is disabled we should ignore its value
                 os.environ[buttonOption.varName] = ""
+
+            # TODO:
+            # path = /home/alexandre/Desktop/file
+            # os.path.basename(path) -> returns fileName
+            # os.path.split(path) -> [path, filename]
 
             if (proceed_flag or (buttonOption.button == None and buttonOption.inputBox.isEnabled)):
               if buttonOption.varType == 'fileInput':
@@ -657,7 +805,7 @@ class WidgetGallery(QDialog):
         rc = subprocess.call("./appsAway_stopApp.sh")
 
     def setupEnvironment(self):
-        os.chdir(os.environ.get('HOME') + "/teamcode/appsAway/demos/" + os.environ.get('APPSAWAY_APP_NAME'))
+        os.chdir(os.path.join(os.environ.get('HOME'), "teamcode","appsAway","demos", os.environ.get('APPSAWAY_APP_NAME')))
         yml_files_default = ["main.yml", "composeGui.yml", "composeHead.yml"]
         yml_files = []
 
@@ -737,7 +885,7 @@ class WidgetGallery(QDialog):
           env_file.write(line + '\n')
         env_file.close()
 
-        os.chdir(os.environ.get('HOME') + "/teamcode/appsAway/scripts/")
+        os.chdir(os.path.join(os.environ.get('HOME'), "teamcode","appsAway","scripts"))
           
         # now we copy all the files to their respective machines
         rc = subprocess.call("./appsAway_copyFiles.sh")
