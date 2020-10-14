@@ -50,14 +50,14 @@ services:
             - discrete_resource_spec:
                 kind: 'gpu'
                 value: 1 #does this work? or do we have to specify a particular number? - answer, number...
-    command: sh -c "if [ ${YOP_INPUT} = 'True' ]; yarpOpenPose --hand_enable $USE_HANDS --face_enable $USE_FACE --num_gpu 1; fi"
+    command: sh -c "if [ ${YOP_INPUT} = 'True' ]; then yarpOpenPose --hand_enable $USE_HANDS --face_enable $USE_FACE --num_gpu 1; fi"
 
   yDemofaceLandmarks:
     <<: *yarp-base
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "if [ ${FL_INPUT} = 'True' ]; faceLandmarks; fi"
+    command: sh -c "if [ ${FL_INPUT} = 'True' ]; then faceLandmarks; fi"
 
   yConnectCamToFL_l:
     <<: *yarp-base
