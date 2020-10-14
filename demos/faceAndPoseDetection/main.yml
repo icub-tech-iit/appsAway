@@ -53,7 +53,7 @@ services:
     command: sh -c "if [ ${YOP_INPUT} = 'True' ]; then yarpOpenPose --hand_enable $USE_HANDS --face_enable $USE_FACE --num_gpu 1; fi"
 
   yDemofaceLandmarks:
-    <<: *yarp-base
+    <<: *yarp-demo
     deploy:
       placement:
         constraints: [node.labels.type != head]
