@@ -8,6 +8,8 @@ x-yarp-base: &yarp-base
     - YARP_FORWARD_LOG_ENABLE=1
     - YARP_ROBOT_NAME
     - FILE_INPUT
+    - LANGUAGE_SYNTHESIS_INPUT
+    - VOICE_NAME_INPUT
   volumes:
     - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
     - "${XAUTHORITY}:/root/.Xauthority:rw"
@@ -18,8 +20,18 @@ x-yarp-base: &yarp-base
   privileged: true
   #ipc: host
 
-#services:
+services:
 #following service are configured in icub-main/app/iCubStartup/scripts/iCubStartup.xml.template
+  
+  yDemoGoogleSynthesis:
+    <<: *yarp-base
+    devices: 
+      - "/dev/snd:/dev/snd"
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "googleSynthesis --language ${LANGUAGE_SYNTHESIS_INPUT} --voice ${VOICE_NAME_INPUT}"
+
   
 
 

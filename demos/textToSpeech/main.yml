@@ -30,13 +30,6 @@ services:
     command: yarpserver --write
   
 #------------------------------------------------------------------------------------------------
-  
-  yDemoGoogleSynthesis:
-    <<: *yarp-base
-    deploy:
-      placement:
-        constraints: [node.labels.type != head]
-    command: sh -c "googleSynthesis --language ${LANGUAGE_SYNTHESIS_INPUT} --voice ${VOICE_NAME_INPUT}"
 
 
 #------------------------------------------------------------------------------------------------

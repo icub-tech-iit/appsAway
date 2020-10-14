@@ -57,12 +57,6 @@ services:
         condition: on-failure
     command: sh -c ""if [ ${GOOGLE_INPUT} = 'True' ]; then yarp wait /googleSpeech/result:o; yarp wait /start-ask/speech:i; yarp connect /googleSpeech/result:o /start-ask/speech:i; fi"
 
-  yDemoGoogleSynthesis:
-    <<: *yarp-base
-    deploy:
-      placement:
-        constraints: [node.labels.type != head]
-    command: sh -c "if [ ${GOOGLE_SYNTHESIS_INPUT} = 'True' ];then googleSynthesis --language ${LANGUAGE_SYNTHESIS_INPUT} --voice ${VOICE_NAME_INPUT}; fi"
 
   yConnectToGoogleSynthesis:
     <<: *yarp-base
