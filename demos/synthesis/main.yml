@@ -53,6 +53,8 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
     command: sh -c ""if [ ${GOOGLE_INPUT} = 'True' ]; then yarp wait /googleSpeech/result:o; yarp wait /start-ask/speech:i; yarp connect /googleSpeech/result:o /start-ask/speech:i; fi"
 
   yDemoGoogleSynthesis:
@@ -67,6 +69,8 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
     command: sh -c "if [ ${GOOGLE_SYNTHESIS_INPUT} = 'True' ];then yarp wait /start-ask/start:o; yarp wait /googleSynthesis/text:i; yarp connect /start-ask/start:o /googleSynthesis/text:i; fi"
 
 #------------------------------------------------------------------------------------------------
