@@ -90,7 +90,7 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "yarp wait /yarpOpenPose/image:o ; yarp wait /pose ; yarp connect /yarpOpenPose/image:o /pose udp"
+    command: sh -c "if [ ${FL_INPUT} = 'True' ]; then yarp wait /faceLandmarks/image:o ; yarp wait /pose ; yarp connect /faceLandmarks/image:o /pose udp; else yarp wait /yarpOpenPose/image:o ; yarp wait /pose ; yarp connect /yarpOpenPose/image:o /pose udp; fi"
     restart: on-failure
   
   yconnect_groundtruth:
