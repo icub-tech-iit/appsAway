@@ -39,6 +39,7 @@ class ButtonType(Enum):
     TEXT_EDIT_BUTTON = ("textEditButton")
     TEXT_EDIT_BOX = ("textEditBox")
     PUSH_BUTTON = ("pushButton")
+    START_BUTTON = ("startButton")
 
     @staticmethod
     def in_line(line: str) -> bool:
@@ -49,7 +50,7 @@ class ButtonType(Enum):
         return False
 
 class OptionButton():
-    def __init__(self, varType, button, varName, is_required, inputBox, outputs, label):
+    def __init__(self, varType, button, varName, inputBox, outputs, label):
         self.varType = varType # radioButton, etc
         self.button = button # the type of Qt button 
         self.varName = varName # the name of the corresponding environment variable
@@ -57,7 +58,7 @@ class OptionButton():
 
         # USED ONLY IF NOT RADIOBUTTONS OR RADIOBUTTONS WITH TEXTBOX
         # boolean to indicate if it is required to fill this button
-        self.is_required = is_required 
+        #self.is_required = is_required 
         self.inputBox = inputBox # the Qt object for the input box
 
         # USED ONLY IF CHECKBOX[2], RADIOBUTTON[1], PUSHBUTTON[file_path/settings], OR DROPDOWN LISTS[multiple]
@@ -87,25 +88,20 @@ class OptionButton():
         else:
           label = None
 
-        var_name, val_value, initial_setting, ticked_state, requisite  = other.split(' ')
-        #var_name = other.split(' ')[0]
-        #requisite = other.split(' ')[-1]
-        #initial_setting = other.split(' ')[2]
-        #ticked_state = other.split(' ')
+        var_name, val_value, initial_setting, ticked_state  = other.split(' ')
+
         if val_value == "None":
           val_value = None
         elif val_value.find('/'):
           val_value = val_value.split('/')
 
         if button_type == ButtonType.RADIO_BUTTON:
-            #val_value = other.split(' ')[1]
             inputButton = None
             button = QRadioButton(button_text)
             if initial_setting == "off":
               button.setEnabled(False)
 
         elif button_type == ButtonType.TEXT_EDIT_BUTTON:
-            #val_value = None
             inputButton = QLineEdit(widget_gallery)
             inputButton.setPlaceholderText(var_name)
             button = QRadioButton(button_text)
@@ -114,7 +110,6 @@ class OptionButton():
               inputButton.setEnabled(False)
 
         elif button_type == ButtonType.TEXT_EDIT_BOX:
-            #val_value = None
             inputButton = QLineEdit(widget_gallery)
             inputButton.setPlaceholderText(var_name)
             button = None
@@ -122,26 +117,22 @@ class OptionButton():
               inputButton.setEnabled(False)
 
         elif button_type == ButtonType.FILE_INPUT:
-            #val_value = None
             inputButton = QLineEdit(widget_gallery)
             inputButton.setPlaceholderText(var_name)
-            button = QPushButton(button_text)  # pushButton
+            button = QPushButton(button_text)
             if initial_setting == "off":
               inputButton.setEnabled(False)
               button.setEnabled(False)
 
         elif button_type == ButtonType.TOGGLE_BUTTON:
-            #val_value = other.split(' ')[1].split('/')
             inputButton = None
             button = QCheckBox(button_text)
             if initial_setting == "off":
               button.setEnabled(False)
             if ticked_state == "ticked":
               button.setChecked(True)
-            # checkBox = QCheckBox(button_text)
 
         elif button_type == ButtonType.DROPDOWN_LIST:
-            #val_value = other.split(' ')[1].split('/')
             inputButton = None
             button = QComboBox(widget_gallery)
             for _value in val_value:
@@ -149,10 +140,8 @@ class OptionButton():
             button.move(50, 250)
             if initial_setting == "off":
               button.setEnabled(False)
-            # dropdownButton = QComboBox(self)
 
         elif button_type == ButtonType.PUSH_BUTTON:
-            #val_value = other.split(' ')[1]
             inputButton = None
             pixmap = QPixmap('images/audioicon.png')
             button = QPushButton(button_text)
@@ -161,7 +150,6 @@ class OptionButton():
             button.setIconSize(QSize(50, 50))
 
         elif button_type == ButtonType.AUDIO_INPUT:
-            #val_value = other.split(' ')[1]
             inputButton = None
             pixmap = QPixmap('images/audioicon.png')
             button = QPushButton(button_text)
@@ -169,16 +157,7 @@ class OptionButton():
             button.setIcon(QIcon(pixmap))
             button.setIconSize(QSize(50, 50))
 
-
-        # initial_setting = other.split(' ')[2]
-
-        # if initial_setting == "off":
-        #    if inputButton is not None:
-        #        # inputButton.setEnabled(False)
-        #        pass
-        #    # button.setEnabled(False)
-
-        return OptionButton(button_type.value, button, var_name, requisite, inputButton, val_value, label)
+        return OptionButton(button_type.value, button, var_name, inputButton, val_value, label)
 
 class MyHandler(FileSystemEventHandler):
     def __init__(self, progressBar):
@@ -240,6 +219,12 @@ class WidgetGallery(QDialog):
 
 # TODO: put sanity checks on the inputs from the .ini file, just in case
 
+        self.pushUpdateButton = QPushButton("Everything is Up to Date!")
+        self.pushStartButton = QPushButton("Start the Application")
+        self.startButtonEntry = OptionButton("startButton", self.pushStartButton, "START_BUTTON", None, None, "")
+        self.button_list.append(self.startButtonEntry)
+        self.pushStopButton = QPushButton("Stop the Application")
+
         for line in conf_file:
           line = line.replace('\n', '').replace('\r','').strip()
           if line.find("title") != -1:
@@ -270,9 +255,6 @@ class WidgetGallery(QDialog):
                 button.options = button.options + [[temp_opt[0], temp_opt[1], temp_opt[2]]]
 
 
-        self.pushUpdateButton = QPushButton("Everything is Up to Date!")
-        self.pushStartButton = QPushButton("Start the Application")
-        self.pushStopButton = QPushButton("Stop the Application")
 
         os.chdir(os.path.join(os.environ.get('HOME'),"teamcode","appsAway","scripts"))
         if os.path.isfile("PIPE"):
@@ -367,6 +349,9 @@ class WidgetGallery(QDialog):
         layout = QVBoxLayout()
         for buttonOption in self.button_list:
 
+          if buttonOption.varType == "startButton":
+            continue
+
           if buttonOption.label != None:
             layout.addWidget(buttonOption.label)
           if buttonOption.button != None:
@@ -399,6 +384,7 @@ class WidgetGallery(QDialog):
             #layout.addWidget(buttonOption.button)
             #layout.addWidget(buttonOption.inputBox)
             buttonOption.button.clicked.connect(self.openFile(buttonOption))
+            buttonOption.inputBox.textChanged.connect(self.checkToggleState(buttonOption))
 
           if buttonOption.varType == 'toggleButton':
             #layout.addWidget(buttonOption.button)
@@ -498,6 +484,8 @@ class WidgetGallery(QDialog):
 
     def checkDependencies(self, buttonOption):
       result = self.recursion(buttonOption.dependencies)
+      #print("result: ", result)
+      #print("button: ", buttonOption.varType)
       if result == "{True}":
         if buttonOption.button != None:
           buttonOption.button.setEnabled(True)
@@ -508,11 +496,6 @@ class WidgetGallery(QDialog):
           buttonOption.button.setEnabled(False)
         if buttonOption.inputBox != None:
           buttonOption.inputBox.setEnabled(False)
-      #else:
-      #  if buttonOption.button != None:
-      #    buttonOption.button.setEnabled(True)
-      #  if buttonOption.inputBox != None:
-      #    buttonOption.inputBox.setEnabled(True)
 
       # now we handle the options
       if buttonOption.varType == 'dropdownList': # we change the options of the button dropwdown
@@ -529,44 +512,13 @@ class WidgetGallery(QDialog):
                   buttonOption.button.clear()
                   for new_item in opt_list:
                     buttonOption.button.addItem(new_item)
-
-
-    def checkRequirements(self):
-      for button in self.button_list:
-        if button.is_required == "True":
-          if button.varType == 'radioButton' or button.varType == 'toggleButton':
-            if not button.button.isChecked():
-              self.pushStartButton.setEnabled(False)
-              return "disabled"
-
-          if button.varType == 'textEditBox':
-            if button.inputBox.text() == "" or button.inputBox.text() == button.inputBox.placeholderText():
-              self.pushStartButton.setEnabled(False)
-              return "disabled"       
-       
-          if button.varType == 'textEditButton':
-            if not button.button.isChecked() and (button.inputBox.text() == "" or button.inputBox.text() == button.inputBox.placeholderText()):
-              self.pushStartButton.setEnabled(False)
-              return "disabled"
-    
-          if button.varType == 'dropdownList':
-            if button.button.currentText() == "" or button.button.text() == button.button.placeholderText():
-              self.pushStartButton.setEnabled(False)
-              return "disabled"
-              
-          if button.varType == 'fileInput':
-            if button.inputBox.text() == "":
-              self.pushStartButton.setEnabled(False)
-              return "disabled"
-      self.pushStartButton.setEnabled(True)
-          
+ 
     
     @pyqtSlot()
     def checkToggleState(self,buttonOption):
       def checkButtonState():
         for button in self.button_list: # check the status of all buttons
           self.checkDependencies(button)
-        self.checkRequirements()
       return checkButtonState
 
     @pyqtSlot()
@@ -581,7 +533,6 @@ class WidgetGallery(QDialog):
         mixer.music.load(os.path.join('..','gui','target','appGUI','Archive','language '+ sel_lang[0] + '_' + sel_voice[0] + '.mp3'))
         mixer.music.play()
         mixer.stop()
-        self.checkRequirements()
       return play
 
 
@@ -589,10 +540,7 @@ class WidgetGallery(QDialog):
     def openFile(self, buttonOption):
       def takeFile():
         filename, _ = QFileDialog.getOpenFileName(self, "Choose file", "/home", "File extension Json (*.json)")
-
         buttonOption.inputBox.setText(filename)
-        self.checkRequirements()
-
       return takeFile
 
 
@@ -602,7 +550,6 @@ class WidgetGallery(QDialog):
         if buttonOption.inputBox != None:
           buttonOption.inputBox.setEnabled(True)
         self.disableAllOthers(buttonOption)
-        self.checkRequirements()
       return setEnable
 
     def disableAllOthers(self, currentOption):
@@ -618,11 +565,6 @@ class WidgetGallery(QDialog):
         
         self.pushStartButton.setDefault(True)
         self.pushStartButton.setEnabled(True)
-        
-        # if there are requisites, the start application button can be enabled after satisfying all the requisites
-        for b in self.button_list:
-          if b.is_required.find("True") != -1: 
-            self.pushStartButton.setEnabled(False)
     
         self.pushStopButton.setDefault(True)
         self.pushStopButton.setEnabled(False)
