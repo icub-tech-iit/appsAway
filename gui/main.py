@@ -49,10 +49,11 @@ class ButtonType(Enum):
         return False
 
 class OptionButton():
-    def __init__(self, varType, button, varName, is_required, inputBox, outputs):
+    def __init__(self, varType, button, varName, is_required, inputBox, outputs, label):
         self.varType = varType # radioButton, etc
         self.button = button # the type of Qt button 
         self.varName = varName # the name of the corresponding environment variable
+        self.label = label # "" or a title
 
         # USED ONLY IF NOT RADIOBUTTONS OR RADIOBUTTONS WITH TEXTBOX
         # boolean to indicate if it is required to fill this button
@@ -74,26 +75,37 @@ class OptionButton():
         els = line.split('"')
         els = [el.strip() for el in els]
 
-        button_type, button_text, other = els
+        button_type, button_label, _discard, button_text, other = els
 
         try:
             button_type = ButtonType(button_type)
         except:
             button_type = None
 
-        var_name = other.split(' ')[0]
-        requisite = other.split(' ')[-1]
-        initial_setting = other.split(' ')[2]
+        if button_label != "":
+          label = QLabel(button_label)
+        else:
+          label = None
+
+        var_name, val_value, initial_setting, ticked_state, requisite  = other.split(' ')
+        #var_name = other.split(' ')[0]
+        #requisite = other.split(' ')[-1]
+        #initial_setting = other.split(' ')[2]
+        #ticked_state = other.split(' ')
+        if val_value == "None":
+          val_value = None
+        elif val_value.find('/'):
+          val_value = val_value.split('/')
 
         if button_type == ButtonType.RADIO_BUTTON:
-            val_value = other.split(' ')[1]
+            #val_value = other.split(' ')[1]
             inputButton = None
             button = QRadioButton(button_text)
             if initial_setting == "off":
               button.setEnabled(False)
 
         elif button_type == ButtonType.TEXT_EDIT_BUTTON:
-            val_value = None
+            #val_value = None
             inputButton = QLineEdit(widget_gallery)
             inputButton.setPlaceholderText(var_name)
             button = QRadioButton(button_text)
@@ -102,15 +114,15 @@ class OptionButton():
               inputButton.setEnabled(False)
 
         elif button_type == ButtonType.TEXT_EDIT_BOX:
-            val_value = None
+            #val_value = None
             inputButton = QLineEdit(widget_gallery)
             inputButton.setPlaceholderText(var_name)
-            button = QLabel(button_text)
+            button = None
             if initial_setting == "off":
               inputButton.setEnabled(False)
 
         elif button_type == ButtonType.FILE_INPUT:
-            val_value = None
+            #val_value = None
             inputButton = QLineEdit(widget_gallery)
             inputButton.setPlaceholderText(var_name)
             button = QPushButton(button_text)  # pushButton
@@ -119,15 +131,17 @@ class OptionButton():
               button.setEnabled(False)
 
         elif button_type == ButtonType.TOGGLE_BUTTON:
-            val_value = other.split(' ')[1].split('/')
+            #val_value = other.split(' ')[1].split('/')
             inputButton = None
             button = QCheckBox(button_text)
             if initial_setting == "off":
               button.setEnabled(False)
+            if ticked_state == "ticked":
+              button.setChecked(True)
             # checkBox = QCheckBox(button_text)
 
         elif button_type == ButtonType.DROPDOWN_LIST:
-            val_value = other.split(' ')[1].split('/')
+            #val_value = other.split(' ')[1].split('/')
             inputButton = None
             button = QComboBox(widget_gallery)
             for _value in val_value:
@@ -138,7 +152,7 @@ class OptionButton():
             # dropdownButton = QComboBox(self)
 
         elif button_type == ButtonType.PUSH_BUTTON:
-            val_value = other.split(' ')[1]
+            #val_value = other.split(' ')[1]
             inputButton = None
             pixmap = QPixmap('images/audioicon.png')
             button = QPushButton(button_text)
@@ -147,7 +161,7 @@ class OptionButton():
             button.setIconSize(QSize(50, 50))
 
         elif button_type == ButtonType.AUDIO_INPUT:
-            val_value = other.split(' ')[1]
+            #val_value = other.split(' ')[1]
             inputButton = None
             pixmap = QPixmap('images/audioicon.png')
             button = QPushButton(button_text)
@@ -164,7 +178,7 @@ class OptionButton():
         #        pass
         #    # button.setEnabled(False)
 
-        return OptionButton(button_type.value, button, var_name, requisite, inputButton, val_value)
+        return OptionButton(button_type.value, button, var_name, requisite, inputButton, val_value, label)
 
 class MyHandler(FileSystemEventHandler):
     def __init__(self, progressBar):
@@ -227,7 +241,7 @@ class WidgetGallery(QDialog):
 # TODO: put sanity checks on the inputs from the .ini file, just in case
 
         for line in conf_file:
-          line = line.replace('\n', '').replace('\r','')
+          line = line.replace('\n', '').replace('\r','').strip()
           if line.find("title") != -1:
             self.title = line.split('"')[1]
           if line.find("ImageName") != -1:
@@ -353,46 +367,53 @@ class WidgetGallery(QDialog):
         layout = QVBoxLayout()
         for buttonOption in self.button_list:
 
+          if buttonOption.label != None:
+            layout.addWidget(buttonOption.label)
+          if buttonOption.button != None:
+            layout.addWidget(buttonOption.button)
+          if buttonOption.inputBox != None:
+            layout.addWidget(buttonOption.inputBox)
+
           # if this is the first radio button, we set it to true, and only this one
           if buttonOption.varType == 'radioButton' and not found_radio:
-            layout.addWidget(buttonOption.button)
+            #layout.addWidget(buttonOption.button)
             buttonOption.button.setChecked(True)
             buttonOption.button.clicked.connect(self.on_click(buttonOption))
             found_radio = True 
 
           # This adds the radiobutton and the corresponding text box
           if buttonOption.varType == 'textEditButton':
-            layout.addWidget(buttonOption.button)
-            layout.addWidget(buttonOption.inputBox)
+            #layout.addWidget(buttonOption.button)
+            #layout.addWidget(buttonOption.inputBox)
             buttonOption.button.clicked.connect(self.on_click(buttonOption))
             buttonOption.inputBox.textChanged.connect(self.checkToggleState(buttonOption))
 
           # This adds the radiobutton and the corresponding text box
           if buttonOption.varType == 'textEditBox':
-            layout.addWidget(buttonOption.button)
-            layout.addWidget(buttonOption.inputBox)
+            #layout.addWidget(buttonOption.button)
+            #layout.addWidget(buttonOption.inputBox)
             buttonOption.inputBox.textChanged.connect(self.checkToggleState(buttonOption))
 
           if buttonOption.varType == 'fileInput':
-            layout.addWidget(buttonOption.button)
-            layout.addWidget(buttonOption.inputBox)
+            #layout.addWidget(buttonOption.button)
+            #layout.addWidget(buttonOption.inputBox)
             buttonOption.button.clicked.connect(self.openFile(buttonOption))
 
           if buttonOption.varType == 'toggleButton':
-            layout.addWidget(buttonOption.button)
+            #layout.addWidget(buttonOption.button)
             buttonOption.button.stateChanged.connect(self.checkToggleState(buttonOption))
 
           if buttonOption.varType == 'dropdownList':
-            layout.addWidget(buttonOption.button)
+            #layout.addWidget(buttonOption.button)
             buttonOption.button.activated.connect(self.checkToggleState(buttonOption))
 
           if buttonOption.varType == 'audioInput':
-            layout.addWidget(buttonOption.button)
+            #layout.addWidget(buttonOption.button)
             buttonOption.button.clicked.connect(self.playAudio())
 
         # now we check the dependencies for all buttons, and enable/disable buttons accordingly
         for buttonOption in self.button_list:
-          self.checkDependencies(buttonOption)          
+          self.checkDependencies(buttonOption)
 
         layout.addStretch(1)
         self.bottomRightGroupBox.setLayout(layout)   
@@ -486,11 +507,11 @@ class WidgetGallery(QDialog):
           buttonOption.button.setEnabled(False)
         if buttonOption.inputBox != None:
           buttonOption.inputBox.setEnabled(False)
-      else:
-        if buttonOption.button != None:
-          buttonOption.button.setEnabled(True)
-        if buttonOption.inputBox != None:
-          buttonOption.inputBox.setEnabled(True)
+      #else:
+      #  if buttonOption.button != None:
+      #    buttonOption.button.setEnabled(True)
+      #  if buttonOption.inputBox != None:
+      #    buttonOption.inputBox.setEnabled(True)
 
       # now we handle the options
       if buttonOption.varType == 'dropdownList': # we change the options of the button dropwdown
