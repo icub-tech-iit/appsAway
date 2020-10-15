@@ -7,10 +7,9 @@ x-yarp-base: &yarp-base
     - FILE_INPUT
     - INPUT_BOX
     - GOOGLE_INPUT
-    - LANGUAGE_SPEECH_INPUT
     - GOOGLE_SYNTHESIS_INPUT
-    - LANGUAGE_SYNTHESIS_INPUT
     - VOICE_NAME_INPUT
+    - LANGUAGE_DIALOG_INPUT
   volumes:
     - type: volume
       source: yarp-config
@@ -39,14 +38,14 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "if [ ${GOOGLE_INPUT} = 'True' ]; then yarp wait /microphone/audio:o; googleSpeech --language_code ${LANGUAGE_SPEECH_INPUT}; fi" 
+    command: sh -c "if [ ${GOOGLE_INPUT} = 'True' ]; then yarp wait /microphone/audio:o; googleSpeech --language_code ${LANGUAGE_DIALOG_INPUT}; fi" 
  
   yDemoGoogleDialog:
     <<: *yarp-base
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "googleDialog --project ${INPUT_BOX}"
+    command: sh -c "googleDialog --project ${INPUT_BOX} --language ${LANGUAGE_DIALOG_INPUT}"
 
   yConnectToGoogleSynthesis:
     <<: *yarp-base

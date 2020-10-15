@@ -9,7 +9,7 @@ x-yarp-base: &yarp-base
     - YARP_ROBOT_NAME
     - FILE_INPUT
     - GOOGLE_SYNTHESIS_INPUT
-    - LANGUAGE_SYNTHESIS_INPUT
+    - LANGUAGE_DIALOG_INPUT
     - VOICE_NAME_INPUT
   volumes:
     - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
@@ -35,7 +35,7 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "if [ ${GOOGLE_SYNTHESIS_INPUT} = 'True' ];then googleSynthesis --language ${LANGUAGE_SYNTHESIS_INPUT} --voice ${VOICE_NAME_INPUT}; fi"
+    command: sh -c "if [ ${GOOGLE_SYNTHESIS_INPUT} = 'True' ];then googleSynthesis --language ${LANGUAGE_DIALOG_INPUT} --voice ${VOICE_NAME_INPUT}; fi"
   
   yconnect_audio:
     <<: *yarp-base
