@@ -375,11 +375,12 @@ class WidgetGallery(QDialog):
             layout.addWidget(buttonOption.inputBox)
 
           # if this is the first radio button, we set it to true, and only this one
-          if buttonOption.varType == 'radioButton' and not found_radio:
+          if (buttonOption.varType == 'radioButton' or buttonOption.varType == 'textEditButton') and not found_radio:
             #layout.addWidget(buttonOption.button)
             buttonOption.button.setChecked(True)
             buttonOption.button.clicked.connect(self.on_click(buttonOption))
             found_radio = True 
+            self.disableAllOthers(buttonOption)
 
           # This adds the radiobutton and the corresponding text box
           if buttonOption.varType == 'textEditButton':
