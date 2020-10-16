@@ -108,7 +108,7 @@ jobs:
                   changes_list="$changes_list<br/><br/>"
                 fi
                 user_list="$user_list$(head -1 $file | awk -F'//' '{print $2}')"
-                changes_list="$changes_list$(tail -n +1 $file | awk -F'//db' '{print $2}')"
+                changes_list="$changes_list$(tail -n +1 $file | awk -F'//&' '{print $2}')"
                 iter=$((iter+1))
               done
               echo $user_list
