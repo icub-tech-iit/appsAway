@@ -105,10 +105,10 @@ jobs:
                 if [ $iter != 0 ];
                 then
                   user_list="$user_list,"
-                  changes_list=`$changes_list\n\n`
+                  changes_list="$changes_list\n\n"
                 fi
                 user_list="$user_list$(head -1 $file | awk -F'//' '{print $2}')"
-                changes_list=`$changes_list$(tail -n +1 $file | awk -F'//db' '{print $2}')`
+                changes_list="$changes_list$(tail -n +1 $file | awk -F'//db' '{print $2}')"
                 iter=$((iter+1))
               done
               echo $user_list
@@ -120,7 +120,7 @@ jobs:
         uses: repo-sync/pull-request@v2
         with:
             pr_title: "Adding user changes into the website."
-            pr_body: ${{ steps.get_filedata.outputs.changes_list }}
+            pr_body: '${{ steps.get_filedata.outputs.changes_list }}'
             pr_reviewer: "AlexAntn,vtikha,ilaria-carlini"
             pr_assignee: ${{ steps.get_filedata.outputs.user_list }}
             source_branch: ${{ github.event.client_payload.branch_name }}
