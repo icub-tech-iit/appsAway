@@ -105,7 +105,7 @@ jobs:
                 if [ $iter != 0 ];
                 then
                   user_list="$user_list,"
-                  changes_list="$changes_list<br/><br/>"
+                  changes_list="$changes_list<br/>"
                 fi
                 user_list="$user_list$(head -1 $file | awk -F'//' '{print $2}')"
                 changes_list="$changes_list$(tail -n +1 $file | awk -F'//&' '{print $2}')"
