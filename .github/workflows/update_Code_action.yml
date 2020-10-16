@@ -92,6 +92,4 @@ jobs:
     steps:
       - name: placeholder job
         run: |
-            echo "${{ toJson(github.event.pull_request) }}"
-            echo "${{ contains(github.event.pull_request.head.ref, 'user_changes') }}"
-            echo "${{ contains(github.event.pull_request.head.ref, 'user_changes*') }}"
+            echo "skipping action"
