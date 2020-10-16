@@ -120,7 +120,7 @@ jobs:
         uses: repo-sync/pull-request@v2
         with:
             pr_title: "Adding user changes into the website."
-            pr_body: 'The changes made by the user are: \n\n${{ steps.get_filedata.outputs.changes_list }}'
+            pr_body: 'The changes made by the user are: <br/><br/>${{ steps.get_filedata.outputs.changes_list }}'
             pr_reviewer: "AlexAntn,vtikha,ilaria-carlini"
             pr_assignee: ${{ steps.get_filedata.outputs.user_list }}
             source_branch: ${{ github.event.client_payload.branch_name }}
