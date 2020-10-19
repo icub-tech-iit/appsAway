@@ -45,7 +45,7 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "googleDialog --project ${INPUT_BOX} --language ${LANGUAGE_DIALOG_INPUT}"
+    command: sh -c "googleDialog --agent ${INPUT_BOX} --language ${LANGUAGE_DIALOG_INPUT}"
 
   yConnectToGoogleSynthesis:
     <<: *yarp-base
