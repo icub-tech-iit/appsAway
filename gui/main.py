@@ -468,7 +468,7 @@ class WidgetGallery(QDialog):
           if (((button.varType == "radioButton" or button.varType == "toggleButton") and 
             ((statement_list[1] == "selected" and button.button.isChecked()) or 
             (statement_list[1] == "unselected" and not button.button.isChecked()))) or 
-            ((button.varType == "textEditBox" or (button.varType == "textEditButton" and button.button.isChecked())) and button.inputBox.text() == statement_list[1]) or
+            ((button.varType == "textEditBox" or (button.varType == "textEditButton" and button.button.isChecked())) and button.inputBox.text() != "") or
             (button.varType == "fileInput" and button.inputBox.text() != "") or 
             (button.varType == "dropdownList" and (statement_list[1].find(button.button.currentText()) != -1))):
             if statement_list[2] == 'enable':
