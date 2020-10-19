@@ -9,7 +9,7 @@ x-yarp-base: &yarp-base
     - GOOGLE_INPUT
     - GOOGLE_SYNTHESIS_INPUT
     - VOICE_NAME_INPUT
-    - LANGUAGE_DIALOG_INPUT
+    - LANGUAGE_SYNTHESIS_INPUT
   volumes:
     - type: volume
       source: yarp-config
@@ -38,20 +38,22 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "if [ ${GOOGLE_INPUT} = 'True' ]; then yarp wait /microphone/audio:o; googleSpeech --language_code ${LANGUAGE_DIALOG_INPUT}; fi" 
+    command: sh -c "if [ ${GOOGLE_INPUT} = 'True' ]; then yarp wait /microphone/audio:o; googleSpeech --language_code ${LANGUAGE_SYNTHESIS_INPUT}; fi" 
  
   yDemoGoogleDialog:
     <<: *yarp-base
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "googleDialog --agent ${INPUT_BOX} --language ${LANGUAGE_DIALOG_INPUT}"
+    command: sh -c "googleDialog --agent ${INPUT_BOX} --language ${LANGUAGE_SYNTHESIS_INPUT}"
 
   yConnectToGoogleSynthesis:
     <<: *yarp-base
     deploy:
       placement:
         constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
     command: sh -c "if [ ${GOOGLE_SYNTHESIS_INPUT} = 'True' ];then yarp wait /googleDialog/result:o; yarp wait /googleSynthesis/text:i; yarp connect /googleDialog/result:o /googleSynthesis/text:i; fi"
 
   yConnectToGoogleDialog:
@@ -59,7 +61,26 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
     command: sh -c "if [ ${GOOGLE_INPUT} = 'True' ];then yarp wait /googleSpeech/result:o; yarp wait /googleDialog/text:i; yarp connect /googleSpeech/result:o /googleDialog/text:i; fi"
+  
+  yconnect_audio:
+    <<: *yarp-base
+    container_name: yconnect_audio
+    deploy:
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp wait /microphone/audio:o; yarp wait /googleSpeech/sound:i; yarp connect /microphone/audio:o /googleSpeech/sound:i tcp"
+
+  yconnect_rpc:
+    <<: *yarp-base
+    container_name: yconnect_rpc
+    deploy:
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp wait /microphone/rpc; yarp wait /googleSpeech/commands:rpc; yarp connect /googleSpeech/commands:rpc /microphone/rpc tcp"
+
 
 
 #------------------------------------------------------------------------------------------------
