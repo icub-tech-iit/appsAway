@@ -5,6 +5,7 @@ x-yarp-base: &yarp-base
   environment:
     - DISPLAY=${DISPLAY}
     - XAUTHORITY=/root/.Xauthority
+    - PULSE_SERVER=unix:${XDG_RUNTIME_DIR}/pulse/native
     - YARP_FORWARD_LOG_ENABLE=1
     - YARP_ROBOT_NAME
     - FILE_INPUT
@@ -16,10 +17,15 @@ x-yarp-base: &yarp-base
     - "${XAUTHORITY}:/root/.Xauthority:rw"
     - "${YARP_CONF_PATH}:/root/.config/yarp"
     - "${FILE_INPUT_PATH}:/root/authorization"
+    - "${XDG_RUNTIME_DIR}/pulse/native:${XDG_RUNTIME_DIR}/pulse/native"
+    - "~/.config/pulse/cookie:/root/.config/pulse/cookie"
     - "/dev:/dev"
   network_mode: "host"
   privileged: true
   #ipc: host
+
+#docker run -it --network host --privileged --device /dev/snd -e PULSE_SERVER=unix:${XDG_RUNTIME_DIR}/pulse/native -v ${XDG_RUNTIME_DIR}/pulse/native:${XDG_RUNTIME_DIR}/pulse/native -v ~/.config/pulse/cookie:/root/.config/pulse/cookie --group-add $(getent group audio | cut -d: -f3) --env DISPLAY=${DISPLAY} --env XAUTHORITY=/root/.Xauthority --env FILE_INPUT=dialogflow-test-293012-3ba67bcfcff3.json --mount type=bind,source=/home/alexandre/Downloads,target=/root/authorization --mount type=bind,source=${XAUTHORITY},target=/root/.Xauthority --mount type=bind,source=/tmp/.X11-unix,target=/tmp/.X11-unix --mount type=bind,source=${HOME}/.config/yarp,target=/root/.config/yarp icubteamcode/speech:master_master-unstable_sources
+
 
 services:
 #following service are configured in icub-main/app/iCubStartup/scripts/iCubStartup.xml.template
@@ -32,10 +38,12 @@ services:
 
   yDemoGoogleSynthesis:
     <<: *yarp-base
+    devices: 
+      - "/dev/snd:/dev/snd"
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "if [ ${GOOGLE_SYNTHESIS_INPUT} = 'True' ];then googleSynthesis --language ${LANGUAGE_SYNTHESIS_INPUT} --voice ${VOICE_NAME_INPUT}; fi"
+    command: sh -c "if [ ${GOOGLE_SYNTHESIS_INPUT} = 'True' ]; then googleSynthesis --language ${LANGUAGE_SYNTHESIS_INPUT} --voice ${VOICE_NAME_INPUT}; fi"
 
 
 
