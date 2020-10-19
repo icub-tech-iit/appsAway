@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QDateTimeEdit,
         QSlider, QSpinBox, QStyleFactory, QTableWidget, QTabWidget, QTextEdit,
         QVBoxLayout, QWidget, QLineEdit, QFileDialog )
 
-from PyQt5.QtGui import QIcon, QPixmap
+from PyQt5.QtGui import QIcon, QPixmap, QImage
 from PyQt5.QtCore import pyqtSlot, QSize, QUrl, QRect
 from itertools import chain
 from PyQt5.QtMultimedia import QMediaContent, QMediaPlayer
@@ -316,7 +316,11 @@ class WidgetGallery(QDialog):
 
         layout.addWidget(self.pushUpdateButton)
 
+
         pixmap = QPixmap(self.image)
+        if pixmap.height() > 250:
+          pixmap = pixmap.scaledToHeight(250, Qt.SmoothTransformation)
+
         self.label.setPixmap(pixmap)
         #self.resize(pixmap.width(),pixmap.height())
         #self.show()
