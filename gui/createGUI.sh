@@ -15,8 +15,9 @@ os=`uname -s`
 if [ "$os" = "Darwin" ]
 then
   echo $APPSAWAY_USER_PASSWORD | HOMEBREW_NO_AUTO_UPDATE=1 brew install pyenv
-  echo $APPSAWAY_USER_PASSWORD | pyenv install 3.6.1
-  echo $APPSAWAY_USER_PASSWORD | pyenv shell 3.6.1
+  echo $APPSAWAY_USER_PASSWORD | env PYTHON_CONFIGURE_OPTS="--enable-framework" pyenv install -f 3.6.1
+  PYTHON_VERSION=$( pyenv global ) 
+  echo $APPSAWAY_USER_PASSWORD | pyenv global 3.6.1
 else
   echo $APPSAWAY_USER_PASSWORD | sudo -S add-apt-repository ppa:deadsnakes/ppa
   echo $APPSAWAY_USER_PASSWORD | sudo -S apt-get -y update
@@ -66,7 +67,7 @@ fbs freeze #> /dev/null
 
 if [ "$os" = "Darwin" ]
 then
-  echo $APPSAWAY_USER_PASSWORD | pyenv shell --unset
+  echo $APPSAWAY_USER_PASSWORD | pyenv global $PYTHON_VERSION
 else
   echo $APPSAWAY_USER_PASSWORD | sudo -S update-alternatives --remove python3 /usr/bin/python3.6
   echo $APPSAWAY_USER_PASSWORD | sudo -S update-alternatives --install /usr/bin/python3 python3 $ORIGIN_PYTHON_PATH 2
