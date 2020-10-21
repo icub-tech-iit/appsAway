@@ -5,8 +5,9 @@ x-yarp-base: &yarp-base
   environment:
     - YARP_FORWARD_LOG_ENABLE=1
     - FILE_INPUT
-    - LANGUAGE_INPUT
+    - LANGUAGE_SPEECH_INPUT
     - GOOGLE_PROCESS_INPUT
+    - GOOGLE_INPUT
   volumes:
     - type: volume
       source: yarp-config
@@ -35,7 +36,7 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "yarp wait /microphone/audio:o; googleSpeech --language_code ${LANGUAGE_INPUT}"
+    command: sh -c "if [ ${GOOGLE_INPUT} = 'True' ]; then yarp wait /microphone/audio:o; googleSpeech --language_code ${LANGUAGE_SPEECH_INPUT}; fi"
 
   yConnectToGoogleSpeechProcess:
       <<: *yarp-base
