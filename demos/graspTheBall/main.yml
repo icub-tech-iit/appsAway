@@ -21,8 +21,6 @@ x-yarp-head: &yarp-head
     - YARP_ROBOT_NAME
   volumes:
     - "${YARP_CONF_PATH}:/root/.config/yarp"
-  ports:
-    - "10000:10000"
   network_mode: "host"
 
 #note: following services that need yarpRobotinterface is running, I write yarp wait /yarpRobotInterface;
