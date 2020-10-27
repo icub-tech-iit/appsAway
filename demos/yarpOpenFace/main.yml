@@ -3,15 +3,16 @@ version: "3.7"
 x-yarp-base: &yarp-base
   image: icubteamcode/yarpopenface:master-unstable_sources
   environment:
+    - DISPLAY=${DISPLAY}
+    - QT_X11_NO_MITSHM=1
+    - XAUTHORITY=/root/.Xauthority
     - YARP_FORWARD_LOG_ENABLE=1
     - YARP_ROBOT_NAME
     - CUSTOM_PORT
   volumes:
-    - type: volume
-      source: yarp-config
-      target: /root/.config/yarp
-      volume:
-        nocopy: true
+    - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
+    - "${XAUTHORITY}:/root/.Xauthority:rw"
+    - "${YARP_CONF_PATH}:/root/.config/yarp"
   networks:
     - hostnet
 
@@ -111,10 +112,3 @@ networks:
     external: true
     name: host
 
-volumes:
-  yarp-config:
-    driver: vieux/sshfs
-    driver_opts:
-      sshcmd: ${USER_NAME}@${MASTER_ADDR}:${YARP_CONF_PATH}
-      password: ${USER_PASSWORD}
-      allow_other: ""

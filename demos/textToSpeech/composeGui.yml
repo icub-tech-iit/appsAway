@@ -16,6 +16,8 @@ x-yarp-base: &yarp-base
     - "${YARP_CONF_PATH}:/root/.config/yarp"
     - "${FILE_INPUT_PATH}:/root/authorization"
     - "/dev:/dev"
+  ports:
+    - "10000:10000"
   network_mode: "host"
   privileged: true
   #ipc: host

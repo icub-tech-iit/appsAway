@@ -4,6 +4,7 @@ x-yarp-base: &yarp-base
   image: icubteamcode/speech:master_master-unstable_sources
   environment:
     - DISPLAY=${DISPLAY}
+    - QT_X11_NO_MITSHM=1
     - XAUTHORITY=/root/.Xauthority
     - YARP_FORWARD_LOG_ENABLE=1
     - YARP_ROBOT_NAME
@@ -14,6 +15,8 @@ x-yarp-base: &yarp-base
     - "${YARP_CONF_PATH}:/root/.config/yarp"
     - "${FILE_INPUT_PATH}:/root/authorization"
     - "/dev:/dev"
+  ports:
+    - "10000:10000"
   network_mode: "host"
   privileged: true
   #ipc: host
@@ -40,10 +43,5 @@ services:
     depends_on:
       - yMicrophone
     command: sh -c "yarp wait /microphone/rpc; yarp wait /googleSpeech/commands:rpc; yarp connect /googleSpeech/commands:rpc /microphone/rpc tcp"
-
-
-
-
-
 
 

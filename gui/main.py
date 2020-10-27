@@ -708,11 +708,8 @@ class WidgetGallery(QDialog):
         yml_files_default = ["main.yml", "composeGui.yml", "composeHead.yml"]
         yml_files = []
 
-        print("are we even here?")
-
         for yml_file in yml_files_default:
           if os.path.isfile(yml_file):
-            print("yml file found: " + yml_file)
             yml_files = yml_files + [yml_file]
 
         for yml_file in yml_files:
@@ -732,12 +729,9 @@ class WidgetGallery(QDialog):
                 if main_list[i+1].find("image") != -1:
                   image_line = main_list[i+1]
                   image_line = image_line.split(':')
-                  print("image line split: ", image_line)
                   for f in range(len(list_images)):
-                    print(list_images[f])
                     if image_line[1] == ' icubteamcode/'+list_images[f]: # if the name is correct
                       image_line[2] = list_versions[f] + "_" + list_tags[f] # we update the version
-                      print("new line: ", image_line)
                       break
                   main_list[i+1] = image_line[0] + ':' + image_line[1] + ':' + image_line[2]
           else:
@@ -746,18 +740,14 @@ class WidgetGallery(QDialog):
                 if main_list[i+1].find("image") != -1:
                   image_line = main_list[i+1]
                   image_line = image_line.split(':')
-                  print("image line 2 split: ", image_line)
                   image_line[2] = os.environ.get('APPSAWAY_REPO_VERSION') + "_" + os.environ.get('APPSAWAY_REPO_TAG')
-                  print("image line after updating: ", image_line)
                   main_list[i+1] = image_line[0] + ':' + image_line[1] + ':' + image_line[2]
 
             if main_list[i].find("services") != -1:
                 break
           main_file.close()
           main_file = open(yml_file, "w")
-          print("writing file:")
           for i in range(len(main_list)-1):
-            print(main_list[i])
             main_file.write(main_list[i]+ '\n')
           main_file.write(main_list[-1])
           main_file.close()
