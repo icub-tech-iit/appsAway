@@ -151,73 +151,6 @@ fini()
   log "$0 ENDED "
 }
 
-run_via_ssh()
-{
-  if [ "$4" != "" ]; then
-    ${_SSH_BIN} ${_SSH_PARAMS} $1@$2 "$3 > $4 2>&1"
-  else
-    ${_SSH_BIN} ${_SSH_PARAMS} $1@$2 "$3"
-  fi
-}
-
-swarm_start()
-{
-  _SWARM_INIT_COMMAND=$( ${_DOCKER_BIN} ${_DOCKER_PARAMS} swarm init --advertise-addr ${APPSAWAY_CONSOLENODE_ADDR} | egrep -i '^\s{4}')
-  if [ "$_SWARM_INIT_COMMAND" == "" ]; then
-    error "swarm init command string is empty (failed swarm initialization?)"
-  fi
-
-  iter=1
-  List=$APPSAWAY_NODES_USERNAME_LIST
-  set -- $List
-  for node_ip in ${APPSAWAY_NODES_ADDR_LIST}
-  do
-    if [ "$node_ip" != "$APPSAWAY_CONSOLENODE_ADDR" ]; then
-      username=$( eval echo "\$$iter")
-      log "running init on node $node_ip.."
-      run_via_ssh $username $node_ip "$_SWARM_INIT_COMMAND"
-    fi
-    iter=$((iter+1))
-  done
-}
-
-ip2hostname()
-{
-  run_via_ssh ${1} ${2} "hostname"
-}
-
-fill_hostname_list()
-{
-  iter=1
-  List=$APPSAWAY_NODES_USERNAME_LIST
-  set -- $List
-  for _ip_addr in ${APPSAWAY_NODES_ADDR_LIST}
-  do
-    username=$( eval echo "\$$iter")
-	  _hostname=$(ip2hostname $username $_ip_addr)
-	  if [ "$_hostname" == "" ]; then
-		  exit_err "unable to get hostname from IP $_ip_addr"
-	  fi
-      _HOSTNAME_LIST="$_hostname $_HOSTNAME_LIST"
-  done
-}
-
-set_hardware_labels()
-{
-  log "setting labels on hardware-dependant nodes.."
-  if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
-    ${_DOCKER_BIN} ${_DOCKER_PARAMS} node update --label-add type=head $(ip2hostname $APPSAWAY_ICUBHEADNODE_USERNAME $APPSAWAY_ICUBHEADNODE_ADDR)
-  fi
-
-  if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
-    ${_DOCKER_BIN} ${_DOCKER_PARAMS} node update --label-add type=gui $(ip2hostname $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR)
-  fi
-
-  if [ "$APPSAWAY_CUDANODE_ADDR" != "" ]; then
-    ${_DOCKER_BIN} ${_DOCKER_PARAMS} node update --label-add type=cuda $(ip2hostname $APPSAWAY_CUDANODE_USERNAME $APPSAWAY_CUDANODE_ADDR)
-  fi
-}
-
 create_yarp_config_files()
 {
   if [ -d "${APPSAWAY_APP_PATH}/${_YARP_CONFIG_FILES_PATH}" ]; then
@@ -320,9 +253,6 @@ copy_yarp_files()
 
 main()
 {
-  fill_hostname_list
-  swarm_start
-  set_hardware_labels
   copy_yaml_files
   create_yarp_config_files
   create_env_file
