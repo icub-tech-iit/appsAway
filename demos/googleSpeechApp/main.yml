@@ -57,6 +57,8 @@ services:
       deploy:
         placement:
           constraints: [node.labels.type != head]
+        restart_policy:
+          condition: on-failure
       command: sh -c "if [ ${GOOGLE_PROCESSING} = 'True' ]; then if [ ${GOOGLE_INPUT} = 'True' ]; then yarp wait /googleSpeech/result:o; yarp wait /googleSpeechProcess/text:i; yarp connect /googleSpeech/result:o /googleSpeechProcess/text:i; fi; fi;"
 
   yconnect_audio:
