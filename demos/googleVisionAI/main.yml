@@ -1,0 +1,139 @@
+version: "3.7"
+
+x-yarp-base: &yarp-base
+  image: icubteamcode/speech:master_master-unstable_sources
+  environment:
+    - YARP_FORWARD_LOG_ENABLE=1
+    - FILE_INPUT
+    - CUSTOM_PORT
+  volumes:
+    - type: volume
+      source: yarp-config
+      target: /root/.config/yarp
+      volume:
+        nocopy: true
+    - "${FILE_INPUT_PATH}:/root/authorization"
+  networks:
+    - hostnet
+
+#note: following services that need yarpRobotinterface is running, I write yarp wait /yarpRobotInterface;
+#just to remember us to solve thi issue. Such yarp port doesn't exist.
+
+services:
+#following service are configured in icub-main/app/iCubStartup/scripts/iCubStartup.xml.template
+  yserver:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+    command: yarpserver --write
+
+ #------------------------------------------------------------------------------------------------
+  #Here we open the viewer to see the output image
+  yview_image_o:
+    <<: *yarp-base
+    container_name: yview_o
+    command: yarpview --name /view
+
+  #Here we open the viewer for the robot cameras
+  yview_image_i:
+    <<: *yarp-base
+    container_name: yview_i
+    command: yarpview --name /view/input_image --x 320 --y 0 --p 50 --w 320 --h 240
+
+#------------------------------------------------------------------------------------------------
+  yDemoGoogleVisionAI:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "googleVisionAI" 
+ 
+
+  yConnectToGoogleVisionAI:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "if [ ! -z ${CUSTOM_PORT} ]; then yarp wait $CUSTOM_PORT ; yarp wait /googleVisionAI/image:i ; yarp connect $CUSTOM_PORT /googleVisionAI/image:i tcp ; else yarp wait /icub/camcalib/left/out; yarp wait /googleVisionAI/image:i ; yarp connect /icub/camcalib/left/out /googleVisionAI/image:i tcp; fi"
+
+#------------------------------------------------------------------------------------------------
+
+  yCamCalib_l:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "if [ -z ${CUSTOM_PORT} ]; then camCalib --context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_LEFT --name /icub/camcalib/left; fi"
+
+  yCamCalib_r:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "if [ -z ${CUSTOM_PORT} ]; then camCalib --context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_RIGHT --name /icub/camcalib/right; fi"
+
+  yConnectCam_l:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "if [ -z ${CUSTOM_PORT} ]; then yarp wait /icub/cam/left; yarp wait /icub/camcalib/left/in; yarp connect /icub/cam/left /icub/camcalib/left/in; fi"
+
+  yConnectCam_r:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "if [ -z ${CUSTOM_PORT} ]; then yarp wait /icub/cam/right; yarp wait /icub/camcalib/right/in; yarp connect /icub/cam/right /icub/camcalib/right/in; fi"
+   
+      
+  yconnect_groundtruth:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "yarp wait /icub/camcalib/left/out ; yarp wait /view/input_image ; yarp connect /icub/camcalib/left/out /view/input_image udp"
+    restart: on-failure
+    
+ #------------------------------------------------------------------------------------------------
+
+  #use network.peer ip address and port 8080 to see the containers status in browser
+  visualizer:
+    image: dockersamples/visualizer:stable
+    ports:
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+
+networks:
+  hostnet:
+    external: true
+    name: host
+
+volumes:
+  yarp-config:
+    driver: vieux/sshfs
+    driver_opts:
+      sshcmd: ${USER_NAME}@${MASTER_ADDR}:${YARP_CONF_PATH}
+      password: ${USER_PASSWORD}
+      allow_other: ""
+
+
+
+
+
+
+
+
+
