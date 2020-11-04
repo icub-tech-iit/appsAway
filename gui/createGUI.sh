@@ -10,21 +10,25 @@ PYTHON_VERSION=$(python3 -V) # python 3.6.2
 MAJOR_MINOR=${PYTHON_VERSION:7:3}
 ORIGIN_PYTHON_PATH=$(which python$MAJOR_MINOR)    # /usr/bin/python3.6
 
+echo ""
+read -p "Insert your password: " -s password
+echo ""
+
 # now we update which python to use for installing the gui
 os=`uname -s`
 if [ "$os" = "Darwin" ]
 then
-  echo $APPSAWAY_USER_PASSWORD | HOMEBREW_NO_AUTO_UPDATE=1 brew install pyenv
-  echo $APPSAWAY_USER_PASSWORD | env PYTHON_CONFIGURE_OPTS="--enable-framework" pyenv install -f 3.6.1
+  echo ${password} | HOMEBREW_NO_AUTO_UPDATE=1 brew install pyenv
+  echo ${password} | env PYTHON_CONFIGURE_OPTS="--enable-framework" pyenv install -f 3.6.1
   PYTHON_VERSION=$( pyenv global ) 
-  echo $APPSAWAY_USER_PASSWORD | pyenv global 3.6.1
+  echo ${password} | pyenv global 3.6.1
 else
-  echo $APPSAWAY_USER_PASSWORD | sudo -S add-apt-repository ppa:deadsnakes/ppa
-  echo $APPSAWAY_USER_PASSWORD | sudo -S apt-get -y update
-  echo $APPSAWAY_USER_PASSWORD | sudo -S apt-get -y install python3.6 python3.6-dev python3.6-venv
-  echo $APPSAWAY_USER_PASSWORD | sudo -S update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.6 1
-  echo $APPSAWAY_USER_PASSWORD | sudo -S update-alternatives --set python3 /usr/bin/python3.6
-  echo $APPSAWAY_USER_PASSWORD | sudo -S apt -y install python3-pip
+  echo ${password} | sudo -S add-apt-repository ppa:deadsnakes/ppa
+  echo ${password} | sudo -S apt-get -y update
+  echo ${password} | sudo -S apt-get -y install python3.6 python3.6-dev python3.6-venv
+  echo ${password} | sudo -S update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.6 1
+  echo ${password} | sudo -S update-alternatives --set python3 /usr/bin/python3.6
+  echo ${password} | sudo -S apt -y install python3-pip
 fi
 
 
@@ -67,11 +71,11 @@ fbs freeze #> /dev/null
 
 if [ "$os" = "Darwin" ]
 then
-  echo $APPSAWAY_USER_PASSWORD | pyenv global $PYTHON_VERSION
+  echo ${password} | pyenv global $PYTHON_VERSION
 else
-  echo $APPSAWAY_USER_PASSWORD | sudo -S update-alternatives --remove python3 /usr/bin/python3.6
-  echo $APPSAWAY_USER_PASSWORD | sudo -S update-alternatives --install /usr/bin/python3 python3 $ORIGIN_PYTHON_PATH 2
-  echo $APPSAWAY_USER_PASSWORD | sudo -S update-alternatives --set python3 $ORIGIN_PYTHON_PATH
+  echo ${password} | sudo -S update-alternatives --remove python3 /usr/bin/python3.6
+  echo ${password} | sudo -S update-alternatives --install /usr/bin/python3 python3 $ORIGIN_PYTHON_PATH 2
+  echo ${password} | sudo -S update-alternatives --set python3 $ORIGIN_PYTHON_PATH
 fi
 
 
