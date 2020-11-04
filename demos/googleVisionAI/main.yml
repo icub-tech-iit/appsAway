@@ -1,7 +1,7 @@
 version: "3.7"
 
 x-yarp-base: &yarp-base
-  image: icubteamcode/speech:master_master-unstable_sources
+  image: icubteamcode/googlevision:master_master-unstable_sources
   environment:
     - YARP_FORWARD_LOG_ENABLE=1
     - FILE_INPUT
@@ -28,18 +28,6 @@ services:
         constraints: [node.role == manager]
     command: yarpserver --write
 
- #------------------------------------------------------------------------------------------------
-  #Here we open the viewer to see the output image
-  yview_image_o:
-    <<: *yarp-base
-    container_name: yview_o
-    command: yarpview --name /view
-
-  #Here we open the viewer for the robot cameras
-  yview_image_i:
-    <<: *yarp-base
-    container_name: yview_i
-    command: yarpview --name /view/input_image --x 320 --y 0 --p 50 --w 320 --h 240
 
 #------------------------------------------------------------------------------------------------
   yDemoGoogleVisionAI:
@@ -58,7 +46,25 @@ services:
       restart_policy:
         condition: on-failure
     command: sh -c "if [ ! -z ${CUSTOM_PORT} ]; then yarp wait $CUSTOM_PORT ; yarp wait /googleVisionAI/image:i ; yarp connect $CUSTOM_PORT /googleVisionAI/image:i tcp ; else yarp wait /icub/camcalib/left/out; yarp wait /googleVisionAI/image:i ; yarp connect /icub/camcalib/left/out /googleVisionAI/image:i tcp; fi"
+  
+  yConnectToOutImage:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp wait /googleVisionAI/image:o ; yarp wait /outImage; yarp connect /googleVisionAI/image:o /outImage tcp ;"
 
+#------------------------------------------------------------------------------------------------
+  yconnectToStartImage:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "if [ ! -z ${CUSTOM_PORT} ]; then yarp wait ${CUSTOM_PORT} ; yarp wait /startImage ; yarp connect ${CUSTOM_PORT} /startImage udp; else yarp wait /icub/camcalib/left/out; yarp wait /icub/view/left; yarp connect /icub/camcalib/left/out /icub/view/left udp; fi"
+    restart: on-failure
+     
 #------------------------------------------------------------------------------------------------
 
   yCamCalib_l:
@@ -94,13 +100,14 @@ services:
     command: sh -c "if [ -z ${CUSTOM_PORT} ]; then yarp wait /icub/cam/right; yarp wait /icub/camcalib/right/in; yarp connect /icub/cam/right /icub/camcalib/right/in; fi"
    
       
-  yconnect_groundtruth:
-    <<: *yarp-base
-    deploy:
-      placement:
-        constraints: [node.labels.type != head]
-    command: sh -c "yarp wait /icub/camcalib/left/out ; yarp wait /view/input_image ; yarp connect /icub/camcalib/left/out /view/input_image udp"
-    restart: on-failure
+  #yconnect_groundtruth:
+  #  <<: *yarp-base
+  #  deploy:
+  #    placement:
+  #      constraints: [node.labels.type != head]
+  #  command: sh -c "yarp wait /icub/camcalib/left/out ; yarp wait /view/input_image ; yarp connect /icub/camcalib/left/out /view/input_image udp"
+  #  restart: on-failure
+    
     
  #------------------------------------------------------------------------------------------------
 
