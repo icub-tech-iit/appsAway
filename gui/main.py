@@ -180,21 +180,54 @@ class MyHandler(FileSystemEventHandler):
           pipe_file.close()
 
 
-########################################################## right options ###########################################################################
-####################################################################################################################################################
-# Button type     # button text       # variable name     # value                                                           # status  # required   #
-# radioButton     # "robot cameras"   # ROBOT_CAMERAS     # yes                                                             # on      # False      #
-# textEditButton  # "text input"      # INPUT_BUTTON      # None                                                            # on      # False      #
-# textEditBox     # "text input"      # INPUT_BOX         # None                                                            # on      # False      #
-# fileInput       # "Google file"     # FILE_INPUT        # None                                                            # on      # False      #
-# toggleButton    # "Google Input"    # GOOGLE_INPUT      # true/false                                                      # on      # False      #
-# dropdownList    # "Language sel"    # LANG_INPUT        # en-US/it-IT                                                     # off     # False      #
-# pushButtom      # "Try your voice!" # AUDIO_INPUT       # /home/laura/teamcode/appsAway/demos/synthesis/audioicon.png     # on      # False      #
-####################################################################################################################################################
+########################################################## right options ######################################################################
+###############################################################################################################################################
+# Button type     # button title                    # button text       # variable name     # value       # initial status  # ticked          #
+# radioButton     # ""                              # "robot cameras"   # ROBOT_CAMERAS     # yes         # on              # None            #
+# textEditButton  # ""                              # "text input"      # INPUT_BUTTON      # None        # on              # None            #
+# textEditBox     # "Insert the name of your agent" # "text input"      # INPUT_BOX         # None        # on              # None            #
+# fileInput       # ""                              # "Google file"     # FILE_INPUT        # None        # on              # None            #
+# toggleButton    # ""                              # "Google Input"    # GOOGLE_INPUT      # true/false  # on              # ticked/unticked #
+# dropdownList    # "Language of the dialogflow:"   # "Language sel"    # LANG_INPUT        # en-US/it-IT # off             # None            #
+# pushButtom      # ""                              # "Try your voice!" # AUDIO_INPUT       # None        # on              # None            #
+###############################################################################################################################################
 
-######################################################## option dependencies #############################################################
-##########################################################################################################################################
-# Dependencies - parent variable name - child variable name [child status] effect[list of effects] - etc                                                #
+############################################################# button hierarchy ################################################################
+###############################################################################################################################################
+# NOTES:                                                                                                                                      #
+#     There should ALWAYS be a START_BUTTON dependency, as it specifies when the startApplication button becomes available                    #
+#                                                                                                                                             #
+#     The logic of the dependency goes as follows:                                                                                            #
+#         logic is defined by C++ symbols:                                                                                                    #
+#           AND - &&                                                                                                                          #
+#           OR - ||                                                                                                                           #
+#         Predicates are specified between {}:                                                                                                #
+#           {"name of button it depends on" "type of dependency (selected/unselected)" "effect of trigger (enable/disable)"}                  #
+#         Operations are split by brackets ():                                                                                                #
+#           e.g.: ( ( {A} && {B} ) || {C} )                                                                                                   #
+###############################################################################################################################################
+################################################################# Examples ####################################################################
+###############################################################################################################################################
+# TYPE (Dependency    # variable name         # logic of dependency                                                                           #
+# Dependency -        # START_BUTTON -        # ( {FILE_INPUT selected enable} && {INPUT_BOX selected enable} )                               #
+# Dependency -        # VOICE_NAME_INPUT -    # ( {GOOGLE_SYNTHESIS_INPUT selected enable} )                                                  #
+###############################################################################################################################################
+
+############################################################# Button Options ##################################################################
+###############################################################################################################################################
+# NOTES:                                                                                                                                      #
+#   The logic of the options goes as follows:                                                                                                 #
+#     first you specify the name of the button whose options depend on another button (button_name)                                           #
+#     Then you specify the name of the button that will trigger changes on this button (parent_button_name)                                   #
+#     Then you specify the list of parent options split by /: [en-GB/it-IT]                                                                   #
+#     Finally you specify the options that become available when each of this options is chosen, in a list of list:                           #
+#       [[en-GB-Wavenet-A/en-GB-Wavenet-B/en-GB-Wavenet-C/en-GB-Wavenet-D],[it-IT-Wavenet-A/it-IT-Wavenet-B/it-IT-Wavenet-C/it-IT-Wavenet-D]] #
+###############################################################################################################################################
+############################################################### Examples ######################################################################
+###############################################################################################################################################
+# OptionList   # button_name      # parent_button_name     # list of parent options        # list of child options                            #
+# OptionList - VOICE_NAME_INPUT - LANGUAGE_SYNTHESIS_INPUT [en-US/en-GB/fr-FR/pt-PT/it-IT] [[...],[...]]                                      #
+###############################################################################################################################################
 
 class WidgetGallery(QDialog):
     def __init__(self, parent=None):
