@@ -36,6 +36,7 @@ _SCP_BIN=$(which scp || true)
 _SCP_PARAMS="-q -B"
 _SCP_PARAMS_DIR="-q -B -r"
 _DOCKER_BIN=$(which docker || true)
+_YARP_BIN=$(which yarp || true)
 _DOCKER_PARAMS=""
 _HOSTNAME_LIST=""
 _CWD=$(pwd)
@@ -151,6 +152,8 @@ fini()
   log "$0 ENDED "
 }
 
+# we could/should change this function to first check if a yarp server is running and get its IP if yes
+# if yarp server is not running, then we use the console node IP to setup our own config files (as currently)
 create_yarp_config_files()
 {
   if [ -d "${APPSAWAY_APP_PATH}/${_YARP_CONFIG_FILES_PATH}" ]; then
@@ -158,9 +161,36 @@ create_yarp_config_files()
   else
     mkdir -p ${APPSAWAY_APP_PATH}/${_YARP_CONFIG_FILES_PATH}
   fi
+  if [ "${_YARP_BIN}" != "" ] 
+  then
+    log "Checking if YARP server is running..."
+    _YARP_IP_FOUND=$( $_YARP_BIN where | echo "$( sed -nr 's/.*is available at ip (.*) port.*/\1/p' )" )
+    _YARP_PORT_FOUND=$( $_YARP_BIN where | echo "$( sed -nr 's/.*at ip '"$_YARP_IP_FOUND"' port (.*).*/\1/p' )" )
+    _YARP_NAMESPACE_FOUND=$( $_YARP_BIN where | echo "$( sed -nr 's/.*Name server (.*) is available.*/\1/p' )" )
+    if [ "$_YARP_IP_FOUND" != "" ]
+    then
+      log "A yarp server was found with ip $_YARP_IP_FOUND port $_YARP_PORT_FOUND with namespace $YARP_NAMESPACE_FOUND"
+      _YARP_IP_CONF=$_YARP_IP_FOUND
+      _YARP_PORT_CONF=$_YARP_PORT_FOUND
+      _YARP_NAMESPACE_CONF=$_YARP_NAMESPACE_FOUND
+    else
+      log "server not found, using default settings for yarp server"
+      _YARP_IP_CONF=$APPSAWAY_CONSOLENODE_ADDR
+      _YARP_PORT_CONF=10000
+      _YARP_NAMESPACE_CONF=/root
+    fi
+  else
+    log "yarp binary not found, using default settings for yarp server"
+    _YARP_IP_CONF=$APPSAWAY_CONSOLENODE_ADDR
+    _YARP_PORT_CONF=10000
+    _YARP_NAMESPACE_CONF=/root
+  fi
   log "creating YARP config files in path ${APPSAWAY_APP_PATH}/${_YARP_CONFIG_FILES_PATH}"
-  echo "$_YARP_NAMESPACE" > ${APPSAWAY_APP_PATH}/${_YARP_CONFIG_FILES_PATH}/yarp_namespace.conf
-  echo "$APPSAWAY_CONSOLENODE_ADDR 10000 yarp" > ${APPSAWAY_APP_PATH}/${_YARP_CONFIG_FILES_PATH}/yarp.conf
+  echo "$_YARP_NAMESPACE_CONF" > ${APPSAWAY_APP_PATH}/${_YARP_CONFIG_FILES_PATH}/yarp_namespace.conf
+  echo "$_YARP_IP_CONF $_YARP_PORT_CONF yarp" > ${APPSAWAY_APP_PATH}/${_YARP_CONFIG_FILES_PATH}/yarp.conf
+  
+  #echo "$_YARP_NAMESPACE" > ${APPSAWAY_APP_PATH}/${_YARP_CONFIG_FILES_PATH}/yarp_namespace.conf
+  #echo "$APPSAWAY_CONSOLENODE_ADDR 10000 yarp" > ${APPSAWAY_APP_PATH}/${_YARP_CONFIG_FILES_PATH}/yarp.conf
 }
 
 create_env_file()
