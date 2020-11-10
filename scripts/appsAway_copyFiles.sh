@@ -258,6 +258,20 @@ copy_yaml_files()
       cp ../demos/${APPSAWAY_APP_NAME}/${file} ${APPSAWAY_APP_PATH}/
     fi
   done
+  APPSAWAY_DATA_FOLDERS=$( ls ../demos/$APPSAWAY_APP_NAME/ )
+  echo "the folders are $APPSAWAY_DATA_FOLDERS"
+  for folder in ${APPSAWAY_DATA_FOLDERS}
+  do
+    if [ "$folder" == "gui" ] 
+    then
+      continue
+    fi
+    if [ -d "../demos/$APPSAWAY_APP_NAME/$folder" ]
+    then
+      log "copying data folder $folder to master node (this)"
+      cp -R ../demos/${APPSAWAY_APP_NAME}/${folder} ${APPSAWAY_APP_PATH}/
+    fi
+  done
   if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
     log "creating path ${APPSAWAY_APP_PATH} on node with IP $APPSAWAY_ICUBHEADNODE_ADDR"
     ${_SSH_BIN} ${_SSH_PARAMS} ${APPSAWAY_ICUBHEADNODE_USERNAME}@${APPSAWAY_ICUBHEADNODE_ADDR} "mkdir -p ${APPSAWAY_APP_PATH}"
@@ -296,6 +310,8 @@ copy_yaml_files()
 copy_yarp_files()
 {
   cd ${APPSAWAY_APP_PATH}
+  
+  APPSAWAY_DATA_FOLDERS=$( ls ${APPSAWAY_APP_PATH} )
 
   iter=1
   List=$APPSAWAY_NODES_USERNAME_LIST
@@ -307,11 +323,14 @@ copy_yarp_files()
       log "copying folder on node $node_ip.."
       ${_SCP_BIN} ${_SCP_PARAMS} ${_DOCKER_ENV_FILE} ${username}@${node_ip}:${APPSAWAY_APP_PATH}/
       ${_SCP_BIN} ${_SCP_PARAMS_DIR} ${_YARP_CONFIG_FILES_PATH} ${username}@${node_ip}:${APPSAWAY_APP_PATH}/
+      for folder in ${APPSAWAY_DATA_FOLDERS}
+      do
+        ${_SCP_BIN} ${_SCP_PARAMS_DIR} ${APPSAWAY_APP_PATH}/${folder} ${username}@${node_ip}:${APPSAWAY_APP_PATH}/
+      done
     fi
     iter=$((iter+1))
   done
 }
-
 
 
 main()
