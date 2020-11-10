@@ -22,7 +22,9 @@ services:
       deploy:
         placement:
           constraints: [node.role == manager]
-      command: yarpserver --write
+        restart_policy:
+          condition: on-failure
+    command: sh -c "yarp where | grep 'is available at ip' > /dev/null ; if [ ! $$? -eq 0 ]; then yarpserver --write; fi"
 
     ydevice:
       <<: *yarp-base

@@ -22,9 +22,12 @@ services:
     deploy:
       placement:
         constraints: [node.role == manager]
-    command: yarpserver --write
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp where | grep 'is available at ip' > /dev/null ; if [ ! $$? -eq 0 ]; then yarpserver --write; fi"
 
 
+    #command: sh -c "_YARP_GOT=$$( yarp where | grep 'is available at ip' > /dev/null ); echo '${_YARP_GOT}'; if [ -z '${_YARP_GOT}' ]; then yarpserver --write; fi"
 #------------------------------------------------------------------------------------------------
   yDemoGoogleVisionAI:
     <<: *yarp-base
@@ -58,6 +61,8 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
     command: sh -c "if [ ! -z ${CUSTOM_PORT} ]; then yarp wait ${CUSTOM_PORT} ; yarp wait /startImage ; yarp connect ${CUSTOM_PORT} /startImage udp; else yarp wait /icub/camcalib/left/out; yarp wait /icub/view/left; yarp connect /icub/camcalib/left/out /icub/view/left udp; fi"
     restart: on-failure
      

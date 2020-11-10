@@ -29,7 +29,9 @@ services:
     deploy:
       placement:
         constraints: [node.role == manager]
-    command: yarpserver --write
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp where | grep 'is available at ip' > /dev/null ; if [ ! $$? -eq 0 ]; then yarpserver --write; fi"
   
 #------------------------------------------------------------------------------------------------
   yDemoGoogleSpeech:
@@ -44,6 +46,8 @@ services:
       deploy:
         placement:
           constraints: [node.labels.type != head]
+        restart_policy:
+          condition: on-failure
       command: sh -c "yarp wait /googleSpeech/result:o; yarp wait /googleSpeechProcess/text:i; yarp connect /googleSpeech/result:o /googleSpeechProcess/text:i;"
 
   yDemoGoogleSpeechProcess:
