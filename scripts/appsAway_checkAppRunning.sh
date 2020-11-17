@@ -105,8 +105,11 @@ merge_environment()
 {
 
   # first we create a temporary copy of the local environment
-  cat appsAway_setEnvironment.local.sh > temp_local_env.sh
-  
+  if [ -f "appsAway_setEnvironment.local.sh" ]; then
+    cat appsAway_setEnvironment.local.sh > temp_local_env.sh
+  else
+    cat appsAway_setEnvironment.temp.sh > temp_local_env.sh
+  fi  
 
   _NUM_APPS=$( ps aux | grep -c ./appGUI )
   if (( $_NUM_APPS > 1 ))
