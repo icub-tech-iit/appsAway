@@ -10,9 +10,8 @@ PYTHON_VERSION=$(python3 -V) # python 3.6.2
 MAJOR_MINOR=${PYTHON_VERSION:7:3}
 ORIGIN_PYTHON_PATH=$(which python$MAJOR_MINOR)    # /usr/bin/python3.6
 
-echo ""
-read -p "Insert your password: " -s password
-echo ""
+password=$1
+
 echo -ne "[              ] installing GUI...\r"
 
 # now we update which python to use for installing the gui

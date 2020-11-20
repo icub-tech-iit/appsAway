@@ -108,6 +108,8 @@ then
     " >> ./hosts.ini
 fi
 
+APPSAWAY_USER_PASSWORD=$1
+
 if [ -z "${APPSAWAY_USER_PASSWORD}" ]
 then
    
