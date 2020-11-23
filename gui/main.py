@@ -397,9 +397,10 @@ class WidgetGallery(QDialog):
             layout.addWidget(buttonOption.inputBox)
 
           # if this is the first radio button, we set it to true, and only this one
-          if (buttonOption.varType == 'radioButton' or buttonOption.varType == 'textEditButton') and not found_radio:
+          if (buttonOption.varType == 'radioButton' or buttonOption.varType == 'textEditButton'):
             #layout.addWidget(buttonOption.button)
-            buttonOption.button.setChecked(True)
+            if not found_radio:
+              buttonOption.button.setChecked(True)
             buttonOption.button.clicked.connect(self.on_click(buttonOption))
             found_radio = True 
             self.disableAllOthers(buttonOption)
@@ -587,6 +588,8 @@ class WidgetGallery(QDialog):
         if buttonOption.inputBox != None:
           buttonOption.inputBox.setEnabled(True)
         self.disableAllOthers(buttonOption)
+        for button in self.button_list: # check the status of all buttons
+          self.checkDependencies(button)
       return setEnable
 
     def disableAllOthers(self, currentOption):
