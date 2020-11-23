@@ -1,0 +1,158 @@
+version: "3.7"
+
+x-yarp-base: &yarp-base
+  image: icubteamcode/camera_pan_calib:master_master-unstable_sources
+  environment:
+    - YARP_FORWARD_LOG_ENABLE=1
+    - LEFT_CUSTOM_PORT
+    - RIGHT_CUSTOM_PORT
+  volumes:
+    - "${YARP_CONF_PATH}:/root/.config/yarp"
+  networks:
+    - hostnet
+
+#note: following services that need yarpRobotinterface is running, I write yarp wait /yarpRobotInterface;
+#just to remember us to solve thi issue. Such yarp port doesn't exist.
+
+services:
+#following service are configured in icub-main/app/iCubStartup/scripts/iCubStartup.xml.template
+  yserver:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp where | grep 'is available at ip' > /dev/null ; if [ ! $$? -eq 0 ]; then yarpserver --write; fi"
+
+
+#------------------------------------------------------------------------------------------------
+  #Calling CameraPanCalibration module 
+  
+  yDemoCameraPanCalibration:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "CameraPanCalibration" 
+ 
+#------------------------------------------------------------------------------------------------
+  #Connections to the ports of the module 
+
+  yConnectToLeftInImage:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "if [ ! -z ${LEFT_CUSTOM_PORT} ]; then yarp wait $LEFT_CUSTOM_PORT ; yarp wait /CameraPanCalibration/leftImage:i ; yarp connect $LEFT_CUSTOM_PORT /CameraPanCalibration/leftImage:i tcp ; else yarp wait /icub/camcalib/left/out; yarp wait /CameraPanCalibration/leftImage:i ; yarp connect /icub/camcalib/left/out /CameraPanCalibration/leftImage:i tcp; fi"
+
+
+  yConnectToRightInImage:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "if [ ! -z ${RIGHT_CUSTOM_PORT} ]; then yarp wait $RIGHT_CUSTOM_PORT ; yarp wait /CameraPanCalibration/rightImage:i ; yarp connect $RIGHT_CUSTOM_PORT /CameraPanCalibration/rightImage:i tcp ; else yarp wait /icub/camcalib/right/out; yarp wait /CameraPanCalibration/rightImage:i ; yarp connect /icub/camcalib/right/out /CameraPanCalibration/rightImage:i tcp; fi"
+  
+  yConnectToLeftOutImage:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp wait /CameraPanCalibration/leftImage:o ; yarp wait /leftImageOutput; yarp connect /CameraPanCalibration/leftImage:o /leftImageOutput tcp ;"
+  
+  yConnectToRightOutImage:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp wait /CameraPanCalibration/rightImage:o ; yarp wait /rightImageOutput; yarp connect /CameraPanCalibration/rightImage:o /rightImageOutput tcp ;"
+
+#------------------------------------------------------------------------------------------------
+  #Connections to the input viewers
+
+  yconnectToLeftInViewer:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "if [ ! -z ${LEFT_CUSTOM_PORT} ]; then yarp wait ${LEFT_CUSTOM_PORT} ; yarp wait /leftImageInput ; yarp connect ${LEFT_CUSTOM_PORT} /leftImageInput udp; else yarp wait /icub/camcalib/left/out; yarp wait /icub/view/left; yarp connect /icub/camcalib/left/out /icub/view/left udp; fi"
+    restart: on-failure
+          
+  yconnectToRightInViewer:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "if [ ! -z ${RIGHT_CUSTOM_PORT} ]; then yarp wait ${RIGHT_CUSTOM_PORT} ; yarp wait /rightImageInput ; yarp connect ${RIGHT_CUSTOM_PORT} /rightImageInput udp; else yarp wait /icub/camcalib/right/out; yarp wait /icub/view/right; yarp connect /icub/camcalib/right/out /icub/view/right udp; fi"
+    restart: on-failure
+            
+#------------------------------------------------------------------------------------------------
+  #Calling camCalib module 
+
+  yCamCalib_l:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "if [ -z ${LEFT_CUSTOM_PORT} && -z ${RIGHT_CUSTOM_PORT} ]; then camCalib --context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_LEFT --name /icub/camcalib/left; fi"
+
+  yCamCalib_r:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "if [ -z ${LEFT_CUSTOM_PORT} && -z ${RIGHT_CUSTOM_PORT} ]; then camCalib --context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_RIGHT --name /icub/camcalib/right; fi"
+
+#------------------------------------------------------------------------------------------------
+  #Connections robot's cameras
+  yConnectCam_l:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "if [ -z ${LEFT_CUSTOM_PORT} && -z ${RIGHT_CUSTOM_PORT} ]; then yarp wait /icub/cam/left; yarp wait /icub/camcalib/left/in; yarp connect /icub/cam/left /icub/camcalib/left/in; fi"
+
+  yConnectCam_r:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "if [ -z ${LEFT_CUSTOM_PORT} && -z ${RIGHT_CUSTOM_PORT} ]; then yarp wait /icub/cam/right; yarp wait /icub/camcalib/right/in; yarp connect /icub/cam/right /icub/camcalib/right/in; fi"
+   
+    
+ #------------------------------------------------------------------------------------------------
+
+  #use network.peer ip address and port 8080 to see the containers status in browser
+  visualizer:
+    image: dockersamples/visualizer:stable
+    ports:
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+
+networks:
+  hostnet:
+    external: true
+    name: host
+
