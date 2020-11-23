@@ -26,16 +26,7 @@ services:
     command: sh -c "yarp where | grep 'is available at ip' > /dev/null ; if [ ! $$? -eq 0 ]; then yarpserver --write; fi"
 
 
-#------------------------------------------------------------------------------------------------
-  #Calling CameraPanCalibration module 
-  
-  yDemoCameraPanCalibration:
-    <<: *yarp-base
-    deploy:
-      placement:
-        constraints: [node.labels.type != head]
-    command: sh -c "CameraPanCalibration" 
- 
+
 #------------------------------------------------------------------------------------------------
   #Connections to the ports of the module 
 
