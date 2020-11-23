@@ -24,26 +24,40 @@
 
   <data>
       <input>
-          <type>Bottle</type>
-          <port>/CameraPanCalibration/image:i</port>
+          <type>PixelRgb</type>
+          <port>/CameraPanCalibration/leftImage:i</port>
           <description>
-            Port to receive streaming of images
+            Port to receive streaming of left images
           </description>
       </input>
-      <output>
-          <type>Bottle</type>
-          <port>/CameraPanCalibration/result:o</port>
+      <input>
+          <type>PixelRgb</type>
+          <port>/CameraPanCalibration/rightImage:i</port>
           <description>
-            Sends the response of the calibration
+            Port to receive streaming of right images
+          </description>
+      </input>
+       <output>
+          <type>PixelRgb</type>
+          <port>/CameraPanCalibration/leftImage:o</port>
+          <description>
+            Sends the response of the left calibration
+          </description>
+      </output>
+      <output>
+          <type>PixelRgb</type>
+          <port>/CameraPanCalibration/rightImage:o</port>
+          <description>
+            Sends the response of the right calibration
           </description>
       </output>
   </data>
 
   <services>
     <server>
-      <type>googleVsionAI_IDL</type>
+      <type>CameraPanCalibration_IDL</type>
       <idl>idl.thrift</idl>
-      <port>/googleVsionAI/rpc</port>
+      <port>/CameraPanCalibration/rpc</port>
       <description>service port</description>
     </server>
   </services>
