@@ -6,7 +6,6 @@ source ./appsAway_setEnvironment.temp.sh
 _APPSAWAY_ENV_FILE="appsAway_setEnvironment.local.sh"
 _YARP_CONFIG_FILES_PATH="config_yarp"
 _YARP_NAMESPACE="/root"
-_DOCKER_ENV_FILE=".env"
 _NC='\033[0m' # No Color
 _RED='\033[0;31m'
 _GREEN='\033[0;32m'
@@ -20,8 +19,6 @@ _SSH_PARAMS="-T"
 _SCP_BIN=$(which scp || true)
 _SCP_PARAMS="-q -B"
 _SCP_PARAMS_DIR="-q -B -r"
-_DOCKER_BIN=$(which docker || true)
-_DOCKER_PARAMS=""
 _HOSTNAME_LIST=""
 _CWD=$(pwd)
 
@@ -31,13 +28,10 @@ print_defs ()
   echo " _SCRIPT_TEMPLATE_VERSION is $_SCRIPT_TEMPLATE_VERSION"
   echo " _SCRIPT_VERSION is $_SCRIPT_VERSION"
   echo " _APPSAWAY_ENV_FILE is $_APPSAWAY_ENV_FILE"
-  echo " _DOCKER_ENV_FILE is $_DOCKER_ENV_FILE"
   echo " _YARP_CONFIG_FILES_PATH is $_YARP_CONFIG_FILES_PATH"
   echo " _YARP_NAMESPACE is $_YARP_NAMESPACE"
   echo " _SSH_BIN is $_SSH_BIN"
   echo " _SSH_PARAMS is $_SSH_PARAMS"
-  echo " _DOCKER_BIN is $_DOCKER_BIN"
-  echo " _DOCKER_PARAMS is $_DOCKER_PARAMS"
 }
 
 log() {
@@ -85,9 +79,6 @@ init()
 {
  if [ "${_SSH_BIN}" == "" ]; then
    exit_err "ssh binary not found"
- fi
- if [ "${_DOCKER_BIN}" == "" ]; then
-   exit_err "docker binary not found"
  fi
  log "$0 STARTED"
 }
