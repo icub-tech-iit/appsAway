@@ -14,7 +14,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 find_package(ICUBcontrib REQUIRED)
 find_package(OpenCV REQUIRED)
-find_package(YARP 3.2.1 REQUIRED COMPONENTS OS sig dev math)
+find_package(YARP 3.2.1 REQUIRED COMPONENTS os cv sig dev math)
 
 yarp_add_idl(IDL_GEN_FILES ${PROJECT_NAME}.thrift)
 
