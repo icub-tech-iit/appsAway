@@ -171,6 +171,7 @@ class MyHandler(FileSystemEventHandler):
           line = pipe_file.readline()
           if line == '':
             return
+          print(line)
           curVal = int(line)
           maxVal = self.progressBar.maximum()
           self.progressBar.setValue(curVal + (maxVal - curVal) / 100)
@@ -714,7 +715,7 @@ class WidgetGallery(QDialog):
             elif buttonOption.button == None and not buttonOption.inputBox.isEnabled:
               os.environ[buttonOption.varName] = ""
         self.setupEnvironment()
-        rc = subprocess.call("./appsAway_startApp.sh")
+        rc = subprocess.Popen("./appsAway_startApp.sh", shell=True)
         #self.rc = subprocess.Popen("./appsAway_startApp.sh", stdout=subprocess.PIPE, shell=True)
     
     def stopApplication(self):

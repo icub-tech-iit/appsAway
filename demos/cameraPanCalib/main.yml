@@ -37,7 +37,7 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "if [ ! -z ${LEFT_CUSTOM_PORT} ]; then yarp wait $LEFT_CUSTOM_PORT ; yarp wait /CameraPanCalibration/leftImage:i ; yarp connect $LEFT_CUSTOM_PORT /CameraPanCalibration/leftImage:i tcp ; else yarp wait /icub/camcalib/left/out; yarp wait /CameraPanCalibration/leftImage:i ; yarp connect /icub/camcalib/left/out /CameraPanCalibration/leftImage:i tcp; fi"
+    command: sh -c "if [ ! -z ${LEFT_CUSTOM_PORT} ]; then yarp wait $LEFT_CUSTOM_PORT ; yarp wait /CameraPanCalibration/leftImage:i ; yarp connect $LEFT_CUSTOM_PORT /CameraPanCalibration/leftImage:i tcp ; else yarp wait /icub/cam/left; yarp wait /CameraPanCalibration/leftImage:i ; yarp connect /icub/cam/left /CameraPanCalibration/leftImage:i tcp; fi"
 
 
   yConnectToRightInImage:
@@ -47,7 +47,7 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "if [ ! -z ${RIGHT_CUSTOM_PORT} ]; then yarp wait $RIGHT_CUSTOM_PORT ; yarp wait /CameraPanCalibration/rightImage:i ; yarp connect $RIGHT_CUSTOM_PORT /CameraPanCalibration/rightImage:i tcp ; else yarp wait /icub/camcalib/right/out; yarp wait /CameraPanCalibration/rightImage:i ; yarp connect /icub/camcalib/right/out /CameraPanCalibration/rightImage:i tcp; fi"
+    command: sh -c "if [ ! -z ${RIGHT_CUSTOM_PORT} ]; then yarp wait $RIGHT_CUSTOM_PORT ; yarp wait /CameraPanCalibration/rightImage:i ; yarp connect $RIGHT_CUSTOM_PORT /CameraPanCalibration/rightImage:i tcp ; else yarp wait /icub/cam/right; yarp wait /CameraPanCalibration/rightImage:i ; yarp connect /icub/cam/right /CameraPanCalibration/rightImage:i tcp; fi"
   
   yConnectToLeftOutImage:
     <<: *yarp-base
@@ -66,67 +66,6 @@ services:
       restart_policy:
         condition: on-failure
     command: sh -c "yarp wait /CameraPanCalibration/rightImage:o ; yarp wait /rightImageOutput; yarp connect /CameraPanCalibration/rightImage:o /rightImageOutput tcp ;"
-
-#------------------------------------------------------------------------------------------------
-  #Connections to the input viewers
-
-  yconnectToLeftInViewer:
-    <<: *yarp-base
-    deploy:
-      placement:
-        constraints: [node.labels.type != head]
-      restart_policy:
-        condition: on-failure
-    command: sh -c "if [ ! -z ${LEFT_CUSTOM_PORT} ]; then yarp wait ${LEFT_CUSTOM_PORT} ; yarp wait /leftImageInput ; yarp connect ${LEFT_CUSTOM_PORT} /leftImageInput udp; else yarp wait /icub/camcalib/left/out; yarp wait /icub/view/left; yarp connect /icub/camcalib/left/out /icub/view/left udp; fi"
-    restart: on-failure
-          
-  yconnectToRightInViewer:
-    <<: *yarp-base
-    deploy:
-      placement:
-        constraints: [node.labels.type != head]
-      restart_policy:
-        condition: on-failure
-    command: sh -c "if [ ! -z ${RIGHT_CUSTOM_PORT} ]; then yarp wait ${RIGHT_CUSTOM_PORT} ; yarp wait /rightImageInput ; yarp connect ${RIGHT_CUSTOM_PORT} /rightImageInput udp; else yarp wait /icub/camcalib/right/out; yarp wait /icub/view/right; yarp connect /icub/camcalib/right/out /icub/view/right udp; fi"
-    restart: on-failure
-            
-#------------------------------------------------------------------------------------------------
-  #Calling camCalib module 
-
-  yCamCalib_l:
-    <<: *yarp-base
-    deploy:
-      placement:
-        constraints: [node.labels.type != head]
-    command: sh -c "if [ -z ${LEFT_CUSTOM_PORT} && -z ${RIGHT_CUSTOM_PORT} ]; then camCalib --context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_LEFT --name /icub/camcalib/left; fi"
-
-  yCamCalib_r:
-    <<: *yarp-base
-    deploy:
-      placement:
-        constraints: [node.labels.type != head]
-    command: sh -c "if [ -z ${LEFT_CUSTOM_PORT} && -z ${RIGHT_CUSTOM_PORT} ]; then camCalib --context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_RIGHT --name /icub/camcalib/right; fi"
-
-#------------------------------------------------------------------------------------------------
-  #Connections robot's cameras
-  yConnectCam_l:
-    <<: *yarp-base
-    deploy:
-      placement:
-        constraints: [node.labels.type != head]
-      restart_policy:
-        condition: on-failure
-    command: sh -c "if [ -z ${LEFT_CUSTOM_PORT} && -z ${RIGHT_CUSTOM_PORT} ]; then yarp wait /icub/cam/left; yarp wait /icub/camcalib/left/in; yarp connect /icub/cam/left /icub/camcalib/left/in; fi"
-
-  yConnectCam_r:
-    <<: *yarp-base
-    deploy:
-      placement:
-        constraints: [node.labels.type != head]
-      restart_policy:
-        condition: on-failure
-    command: sh -c "if [ -z ${LEFT_CUSTOM_PORT} && -z ${RIGHT_CUSTOM_PORT} ]; then yarp wait /icub/cam/right; yarp wait /icub/camcalib/right/in; yarp connect /icub/cam/right /icub/camcalib/right/in; fi"
-   
     
  #------------------------------------------------------------------------------------------------
 

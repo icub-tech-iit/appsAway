@@ -19,12 +19,6 @@ x-yarp-base: &yarp-base
 
 services:
   
-  yGrabberCameras:
-    <<: *yarp-base
-    devices: 
-      - "/dev/video0:/dev/video0"
-    container_name: yGrabberCameras
-    command: sh -c "if [ -z ${LEFT_CUSTOM_PORT} && -z ${RIGHT_CUSTOM_PORT} ]; then yarpdev --from camera/ServerGrabberDualDragon.ini --split true; fi"  
  #------------------------------------------------------------------------------------------------
   #Calling CameraPanCalibration module 
   
@@ -44,31 +38,6 @@ services:
     <<: *yarp-base
     container_name: yview_output_r
     command: yarpview --name /rightImageOutput
-
-  #Opening we open the viewer to see left icub view
-  yview_icub_l:
-    <<: *yarp-base
-    container_name: yview_icub_l
-    command: sh -c "if [ -z ${LEFT_CUSTOM_PORT} && -z ${RIGHT_CUSTOM_PORT}]; then yarpview --name  /icub/view/left; fi"
-
-  #Opening we open the viewer to see right icub view
-  yview_icub_r:
-    <<: *yarp-base
-    container_name: yview_icub_r
-    command: sh -c "if [ -z ${LEFT_CUSTOM_PORT} && -z ${RIGHT_CUSTOM_PORT}]; then yarpview --name  /icub/view/right; fi"
-
-  #Opening we open the viewer to see the input of the right custom port
-  yview_right_image_i:
-    <<: *yarp-base
-    container_name: yview_input_r
-    command: yarpview --name /rightImageInput
-
-  #Opening we open the viewer to see the input of the left custom port
-  yview_left_image_i:
-    <<: *yarp-base
-    container_name: yview_input_l
-    command: yarpview --name /leftImageInput
-
 
 
 
