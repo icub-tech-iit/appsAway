@@ -39,7 +39,6 @@
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/opencv.hpp>
-#include <opencv2/quality/qualitymse.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/tracking.hpp>
 
@@ -69,13 +68,15 @@ class Processing : public yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::P
     yarp::os::RpcServer handlerPort;
     yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > left_outPort, right_outPort, right_outPort_after;
     yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> >  right_inPort;
-    cv::Mat out_left_scene, out_right_scene, obj, H;
+    cv::Mat out_left_scene, out_right_scene, obj_template, H;
     cv::Point left_c, right_c;
     bool select_ROI = false;
-    bool not_found = false;
+    bool points_found = false;
     int shift_left, shift_right;
     std::mutex mtx;
     int top, bottom, left, right;
+    cv::Point arrowDown_pt1_last{0,0}, arrowDown_pt2_last{0,0}, arrowUp_pt1_last{0,0}, arrowUp_pt2_last{0,0};
+    int centroid_diff_last{-1};
   
 
 public:
@@ -103,7 +104,7 @@ public:
         right_outPort.open("/" + moduleName + "/rightImage:o");
         right_outPort_after.open("/" + moduleName + "/rightImageAfter:o");
         shift_left = 0;
-        shift_right = 15;
+        shift_right = 0;
         return true;
     }
 
@@ -147,95 +148,141 @@ public:
 
 
         if (!select_ROI) {
-            select_ROI = true;
             namedWindow("Select ROI", 2);
             //resizeWindow("Select ROI",320,240);
             Rect2d templ = selectROI("Select ROI", left_scene);  
-            obj = left_scene(templ);// Crop image
-            imshow("Crop image",obj);
+            left_scene(templ).copyTo(obj_template); // Copying otherwise the template might change
+            if (obj_template.empty()) {
+                yWarning() << "The template selected was empty";
+                return;
+            }
+            imshow("Crop image",obj_template);
             waitKey(0);
-
+            select_ROI = true;
         }
- 
-        
-        out_left_scene = CameraPanCalibration(obj, sft_left_scene, &left_c );
+         
+        out_left_scene = CameraPanCalibration(obj_template, sft_left_scene, &left_c );
         if (select_ROI)
         {
-            out_right_scene = CameraPanCalibration(obj, sft_right_scene, &right_c );
+            out_right_scene = CameraPanCalibration(obj_template, sft_right_scene, &right_c );
         
             //double centroid_diff = cv::norm(cv::Mat(left_c),cv::Mat(right_c));
-            double centroid_diff = abs(left_c.y-right_c.y);
-            cout << "Difference between centroids: " << centroid_diff << endl; 
+            int centroid_diff = abs(left_c.y-right_c.y);
+            yInfo() << "Difference between centroids: " << centroid_diff;
             
             int left_width=out_left_scene.size().width;
             int left_height=out_left_scene.size().height;
             int right_width=out_right_scene.size().width;
             int right_height=out_right_scene.size().height; 
 
-            if (centroid_diff< 3){
-                
-                // Grid on the left image 
-                for(int i = 0; i < left_height; i += (left_height/3))
-                    cv::line(out_left_scene,Point(0,i),Point(left_width,i),cv::Scalar(23,187,76), 2);
-                cv::line(out_left_scene,Point(0,left_height-1),Point(left_width,left_height-1),cv::Scalar(23,187,76), 2);
+            cv::Point arrowDown_pt1, arrowDown_pt2;
+            arrowDown_pt1.x = out_left_scene.cols/8;
+            arrowDown_pt1.y = 4.5*(out_left_scene.rows/6);
+            arrowDown_pt2.x = out_left_scene.cols/8;
+            arrowDown_pt2.y = 5.5*(out_left_scene.rows/6);
 
-                for(int i = 0; i < left_width; i += (left_width/3))
-                    cv::line(out_left_scene,Point(i,0),Point(i,left_height),cv::Scalar(23,187,76), 2);
+            cv::Point arrowUp_pt1, arrowUp_pt2;
+            arrowUp_pt1.x = out_left_scene.cols/8;
+            arrowUp_pt1.y = 5.5*(out_left_scene.rows/6);
+            arrowUp_pt2.x = out_left_scene.cols/8;
+            arrowUp_pt2.y = 4.5*(out_left_scene.rows/6);
 
-                // Grid on the right image 
-                for(int i = 0; i < right_height; i += (right_height/3))
-                    cv::line(out_right_scene,Point(0,i),Point(right_width,i),cv::Scalar(23,187,76), 2);
-                cv::line(out_right_scene,Point(0,right_height-1),Point(right_width,right_height-1),cv::Scalar(23,187,76), 2);
-
-                for(int i = 0; i < right_width; i += (right_width/3))
-                    cv::line(out_right_scene,Point(i,0),Point(i,right_height),cv::Scalar(23,187,76), 2);
-
-            }
-            else{
-                
-                // Grid on the left image 
-                for(int i = 0; i < left_height; i += (left_height/3))
-                    cv::line(out_left_scene,Point(0,i),Point(left_width,i),cv::Scalar(10,15,184), 2);
-                cv::line(out_left_scene,Point(0,left_height-1),Point(left_width,left_height-1),cv::Scalar(10,15,184), 2);
-
-                for(int i = 0; i < left_width; i += (left_width/3))
-                    cv::line(out_left_scene,Point(i,0),Point(i,left_height),cv::Scalar(10,15,184), 2);
-            
-                // Grid on the right image 
-                for(int i = 0; i < right_height; i += (right_height/3))
-                    cv::line(out_right_scene,Point(0,i),Point(right_width,i),cv::Scalar(10,15,184), 2);
-                cv::line(out_right_scene,Point(0,right_height-1),Point(right_width,right_height-1),cv::Scalar(10,15,184), 2);
-
-                for(int i = 0; i < right_width; i += (right_width/3))
-                    cv::line(out_right_scene,Point(i,0),Point(i,right_height),cv::Scalar(10,15,184), 2);
-
-                cv::Point arrowDown_pt1, arrowDown_pt2;
-                arrowDown_pt1.x = out_left_scene.cols/8;
-                arrowDown_pt1.y = 4.5*(out_left_scene.rows/6);
-                arrowDown_pt2.x = out_left_scene.cols/8;
-                arrowDown_pt2.y = 5.5*(out_left_scene.rows/6);
-            
-                cv::Point arrowUp_pt1, arrowUp_pt2;
-                arrowUp_pt1.x = out_left_scene.cols/8;
-                arrowUp_pt1.y = 5.5*(out_left_scene.rows/6);
-                arrowUp_pt2.x = out_left_scene.cols/8;
-                arrowUp_pt2.y = 4.5*(out_left_scene.rows/6);
-            
-                if(left_c.y < right_c.y){
-                    cv::arrowedLine(out_left_scene, arrowDown_pt1, arrowDown_pt2, cv::Scalar(10,15,184), 4, 8, 0, 0.3); // draw arrow!
-                    cv::arrowedLine(out_right_scene, arrowUp_pt1, arrowUp_pt2, cv::Scalar(10,15,184), 4, 8, 0, 0.3);
+            if (points_found) {
+                cv::Scalar color;
+                if (centroid_diff< 3){
+                    color = cv::Scalar(23,187,76);
                 }
                 else{
-                    cv::arrowedLine(out_right_scene, arrowDown_pt1, arrowDown_pt2, cv::Scalar(10,15,184), 4, 8, 0, 0.3); // draw arrow!
-                    cv::arrowedLine(out_left_scene, arrowUp_pt1, arrowUp_pt2, cv::Scalar(10,15,184), 4, 8, 0, 0.3);
+                    color = cv::Scalar(10,15,184);
                 }
 
-                std::string str = std::to_string (centroid_diff);
-                str.erase ( str.find_last_not_of('0') + 1, std::string::npos );
-                str.erase(std::remove(str.begin(), str.end(), '.'), str.end());
-                cv::putText(out_left_scene, str, Point(out_left_scene.cols/6, 5.25*(out_left_scene.rows/6)), FONT_HERSHEY_SIMPLEX , 1, cv::Scalar(10,15,184), 2, 8, false) ;
-                cv::putText(out_right_scene, str, Point(out_right_scene.cols/6, 5.25*(out_right_scene.rows/6)), FONT_HERSHEY_SIMPLEX , 1,  cv::Scalar(10,15,184), 2, 8, false) ;
+                // Grid on the left image
+                for(int i = 0; i < left_height; i += (left_height/3))
+                    cv::line(out_left_scene,Point(0,i),Point(left_width,i),color, 2);
+                cv::line(out_left_scene,Point(0,left_height-1),Point(left_width,left_height-1),color, 2);
 
+                for(int i = 0; i < left_width; i += (left_width/3))
+                    cv::line(out_left_scene,Point(i,0),Point(i,left_height),color, 2);
+
+                // Grid on the right image
+                for(int i = 0; i < right_height; i += (right_height/3))
+                    cv::line(out_right_scene,Point(0,i),Point(right_width,i),color, 2);
+                cv::line(out_right_scene,Point(0,right_height-1),Point(right_width,right_height-1),color, 2);
+
+                for(int i = 0; i < right_width; i += (right_width/3))
+                    cv::line(out_right_scene,Point(i,0),Point(i,right_height),color, 2);
+
+                if(left_c.y < right_c.y){
+                    cv::arrowedLine(out_left_scene, arrowUp_pt1, arrowUp_pt2, color, 4, 8, 0, 0.3); // draw arrow!
+                    cv::arrowedLine(out_right_scene, arrowDown_pt1, arrowDown_pt2, color, 4, 8, 0, 0.3);
+                }
+                else{
+                    cv::arrowedLine(out_right_scene, arrowUp_pt1, arrowUp_pt2, color, 4, 8, 0, 0.3); // draw arrow!
+                    cv::arrowedLine(out_left_scene, arrowDown_pt1, arrowDown_pt2, color, 4, 8, 0, 0.3);
+                }
+
+                cv::circle(out_right_scene, right_c, 5, color, -1, 8);
+                cv::circle(out_left_scene, left_c, 5, color, -1, 8);
+
+                std::string str = std::to_string (centroid_diff);
+//                str.erase ( str.find_last_not_of('0') + 1, std::string::npos );
+//                str.erase(std::remove(str.begin(), str.end(), '.'), str.end());
+                cv::putText(out_left_scene, str, Point(out_left_scene.cols/6, 5.25*(out_left_scene.rows/6)), FONT_HERSHEY_SIMPLEX , 1, color, 2, 8, false) ;
+                cv::putText(out_right_scene, str, Point(out_right_scene.cols/6, 5.25*(out_right_scene.rows/6)), FONT_HERSHEY_SIMPLEX , 1,  color, 2, 8, false) ;
+
+                arrowUp_pt1_last = arrowUp_pt1;
+                arrowUp_pt2_last = arrowUp_pt2;
+                arrowDown_pt1_last = arrowDown_pt1;
+                arrowDown_pt2_last = arrowDown_pt2;
+                centroid_diff_last = centroid_diff;
+            }
+            else {
+                if (centroid_diff_last < 0) {
+                    yInfo() << "No correspondences found for the first image";
+                }
+                else {
+                    cv::Scalar color;
+                    if (centroid_diff_last < 3){
+                        color = cv::Scalar(23,187,76);
+                    }
+                    else{
+                        color = cv::Scalar(10,15,184);
+                    }
+
+                    // Grid on the left image
+                    for(int i = 0; i < left_height; i += (left_height/3))
+                        cv::line(out_left_scene,Point(0,i),Point(left_width,i),color, 2);
+                    cv::line(out_left_scene,Point(0,left_height-1),Point(left_width,left_height-1),color, 2);
+
+                    for(int i = 0; i < left_width; i += (left_width/3))
+                        cv::line(out_left_scene,Point(i,0),Point(i,left_height),color, 2);
+
+                    // Grid on the right image
+                    for(int i = 0; i < right_height; i += (right_height/3))
+                        cv::line(out_right_scene,Point(0,i),Point(right_width,i),color, 2);
+                    cv::line(out_right_scene,Point(0,right_height-1),Point(right_width,right_height-1),color, 2);
+
+                    for(int i = 0; i < right_width; i += (right_width/3))
+                        cv::line(out_right_scene,Point(i,0),Point(i,right_height),color, 2);
+
+                    if(left_c.y < right_c.y){
+                        cv::arrowedLine(out_left_scene, arrowUp_pt1_last, arrowUp_pt2_last, color, 4, 8, 0, 0.3); // draw arrow!
+                        cv::arrowedLine(out_right_scene, arrowDown_pt1_last, arrowDown_pt2_last, color, 4, 8, 0, 0.3);
+                    }
+                    else{
+                        cv::arrowedLine(out_right_scene, arrowUp_pt1_last, arrowUp_pt2_last, color, 4, 8, 0, 0.3); // draw arrow!
+                        cv::arrowedLine(out_left_scene, arrowDown_pt1_last, arrowDown_pt2_last, color, 4, 8, 0, 0.3);
+                    }
+
+                    cv::circle(out_right_scene, right_c, 5, color, -1, 8);
+                    cv::circle(out_left_scene, left_c, 5, color, -1, 8);
+
+                    std::string str = std::to_string (centroid_diff_last);
+//                    str.erase ( str.find_last_not_of('0') + 1, std::string::npos );
+//                    str.erase(std::remove(str.begin(), str.end(), '.'), str.end());
+                    cv::putText(out_left_scene, str, Point(out_left_scene.cols/6, 5.25*(out_left_scene.rows/6)), FONT_HERSHEY_SIMPLEX , 1, color, 2, 8, false) ;
+                    cv::putText(out_right_scene, str, Point(out_right_scene.cols/6, 5.25*(out_right_scene.rows/6)), FONT_HERSHEY_SIMPLEX , 1,  color, 2, 8, false) ;
+                }
             }
 
             left_outImage.resize( out_left_scene.rows, out_left_scene.cols);
@@ -251,17 +298,17 @@ public:
     }
 
     /********************************************************/
-    cv::Mat CameraPanCalibration( cv::Mat image_obj, cv::Mat image_scene, cv::Point* center )
+    cv::Mat CameraPanCalibration(const cv::Mat &image_obj, const cv::Mat &image_scene, cv::Point* center )
     {  
   
         //Check whether images have been loaded
         if( !image_obj.data)
         { 
-        cout<< " --(!) Error reading image1 " << endl; 
+            cout<< " --(!) Error reading image1 " << endl;
         }
         if( !image_scene.data)
         { 
-        cout<< " --(!) Error reading image2 " << endl; 
+            cout<< " --(!) Error reading image2 " << endl;
         }
  
         //-- Step 1: Detect the keypoints using SURF Detector and Calculate descriptors 
@@ -276,39 +323,50 @@ public:
         //-- Step 2: Matching descriptor vectors  
         //Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create( DescriptorMatcher::BRUTEFORCE );
         Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create( DescriptorMatcher::MatcherType::FLANNBASED );
-        std::vector< DMatch > matches;
-        matcher->match( descriptors_obj, descriptors_scene, matches );
-        
-        
-        Mat img_matches;
-        drawMatches( image_obj, keypoints_obj, image_scene, keypoints_scene,
-                    matches, img_matches, Scalar::all(-1), Scalar::all(-1),
-                    vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS );
-        //imshow("Original", img_matches);
-        //waitKey(0);
+//        Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create( DescriptorMatcher::FLANNBASED );
+
+        std::vector< std::vector<DMatch> > all_matches;
+        std::vector< DMatch > good_matches;
+        matcher->knnMatch( descriptors_obj, descriptors_scene, all_matches, 2 );
+        //        matcher->match( descriptors_obj, descriptors_scene, good_matches );
+
 
         //-- Step 3: Localize the object
         vector<Point2f> obj;
         vector<Point2f> scene;
 
-        for( int i = 0; i < matches.size(); i++ )
+        const float ratio_thresh = 0.7f;
+        for( int i = 0; i < all_matches.size(); i++ )
         {
             //-- Step 4: Get the keypoints from the  matches
-            obj.push_back( keypoints_obj [matches[i].queryIdx ].pt );
-            scene.push_back( keypoints_scene[ matches[i].trainIdx ].pt );
+            //-- Filter matches using the Lowe's ratio test
+            if (all_matches[i][0].distance < ratio_thresh * all_matches[i][1].distance)
+            {
+                good_matches.push_back( all_matches[i][0] );
+                obj.push_back( keypoints_obj [all_matches[i][0].queryIdx ].pt );
+                scene.push_back( keypoints_scene[ all_matches[i][0].trainIdx ].pt );
+            }
         }
-        
+
+        yInfo() << "Number of good matches: " << good_matches.size();
+
+//        Mat img_matches;
+//        drawMatches( image_obj, keypoints_obj, image_scene, keypoints_scene,
+//                    good_matches, img_matches, Scalar::all(-1), Scalar::all(-1),
+//                    vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS );
+//        imshow("Original", img_matches);
+//        waitKey(0);
+
         if (obj.size() > 4) {
             //-- Step 5:FindHomography
             H = findHomography( obj, scene, RANSAC );
+            points_found = true;
         }
         else
         {   
-           // not_found = true;
             yDebug() << "Not enough corresponding points";
-            select_ROI = false;
-        }
-      
+            points_found = false;
+        }      
 
         //-- Step 6: Get the corners of the object which needs to be detected.
         vector<Point2f> obj_corners(4);
@@ -327,7 +385,7 @@ public:
 
             //Bounding Box Centroid
             *center = Point(scene_corners[3].x + (scene_corners[2].x - scene_corners[3].x )/2, scene_corners[0].y + (scene_corners[3].y - scene_corners[0].y)/2);
-            cv::circle(image_scene, *center, 5, cv::Scalar(0,255,0), -1, 8);
+//            cv::circle(image_scene, *center, 5, cv::Scalar(0,255,0), -1, 8);
             
         }
         
@@ -351,8 +409,11 @@ public:
      /********************************************************/
      bool reset()
      {  
+         std::lock_guard<std::mutex> lg(mtx);
          select_ROI = false;
-        return true;
+         points_found = false;
+         centroid_diff_last = -1;
+         return true;
      }
 
     /********************************************************/
