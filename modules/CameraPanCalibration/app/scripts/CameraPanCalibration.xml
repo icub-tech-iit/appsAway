@@ -10,19 +10,7 @@
         <name>yarpdataplayer</name>
         <node>localhost</node>
     </module>
-    
-    <module>
-        <name>yarpview</name>
-        <parameters>--name /leftImageInput</parameters>
-        <node>localhost</node>
-    </module>
-    
-     <module>
-        <name>yarpview</name>
-        <parameters>--name /rightImageInput</parameters>
-        <node>localhost</node>
-    </module>
-    
+        
      <module>
         <name>yarpview</name>
         <parameters>--name /leftImageOutput</parameters>
@@ -34,18 +22,6 @@
         <parameters>--name /rightImageOutput</parameters>
         <node>localhost</node>
     </module>
-
-    <connection>
-        <from>/icub/camcalib/left/out</from>
-        <to>/leftImageInput</to>
-        <protocol>fast_tcp</protocol>
-    </connection>
- 
-     <connection>
-        <from>/icub/camcalib/right/out</from>
-        <to>/rightImageInput</to>
-        <protocol>fast_tcp</protocol>
-    </connection>
      
      <connection>
         <from>/CameraPanCalibration/leftImage:o</from>
@@ -60,13 +36,13 @@
     </connection>
     
     <connection>
-        <from>/icub/camcalib/left/out</from>
+        <from>/icub/cam/left</from>
         <to>/CameraPanCalibration/leftImage:i</to>
         <protocol>fast_tcp</protocol>
     </connection>
         
     <connection>
-        <from>/icub/camcalib/right/out</from>
+        <from>/icub/cam/right</from>
         <to>/CameraPanCalibration/rightImage:i</to>
         <protocol>fast_tcp</protocol>
     </connection>
