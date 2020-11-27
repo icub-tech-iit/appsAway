@@ -15,7 +15,6 @@
           - apt-transport-https
           - ca-certificates
           - curl
-          - gnupg-agent
           - software-properties-common
         state: latest
         autoclean: yes
@@ -55,6 +54,17 @@
     
     - name: Install docker-compose
       shell: chmod +x /usr/local/bin/docker-compose
+      args:
+        warn: no
+      when: ansible_distribution != 'MacOSX'
+      
+    - name: Make docker run without sudo
+      shell: groupadd docker && gpasswd -a $USER docker
+      ignore_errors: yes
+      when: ansible_distribution != 'MacOSX'
+
+    - name: Start docker
+      shell: systemctl start docker
       args:
         warn: no
       when: ansible_distribution != 'MacOSX'
