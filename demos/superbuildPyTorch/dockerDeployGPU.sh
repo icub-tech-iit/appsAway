@@ -12,7 +12,7 @@ if [ -z "$(dpkg -l | grep nvidia-docker2)" ]; then
 
     sudo apt-get install -y nvidia-docker2
 
-    sudo systemctl restart docker
+    systemctl restart docker
 else
     echo "nvidia-docker2 already installed"
 fi
