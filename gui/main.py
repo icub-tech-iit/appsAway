@@ -160,8 +160,9 @@ class OptionButton():
         return OptionButton(button_type.value, button, var_name, inputButton, val_value, label)
 
 class MyHandler(FileSystemEventHandler):
-    def __init__(self, progressBar):
+    def __init__(self, progressBar, pushStopButton):
         self.progressBar = progressBar
+        self.pushStopButton = pushStopButton
     def on_modified(self, event):
         global PAUSED
         if PAUSED:
@@ -177,6 +178,7 @@ class MyHandler(FileSystemEventHandler):
           self.progressBar.setValue(curVal + (maxVal - curVal) / 100)
           if curVal == 100:
             self.progressBar.setFormat("Application is being deployed!")
+            self.pushStopButton.setEnabled(True)
             PAUSED = True
           pipe_file.close()
 
@@ -305,7 +307,7 @@ class WidgetGallery(QDialog):
 
 
         self.createProgressBar()
-        self.event_handler = MyHandler(self.progressBar)
+        self.event_handler = MyHandler(self.progressBar, self.pushStopButton)
         self.observer = Observer()
         self.observer.schedule(self.event_handler, path=os.getcwd(), recursive=False)
         self.observer.start()
@@ -628,6 +630,7 @@ class WidgetGallery(QDialog):
     def startProgressBar(self):
         global PAUSED
         self.pushStartButton.setEnabled(False)
+        self.pushStopButton.setEnabled(False)
 
         for buttonOption in self.button_list:
           if buttonOption.button != None:
@@ -639,8 +642,6 @@ class WidgetGallery(QDialog):
         
         elapsedTime = QElapsedTimer()
         elapsedTime.start()
-
-        self.pushStopButton.setEnabled(True)
 
         self.startApplication()
 
