@@ -1,0 +1,92 @@
+version: "3.7"
+
+x-yarp-base: &yarp-base
+  image: icubteamcode/superbuild:master-unstable_binaries
+  environment:
+    - DISPLAY=${DISPLAY}
+    - QT_X11_NO_MITSHM=1
+    - XAUTHORITY=/root/.Xauthority
+    - YARP_FORWARD_LOG_ENABLE=1
+    - YARP_ROBOT_NAME
+  volumes:
+    - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
+    - "${XAUTHORITY}:/root/.Xauthority:rw"
+    - "${YARP_CONF_PATH}:/root/.config/yarp"
+  networks:
+    - hostnet
+
+services:
+#following service are configured in icub-main/app/iCubStartup/scripts/iCubStartup.xml.template
+  yserver:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp where | grep 'is available at ip' > /dev/null ; if [ ! $$? -eq 0 ]; then yarpserver --write; fi"
+
+  yCartisianSolver_r:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "checkRobotInterface; iKinCartesianSolver --part right_arm"
+    #<port timeout="60.0" request="is_ready" reply="[ok]">/icub/yarprobotinterface</port>
+
+  yCartisianSolver_l:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "checkRobotInterface; iKinCartesianSolver --part left_arm"
+    #<port timeout="60.0" request="is_ready" reply="[ok]">/icub/yarprobotinterface</port>
+
+  yGazeCtrl:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type == head]
+    command: sh -c "checkRobotInterface;  iKinGazeCtrl --from iKinGazeCtrl.ini"
+    #note: in our issue we used this configuration file config_no_imu_filter.ini,, but I could not find it.
+    #<port timeout="60.0" request="is_ready" reply="[ok]">/icub/yarprobotinterface</port>
+
+#  yWBD:
+#    <<: *yarp-base
+#    deploy:
+#      placement:
+#        constraints: [node.labels.type != head]
+#    command: sh -c "checkRobotInterface; wholeBodyDynamics --autoconnect --no_legs"
+#    #note: Do I add --headV2 option??.
+#    #note: We need to check if WBD is already running, because some yarprobotinterface configuration files already contain it.
+#    # <port timeout="60.0" request="is_ready" reply="[ok]">/icub/yarprobotinterface</port>
+
+#  yGravityCompensator:
+#    <<: *yarp-base
+#    deploy:
+#      placement:
+#        constraints: [node.labels.type != head]
+#    command: sh -c "gravityCompensator --autoconnect --no_legs"
+#    #note: Do I add --headV2 option??.
+
+
+#------------------------------------------------------------------------------------------------
+
+
+
+  #use network.peer ip address and port 8080 to see the containers status in browser (http://localhost:8080/)
+  visualizer:
+    image: dockersamples/visualizer:stable
+    ports:
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+networks:
+  hostnet:
+    external: true
+    name: host
+

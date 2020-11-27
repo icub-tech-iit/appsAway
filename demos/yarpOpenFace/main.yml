@@ -1,0 +1,116 @@
+version: "3.7"
+
+x-yarp-base: &yarp-base
+  image: icubteamcode/yarpopenface:master-unstable_sources
+  environment:
+    - DISPLAY=${DISPLAY}
+    - QT_X11_NO_MITSHM=1
+    - XAUTHORITY=/root/.Xauthority
+    - YARP_FORWARD_LOG_ENABLE=1
+    - YARP_ROBOT_NAME
+    - CUSTOM_PORT
+  volumes:
+    - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
+    - "${XAUTHORITY}:/root/.Xauthority:rw"
+    - "${YARP_CONF_PATH}:/root/.config/yarp"
+  networks:
+    - hostnet
+
+
+#note: following services that need yarpRobotinterface is running, I write yarp wait /yarpRobotInterface;
+#just to remember us to solve thi issue. Such yarp port doesn't exist.
+
+services:
+#following service are configured in icub-main/app/iCubStartup/scripts/iCubStartup.xml.template
+  yserver:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp where | grep 'is available at ip' > /dev/null ; if [ ! $$? -eq 0 ]; then yarpserver --write; fi"
+
+#------------------------------------------------------------------------------------------------
+#Following services are configured in ./icub-main/app/default/scripts/cameras_calib.xml.template
+
+  yCamCalib_l:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "checkRobotInterface; camCalib --context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_LEFT --name /icub/camcalib/left"
+
+  yCamCalib_r:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "checkRobotInterface; camCalib --context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_RIGHT --name /icub/camcalib/right"
+
+  yConnectCam_l:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp wait /icub/cam/left; yarp wait /icub/camcalib/left/in; yarp connect /icub/cam/left /icub/camcalib/left/in udp"
+
+  yConnectCam_r:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp wait /icub/cam/right; yarp wait /icub/camcalib/right/in; yarp connect /icub/cam/right /icub/camcalib/right/in udp"
+
+#------------------------------------------------------------------------------------------------
+#Following services are configured in icub-basic-demos/demoRedBall/app/scripts/demoRedBall.xml.template
+#we need to verify following depencencies:
+#<port>/icub/camcalib/left/out</port>
+#<port>/iKinGazeCtrl/rpc</port>
+#<port>/icub/cartesianController/right_arm/state:o</port>
+#<port>/icub/cartesianController/left_arm/state:o</port>
+#<port>/wholeBodyDynamics/right_arm/FT:i</port>
+#<port>/wholeBodyDynamics/left_arm/FT:i</port>
+
+  yDemoOpenFace:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "if [ ! -z ${CUSTOM_PORT} ]; then yarp wait $CUSTOM_PORT; else yarp wait /icub/camcalib/left/out; fi ; yarpOpenFace --name /yarpOpenFace --robot iTeen --file /usr/local/share/ICUBcontrib/robots/iTeenGenova01/icubEyes.ini"
+
+  yConnectCamToYOF_l:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "if [ ! -z ${CUSTOM_PORT} ]; then yarp wait $CUSTOM_PORT ; yarp wait /yarpOpenFace/inputImg:i ; yarp connect $CUSTOM_PORT /yarpOpenFace/inputImg:i udp ; else yarp wait /icub/camcalib/left/out; yarp wait /yarpOpenFace/inputImg:i ; yarp connect /icub/camcalib/left/out /yarpOpenFace/inputImg:i udp; fi"
+
+
+#------------------------------------------------------------------------------------------------
+
+
+
+  #use network.peer ip address and port 8080 to see the containers status in browser (http://localhost:8080/)
+  visualizer:
+    image: dockersamples/visualizer:stable
+    ports:
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+
+networks:
+  hostnet:
+    external: true
+    name: host
+

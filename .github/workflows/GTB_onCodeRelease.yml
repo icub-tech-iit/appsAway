@@ -1,0 +1,38 @@
+# this workflow will generate the containers on push. These containers are for test only, so ideally they should be uploaded to a private repo, not available to the public. tag=graspTheBall_devel (?)
+# for the stable versions, use graspTheBall_builder_stable.yml, triggered on release
+
+name: GTB_onCodeRelease
+
+on: 
+    repository_dispatch:
+        types: [GTB_onCodeRelease]
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+              with:
+                  repository: icub-tech-iit/code
+                  token: ${{ secrets.CODE_REPO_ACCSS_TOKEN }}
+
+            - name: Login to DockerHub Registry
+              run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+
+
+############## build the release version of graspTheBall ##############
+            - name: Build graspTheBall Docker full image
+              run: docker build --build-arg ${{ github.event.client_payload.extra_payload.base_image_for_GTB_src }} --build-arg ${{ github.event.client_payload.extra_payload.sb_base_image_for_GTB_bin }} ${{ github.event.client_payload.extra_payload.docker_path }} --file ${{ github.event.client_payload.extra_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.extra_payload.grasptheball_src}}
+            - name: Push graspTheBall Docker full image
+              run: docker push ${{ github.event.client_payload.extra_payload.grasptheball_src }}
+ 
+
+############## build the release version of graspTheBall ##############
+            - name: Build graspTheBall Docker thin image
+              run: docker build --build-arg ${{ github.event.client_payload.extra_payload.base_image_for_GTB_bin }} --build-arg ${{ github.event.client_payload.extra_payload.sb_base_image_for_GTB_bin }} ${{ github.event.client_payload.extra_payload.docker_path }} --file ${{ github.event.client_payload.extra_payload.docker_path }}/Dockerfile4Production --tag ${{ github.event.client_payload.extra_payload.grasptheball_bin }}
+            - name: Push graspTheBall Docker thin image
+              run: docker push ${{ github.event.client_payload.extra_payload.grasptheball_bin }}
+
+
+
+

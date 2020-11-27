@@ -1,0 +1,131 @@
+version: "3.7"
+
+x-yarp-base: &yarp-base
+  image: icubteamcode/googlevision:master_master-unstable_sources
+  environment:
+    - YARP_FORWARD_LOG_ENABLE=1
+    - FILE_INPUT
+    - CUSTOM_PORT
+  volumes:
+    - "${YARP_CONF_PATH}:/root/.config/yarp"
+    - "${FILE_INPUT_PATH}:/root/authorization"
+  networks:
+    - hostnet
+
+#note: following services that need yarpRobotinterface is running, I write yarp wait /yarpRobotInterface;
+#just to remember us to solve thi issue. Such yarp port doesn't exist.
+
+services:
+#following service are configured in icub-main/app/iCubStartup/scripts/iCubStartup.xml.template
+  yserver:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp where | grep 'is available at ip' > /dev/null ; if [ ! $$? -eq 0 ]; then yarpserver --write; fi"
+
+
+    #command: sh -c "_YARP_GOT=$$( yarp where | grep 'is available at ip' > /dev/null ); echo '${_YARP_GOT}'; if [ -z '${_YARP_GOT}' ]; then yarpserver --write; fi"
+#------------------------------------------------------------------------------------------------
+  yDemoGoogleVisionAI:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "googleVisionAI" 
+ 
+
+  yConnectToGoogleVisionAI:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "if [ ! -z ${CUSTOM_PORT} ]; then yarp wait $CUSTOM_PORT ; yarp wait /googleVisionAI/image:i ; yarp connect $CUSTOM_PORT /googleVisionAI/image:i tcp ; else yarp wait /icub/camcalib/left/out; yarp wait /googleVisionAI/image:i ; yarp connect /icub/camcalib/left/out /googleVisionAI/image:i tcp; fi"
+  
+  yConnectToOutImage:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp wait /googleVisionAI/image:o ; yarp wait /outImage; yarp connect /googleVisionAI/image:o /outImage tcp ;"
+
+#------------------------------------------------------------------------------------------------
+  yconnectToStartImage:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "if [ ! -z ${CUSTOM_PORT} ]; then yarp wait ${CUSTOM_PORT} ; yarp wait /startImage ; yarp connect ${CUSTOM_PORT} /startImage udp; else yarp wait /icub/camcalib/left/out; yarp wait /icub/view/left; yarp connect /icub/camcalib/left/out /icub/view/left udp; fi"
+    restart: on-failure
+     
+#------------------------------------------------------------------------------------------------
+
+  yCamCalib_l:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "if [ -z ${CUSTOM_PORT} ]; then camCalib --context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_LEFT --name /icub/camcalib/left; fi"
+
+  yCamCalib_r:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "if [ -z ${CUSTOM_PORT} ]; then camCalib --context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_RIGHT --name /icub/camcalib/right; fi"
+
+  yConnectCam_l:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "if [ -z ${CUSTOM_PORT} ]; then yarp wait /icub/cam/left; yarp wait /icub/camcalib/left/in; yarp connect /icub/cam/left /icub/camcalib/left/in; fi"
+
+  yConnectCam_r:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "if [ -z ${CUSTOM_PORT} ]; then yarp wait /icub/cam/right; yarp wait /icub/camcalib/right/in; yarp connect /icub/cam/right /icub/camcalib/right/in; fi"
+   
+      
+  #yconnect_groundtruth:
+  #  <<: *yarp-base
+  #  deploy:
+  #    placement:
+  #      constraints: [node.labels.type != head]
+  #  command: sh -c "yarp wait /icub/camcalib/left/out ; yarp wait /view/input_image ; yarp connect /icub/camcalib/left/out /view/input_image udp"
+  #  restart: on-failure
+    
+    
+ #------------------------------------------------------------------------------------------------
+
+  #use network.peer ip address and port 8080 to see the containers status in browser
+  visualizer:
+    image: dockersamples/visualizer:stable
+    ports:
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+
+networks:
+  hostnet:
+    external: true
+    name: host
+

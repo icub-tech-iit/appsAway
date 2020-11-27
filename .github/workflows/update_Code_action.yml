@@ -1,0 +1,95 @@
+on:
+  pull_request:
+    types: [closed]
+
+
+#            mv -v ./appsAway/user_changes/* ./icub-tech-apps/dist/database/upgrade/
+#            mv -v ./appsAway/user_changes/images/* ./icub-tech-apps/dist/express/images/
+
+jobs:
+  update_code:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true && contains(github.event.pull_request.head.ref, 'user_changes')
+    steps: 
+      # we checkout appsAway code
+      #- uses: actions/checkout@v2
+      #  with:
+      #    path: "./appsAway"
+      - name: cloning appsAway
+        run: git clone https://github.com/icub-tech-iit/appsAway
+            
+          
+      - name: check working directory
+        run: |
+            ls
+            pwd
+
+#            mv -v ./user_changes/*.json ../test/ 2>/dev/null || :
+#            mv -v ./user_changes/images/*.png ../test/ 2>/dev/null || :
+#            mv -v ./user_changes/images/*.jpg ../test/ 2>/dev/null || :
+#            mv -v ./user_changes/images/*.jpeg ../test/ 2>/dev/null || :
+      - name: copies user_changes to temporary folder
+        run: |
+            cd appsAway
+            mkdir -p ../test/
+            mv -v ./user_changes/*.js ../test/ 2>/dev/null || :
+            mv -v ./user_changes/*.json ../test/ 2>/dev/null || :
+            mv -v ./user_changes/images/*.png ../test/ 2>/dev/null || :
+            mv -v ./user_changes/images/*.jpg ../test/ 2>/dev/null || :
+            mv -v ./user_changes/images/*.jpeg ../test/ 2>/dev/null || :
+            ls
+            ls ./user_changes
+            git config --local user.email "actions@github.com"
+            git config --local user.name "GitHub Action"
+            git add -A
+            git commit -am "removing user_changes from appsAway" 
+
+      - name: push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          directory: "./appsAway/"
+
+#      - name: remove appsAway
+#        run: |
+#            rm -rf ./appsAway
+
+      - uses: actions/checkout@v2
+        with:
+            repository: icub-tech-iit/code
+            token: ${{ secrets.CODE_REPO_ACCSS_TOKEN }}
+            path: "./code"
+          
+      - name: check working directory
+        run: |
+            ls
+            pwd
+
+      - name: copies user_changes folder
+        run: |
+            mkdir -p ./code/test/
+            mv -v ./test/* ./code/icub-tech-apps/dist/express/evaluate/
+
+      - name: Commit changes
+        run: |
+            cd code
+            pwd
+            git status
+            git config --local user.email "actions@github.com"
+            git config --local user.name "GitHub Action"
+            git add -A
+            git commit -m "Merged user changes in code" -a
+        
+      - name: push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.CODE_REPO_ACCSS_TOKEN }}
+          directory: "/home/runner/work/appsAway/appsAway/code"
+          repository: icub-tech-iit/code
+          
+  placeholder:
+    runs-on: ubuntu-latest
+    steps:
+      - name: placeholder job
+        run: |
+            echo "skipping action"

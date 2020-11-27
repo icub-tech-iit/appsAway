@@ -1,0 +1,87 @@
+version: "3.7"
+
+x-yarp-base: &yarp-base
+  image: icubteamcode/superbuild:master-unstable_binaries
+  environment:
+    - DISPLAY=${DISPLAY}
+    - QT_X11_NO_MITSHM=1
+    - XAUTHORITY=/root/.Xauthority
+    - YARP_FORWARD_LOG_ENABLE=1
+    - YARP_ROBOT_NAME
+    - APPSAWAY_ROBOT_MODEL
+    - APPSAWAY_OPTIONS
+  volumes:
+    - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
+    - "${XAUTHORITY}:/root/.Xauthority:rw"
+    - type: volume
+      source: yarp-config
+      target: /root/.config/yarp
+      volume:
+        nocopy: true
+  networks:
+    - hostnet
+
+services:
+#following service are configured in icub-main/app/iCubStartup/scripts/iCubStartup.xml.template
+  yserver:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+    command: yarpserver --write
+
+
+#################################### ADD YOUR SERVICES HERE #####################################
+  your_service: 
+    # use this if it is part of the base superbuild image
+    <<: *yarp-base 
+
+    # use this if you are running your service from your own docker image
+    image: YOURIMAGE:TAG 
+    
+    ##############################################################
+    # set any extra options here, e.g. environment, volumes, etc #
+    ##############################################################
+
+    deploy:
+      placement:
+        constrains: [node.labels.type != head] 
+####### You can specify additional constraints, e.g. manager
+
+      restart_policy:
+        condition: [on-failure, always, etc]
+        # this specifies when you want to restart the container. Generally we woud use "on-failure"
+        # for services that are connecting ports, for example
+
+##### specify your shell/bash command to run your application.
+##### The format is command: sh -c "bash/shell commands"
+    command: sh -c ""
+
+#################################################################################################
+
+
+#------------------------------------------------------------------------------------------------
+
+  #use network.peer ip address and port 8080 to see the containers status in browser (http://localhost:8080/)
+  visualizer:
+    image: dockersamples/visualizer:stable
+    ports:
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+networks:
+  hostnet:
+    external: true
+    name: host
+
+volumes:
+  yarp-config:
+    driver: vieux/sshfs
+    driver_opts:
+      sshcmd: ${USER_NAME}@${MASTER_ADDR}:${YARP_CONF_PATH}
+      password: ${USER_PASSWORD}
+      allow_other: ""

@@ -1,0 +1,50 @@
+<application>
+<name>Camera Pan Calibration App</name>
+
+    <module>
+        <name>CameraPanCalibration</name>
+        <node>localhost</node>
+    </module>
+    
+    <module>
+        <name>yarpdataplayer</name>
+        <node>localhost</node>
+    </module>
+        
+     <module>
+        <name>yarpview</name>
+        <parameters>--name /leftImageOutput</parameters>
+        <node>localhost</node>
+    </module>
+        
+     <module>
+        <name>yarpview</name>
+        <parameters>--name /rightImageOutput</parameters>
+        <node>localhost</node>
+    </module>
+     
+     <connection>
+        <from>/CameraPanCalibration/leftImage:o</from>
+        <to>/leftImageOutput</to>
+        <protocol>fast_tcp</protocol>
+    </connection>
+         
+     <connection>
+        <from>/CameraPanCalibration/rightImage:o</from>
+        <to>/rightImageOutput</to>
+        <protocol>fast_tcp</protocol>
+    </connection>
+    
+    <connection>
+        <from>/icub/cam/left</from>
+        <to>/CameraPanCalibration/leftImage:i</to>
+        <protocol>fast_tcp</protocol>
+    </connection>
+        
+    <connection>
+        <from>/icub/cam/right</from>
+        <to>/CameraPanCalibration/rightImage:i</to>
+        <protocol>fast_tcp</protocol>
+    </connection>
+  
+</application>

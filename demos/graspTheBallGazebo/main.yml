@@ -1,0 +1,150 @@
+version: "3.7"
+
+x-yarp-base: &yarp-base
+  image: icubteamcode/grasptheball:v2020.08.patch-01_master-unstable_sources
+  environment:
+    - DISPLAY=${DISPLAY}
+    - QT_X11_NO_MITSHM=1
+    - XAUTHORITY=/root/.Xauthority
+    - YARP_FORWARD_LOG_ENABLE=1
+  volumes:
+    - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
+    - "${XAUTHORITY}:/root/.Xauthority:rw"
+    - "${YARP_CONF_PATH}:/root/.config/yarp"
+    - "${HOME}/teamcode/appsAway/demos/graspTheBallGazebo/gazebo/config-gazebo.ini:/usr/local/share/ICUBcontrib/contexts/demoRedBall/config-gazebo.ini"
+  networks:
+    - hostnet
+
+x-yarp-gazebo: &yarp-gazebo
+  image: icubteamcode/icubgraspgazebo:master_master-unstable_sources
+  environment:
+    - DISPLAY=${DISPLAY}
+    - QT_X11_NO_MITSHM=1
+    - XAUTHORITY=/root/.Xauthority
+    - YARP_FORWARD_LOG_ENABLE=1
+    - YARP_ROBOT_NAME
+    - APPSAWAY_ROBOT_MODEL
+  volumes:
+    - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
+    - "${XAUTHORITY}:/root/.Xauthority:rw"
+    - "${YARP_CONF_PATH}:/root/.config/yarp"
+    - "${HOME}/teamcode/appsAway/demos/graspTheBallGazebo/gazebo/models/red-ball:/workspace/iCubContrib/share/gazebo/models/red-ball"
+    - "${HOME}/teamcode/appsAway/demos/graspTheBallGazebo/gazebo/worlds/grasp-ball-gazebo.sdf:/workspace/iCubContrib/share/gazebo/worlds/grasp-ball-gazebo.sdf"
+    - "${HOME}/teamcode/appsAway/demos/graspTheBallGazebo/gazebo/libdemoRedBall-world.so:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins/libdemoRedBall-world.so"
+  networks:
+    - hostnet
+
+#note: following services that need yarpRobotinterface is running, I write yarp wait /yarpRobotInterface;
+#just to remember us to solve thi issue. Such yarp port doesn't exist.
+
+services:
+#following service are configured in icub-main/app/iCubStartup/scripts/iCubStartup.xml.template
+  yserver:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp where | grep 'is available at ip' > /dev/null ; if [ ! $$? -eq 0 ]; then yarpserver --write; fi"
+
+  yRobotInterface:
+    <<: *yarp-gazebo
+    command: sh -c "yarp wait /icubSim/torso/state:o; yarp wait /icubSim/right_arm/state:o; yarp wait /icubSim/left_arm/state:o; yarprobotinterface --context gazeboCartesianControl --config no_legs.xml"
+    #<port timeout="60.0" request="is_ready" reply="[ok]">/icub/yarprobotinterface</port>
+
+  yCartisianSolver_r:
+    <<: *yarp-gazebo
+    command: sh -c "yarp wait /icubSim/torso/state:o; yarp wait /icubSim/right_arm/state:o; iKinCartesianSolver --context gazeboCartesianControl --part right_arm"
+    #<port timeout="60.0" request="is_ready" reply="[ok]">/icub/yarprobotinterface</port>
+
+  yCartisianSolver_l:
+    <<: *yarp-gazebo
+    command: sh -c "yarp wait /icubSim/torso/state:o; yarp wait /icubSim/left_arm/state:o; iKinCartesianSolver --context gazeboCartesianControl --part left_arm"
+    #<port timeout="60.0" request="is_ready" reply="[ok]">/icub/yarprobotinterface</port>
+
+  yGazeCtrl:
+    <<: *yarp-gazebo
+    command: sh -c "yarp wait /icubSim/head/state:o; yarp wait /icubSim/inertial; iKinGazeCtrl --context gazeboCartesianControl --from iKinGazeCtrl.ini"
+    #<port timeout="60.0" request="is_ready" reply="[ok]">/icub/yarprobotinterface</port>
+
+  yWBD:
+    <<: *yarp-gazebo
+    command: sh -c "yarp wait /icubSim/head/state:o; yarp wait /icubSim/torso/state:o; yarp wait /icubSim/right_arm/state:o; yarp wait /icubSim/left_arm/state:o; yarp wait /icubSim/inertial; wholeBodyDynamics --robot icubSim --autoconnect --dummy_ft --headV2 --no_legs"
+    #note: Do I add --headV2 option??.
+    #note: We need to check if WBD is already running, because some yarprobotinterface configuration files already contain it.
+    # <port timeout="60.0" request="is_ready" reply="[ok]">/icub/yarprobotinterface</port>
+
+#------------------------------------------------------------------------------------------------
+#Following services are configured in icub-basic-demos/demoRedBall/app/scripts/demoRedBall.xml.template
+ #we need to verify following depencencies:
+#<port>/icub/camcalib/left/out</port>
+#<port>/iKinGazeCtrl/rpc</port>
+#<port>/icub/cartesianController/right_arm/state:o</port>
+#<port>/icub/cartesianController/left_arm/state:o</port>
+#<port>/wholeBodyDynamics/right_arm/FT:i</port>
+#<port>/wholeBodyDynamics/left_arm/FT:i</port>
+
+  yTracker:
+    <<: *yarp-base
+    command: sh -c "pf3dTracker --from pf3dTracker-gazebo.ini"
+
+  yDemoRedBall:
+    <<: *yarp-base
+    command: sh -c "yarp wait /iKinGazeCtrl/rpc; yarp wait /red-ball/mover:i; demoRedBall --from config-gazebo.ini"
+
+  yConnectCam2Traker:
+    <<: *yarp-base
+    deploy:
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp wait /icubSim/cam/left/rgbImage:o; yarp wait /pf3dTracker/video:i; yarp connect /icubSim/cam/left/rgbImage:o /pf3dTracker/video:i fast_tcp"
+
+  yConnectTraker2Demo:
+    <<: *yarp-base
+    deploy:
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp wait /pf3dTracker/data:o; yarp wait /demoRedBall/trackTarget:i; yarp connect /pf3dTracker/data:o /demoRedBall/trackTarget:i fast_tcp"
+
+#------------------------------------------------------------------------------------------------
+  yconnect_l:
+    <<: *yarp-base
+    deploy:
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp wait /icubSim/cam/left/rgbImage:o; yarp wait /icubSim/view/left; yarp connect /icubSim/cam/left/rgbImage:o /icubSim/view/left fast_tcp"
+
+  yconnect_r:
+    <<: *yarp-base
+    deploy:
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp wait /icubSim/cam/right/rgbImage:o; yarp wait /icubSim/view/right; yarp connect /icubSim/cam/right/rgbImage:o /icubSim/view/right fast_tcp"
+
+  yconnect_demo:
+    <<: *yarp-base
+    deploy:
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp wait /pf3dTracker/video:o; yarp wait /PF3DTracker_viewer; yarp connect /pf3dTracker/video:o /PF3DTracker_viewer fast_tcp"
+
+#------------------------------------------------------------------------------------------------
+
+  #use network.peer ip address and port 8080 to see the containers status in browser
+  visualizer:
+    image: dockersamples/visualizer:stable
+    ports:
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+
+networks:
+  hostnet:
+    external: true
+    name: host
+

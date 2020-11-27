@@ -1,0 +1,34 @@
+
+#### specify the name of the job -  not important, but it's nice for organization: ###
+
+#name: <name>_onCodeChanges
+
+on: 
+    repository_dispatch:
+        types: [<name>_onCodeChanges,<name>_onSBRelease]
+
+#############################################################################################
+
+
+#### Specify the instructions for this particular build ####
+#jobs:
+#    build:
+#        runs-on: ubuntu-latest   # other OS can be used, but since we are just building, ubuntu works
+#        steps:
+############# This segment checks out the repo to the github workflow #######################
+#            - uses: actions/checkout@v2
+
+############# This segment logs in to the DockerHub account for pushing the container #######
+#            - name: Login to DockerHub Registry
+#              run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+
+############# This segment builds the container. Attention to the paths to the build folder/file
+#            - name: Build <project> Docker image
+#              run: docker build  ./<path/to/build/folder> --file ./<path/to/Dockerfile> --tag <Dockerhub/repo>:<container name/tag>
+
+############# Now push the container to the Dockerhub repo ##################################
+#            - name: Push <project>  Docker image
+#              run: docker push <Dockerhub/repo>:<container name/tag>
+
+
+#IMPORTANT NOTE: The Docker build folder should be the one used to manually build the Docker containers. This is so .ini/.conf/other files are found/copied correctly.

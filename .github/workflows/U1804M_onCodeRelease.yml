@@ -1,0 +1,29 @@
+# this workflow will generate the containers on release, generating stable versions of the containers. The tag is given by:
+#            - name: Get the version
+#              id: get_version
+#              run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3)
+#              ${{ steps.get_version.outputs.VERSION }}
+
+name: U1804M_onCodeRelease
+
+on: 
+    repository_dispatch:
+        types: [U1804M_onCodeRelease]
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+            - name: Get the version
+              id: get_version
+              run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3)
+            - name: Login to DockerHub Registry
+              run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+
+            - name: Build ubuntu1804mesa Docker image
+              run: docker build ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.ubuntu_mesa_stab }}
+            - name: Push ubuntu1804mesa Docker image
+              run: docker push ${{ github.event.client_payload.ubuntu_mesa_stab }}
+
+

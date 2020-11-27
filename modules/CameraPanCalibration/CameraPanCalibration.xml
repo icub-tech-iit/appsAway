@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml-stylesheet type="text/xsl" href="yarpmanifest.xsl"?>
+
+<module>
+  <name>CameraPanCalibration</name>
+  <doxygen-group>CameraPanCalibration</doxygen-group>
+  <description>This module has the goal of aiding in the calibration of the pan of the camera</description>
+  <copypolicy> Released under the terms of the BSD 3-Clause License.</copypolicy>
+  <version>0.3.0</version>
+
+  <description-long>
+   This module has the goal of aiding in the calibration of the pan of the camera.
+  </description-long>
+
+  <arguments>
+        <param default="CameraPanCalibration" desc="Module's name; all the open ports will be tagged with the prefix /name.">name</param>
+         
+  </arguments>
+
+  <authors>
+    <author email="valentina.vasco@iit.it"> Valentina Vasco</author>
+    <author email="laura.cavaliere@iit.it"> Laura Cavaliere </author> 
+  </authors>
+
+  <data>
+      <input>
+          <type>PixelRgb</type>
+          <port>/CameraPanCalibration/leftImage:i</port>
+          <description>
+            Port to receive streaming of left images
+          </description>
+      </input>
+      <input>
+          <type>PixelRgb</type>
+          <port>/CameraPanCalibration/rightImage:i</port>
+          <description>
+            Port to receive streaming of right images
+          </description>
+      </input>
+       <output>
+          <type>PixelRgb</type>
+          <port>/CameraPanCalibration/leftImage:o</port>
+          <description>
+            Sends the response of the left calibration
+          </description>
+      </output>
+      <output>
+          <type>PixelRgb</type>
+          <port>/CameraPanCalibration/rightImage:o</port>
+          <description>
+            Sends the response of the right calibration
+          </description>
+      </output>
+  </data>
+
+  <services>
+    <server>
+      <type>CameraPanCalibration_IDL</type>
+      <idl>idl.thrift</idl>
+      <port>/CameraPanCalibration/rpc</port>
+      <description>service port</description>
+    </server>
+  </services>
+
+</module>
+

@@ -1,0 +1,48 @@
+version: "3.7"
+
+x-yarp-base: &yarp-base
+  image: icubteamcode/superbuild-gazebo:master-unstable_sources
+  environment:
+    - DISPLAY=${DISPLAY}
+    - QT_X11_NO_MITSHM=1
+    - XAUTHORITY=/root/.Xauthority
+    - YARP_FORWARD_LOG_ENABLE=1
+    - YARP_ROBOT_NAME
+    - APPSAWAY_ROBOT_MODEL
+  volumes:
+    - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
+    - "${XAUTHORITY}:/root/.Xauthority:rw"
+    - "${YARP_CONF_PATH}:/root/.config/yarp"
+  network_mode: "host"
+  privileged: true
+  #ipc: host
+
+services:
+
+#################################### ADD YOUR SERVICES HERE #####################################
+# NOTE - keep all the services that need to present a graphical interface in this .yml file
+# it has the correct configuration to access the displays in different OS (linux, macOS, windows)
+
+  your_service: 
+    # use this if it is part of the base superbuild image
+    <<: *yarp-base 
+
+    # use this if you are running your service from your own docker image
+    image: YOURIMAGE:TAG 
+    # NOTE - if you are using your own image, make sure you set the volumes and environment   
+    # variables as defined for yarp-base service above!
+    
+    ##############################################################
+    # set any extra options here, e.g. environment, volumes, etc #
+    ##############################################################
+
+    restart: [on-failure, always, etc]
+    # this specifies when you want to restart the container. Generally we woud use "on-failure"
+    # for services that are connecting ports, for example
+
+##### specify your shell/bash command to run your application.
+##### The format is command: sh -c "bash/shell commands"
+    command: sh -c ""
+
+#################################################################################################
+

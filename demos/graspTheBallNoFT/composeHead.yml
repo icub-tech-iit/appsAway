@@ -1,0 +1,32 @@
+version: "3.7"
+
+x-yarp-head: &yarp-head
+  image: icubteamcode/superbuild-icubhead:master-unstable_binaries
+  environment:
+    - YARP_FORWARD_LOG_ENABLE=1
+    - YARP_ROBOT_NAME
+  volumes:
+    - "${YARP_CONF_PATH}:/root/.config/yarp"
+    - "/dev:/dev"
+  ports:
+    - "10000:10000"
+  network_mode: "host"
+  privileged: true
+
+
+services:
+
+  yrobotinterface:
+    <<: *yarp-head
+    devices: 
+      - "/dev/bosch-i2c-imu:/dev/bosch-i2c-imu"
+    container_name: yrobotinterface
+    command: yarprobotinterface
+
+  yGrabberCameras:
+    <<: *yarp-head
+    devices: 
+      - "/dev/video0:/dev/video0"
+    container_name: yGrabberCameras
+    command: sh -c "yarpdev --from camera/ServerGrabberDualDragon.ini --split true"
+

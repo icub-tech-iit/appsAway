@@ -1,0 +1,63 @@
+version: "3.7"
+
+x-yarp-base: &yarp-base
+  image: icubteamcode/googlevision:master_master-unstable_sources
+  environment:
+    - DISPLAY=${DISPLAY}
+    - XAUTHORITY=/root/.Xauthority
+    - YARP_FORWARD_LOG_ENABLE=1
+    - YARP_ROBOT_NAME
+    - FILE_INPUT
+  volumes:
+    - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
+    - "${XAUTHORITY}:/root/.Xauthority:rw"
+    - "${YARP_CONF_PATH}:/root/.config/yarp"
+    - "${FILE_INPUT_PATH}:/root/authorization"
+    - "/dev:/dev"
+  network_mode: "host"
+  privileged: true
+  #ipc: host
+
+#docker run -it --network host --privileged --device /dev/snd -e PULSE_SERVER=unix:${XDG_RUNTIME_DIR}/pulse/native -v ${XDG_RUNTIME_DIR}/pulse/native:${XDG_RUNTIME_DIR}/pulse/native -v ~/.config/pulse/cookie:/root/.config/pulse/cookie --group-add $(getent group audio | cut -d: -f3) --env DISPLAY=${DISPLAY} --env XAUTHORITY=/root/.Xauthority --env FILE_INPUT=dialogflow-test-293012-3ba67bcfcff3.json --mount type=bind,source=/home/alexandre/Downloads,target=/root/authorization --mount type=bind,source=${XAUTHORITY},target=/root/.Xauthority --mount type=bind,source=/tmp/.X11-unix,target=/tmp/.X11-unix --mount type=bind,source=${HOME}/.config/yarp,target=/root/.config/yarp icubteamcode/speech:master_master-unstable_sources
+
+
+services:
+#following service are configured in icub-main/app/iCubStartup/scripts/iCubStartup.xml.template
+  
+  yGrabberCameras:
+    <<: *yarp-base
+    devices: 
+      - "/dev/video0:/dev/video0"
+    container_name: yGrabberCameras
+    command: sh -c "if [ -z ${CUSTOM_PORT} ]; then yarpdev --from camera/ServerGrabberDualDragon.ini --split true; fi" 
+
+#------------------------------------------------------------------------------------------------
+  #Here we open the viewer to see the output image
+  yview_image_o:
+    <<: *yarp-base
+    container_name: yview_o
+    command: yarpview --name /outImage 
+
+  #Here we open the viewer to see icub view
+  yview_icub_l:
+    <<: *yarp-base
+    container_name: yview_icub_l
+    command: sh -c "if [ -z ${CUSTOM_PORT} ]; then yarpview --name  /icub/view/left; fi"
+  
+
+  #Here we open the viewer to see the input of the custom port
+  yview_port_image_i:
+    <<: *yarp-base
+    container_name: yview_port_input
+    command: yarpview --name /startImage 
+
+
+
+
+
+
+
+
+
+
+

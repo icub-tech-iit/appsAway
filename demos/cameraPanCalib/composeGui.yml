@@ -1,0 +1,51 @@
+version: "3.7"
+
+x-yarp-base: &yarp-base
+  image: icubteamcode/camera_pan_calib:master_master-unstable_sources
+  environment:
+    - DISPLAY=${DISPLAY}
+    - XAUTHORITY=/root/.Xauthority
+    - YARP_FORWARD_LOG_ENABLE=1
+    - YARP_ROBOT_NAME
+  volumes:
+    - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
+    - "${XAUTHORITY}:/root/.Xauthority:rw"
+    - "${YARP_CONF_PATH}:/root/.config/yarp"
+    - "/dev:/dev"
+  network_mode: "host"
+  privileged: true
+
+
+
+services:
+  
+ #------------------------------------------------------------------------------------------------
+  #Calling CameraPanCalibration module 
+  
+  yDemoCameraPanCalibration:
+    <<: *yarp-base
+    command: sh -c "CameraPanCalibration" 
+ 
+#------------------------------------------------------------------------------------------------
+  #Opening the viewer to see the left output image
+  yview_right_img_o:
+    <<: *yarp-base
+    container_name: yview_output_l
+    command: yarpview --name /leftImageOutput
+
+  #Opening we open the viewer to see the right output image
+  yview_left_img_o:
+    <<: *yarp-base
+    container_name: yview_output_r
+    command: yarpview --name /rightImageOutput
+
+
+
+
+
+
+
+
+
+
+

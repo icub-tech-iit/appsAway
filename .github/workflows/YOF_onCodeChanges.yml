@@ -1,0 +1,46 @@
+# this workflow will generate the containers on push. These containers are for test only, so ideally they should be uploaded to a private repo, not available to the public. tag=yarpOpenFace:version (?)
+# for the stable versions, use yarpOpenFace_builder_stable.yml, triggered on release
+
+name: YOF_onCodeChanges
+
+on: 
+    repository_dispatch:
+        types: [YOF_onCodeChanges,YOF_onSBRelease]
+
+jobs:
+    build-unstable:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+              with:
+                  repository: icub-tech-iit/code
+                  token: ${{ secrets.CODE_REPO_ACCSS_TOKEN }}
+            - name: Login to DockerHub Registry
+              run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+
+
+############## build the unstable version of yarpOpenFace ##############
+            - name: Build yarpOpenFace Docker full image
+              run: docker build --build-arg ${{ github.event.client_payload.extra_payload.unst_sb_base_image_for_YOF_src }} --build-arg ${{ github.event.client_payload.extra_payload.unst_sb_base_image_for_YOF_bin }} ${{ github.event.client_payload.extra_payload.docker_path }} --file ${{ github.event.client_payload.extra_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.extra_payload.yarpopenface_unst_src }}
+            - name: Push yarpOpenFace Docker full image
+              run: docker push ${{ github.event.client_payload.extra_payload.yarpopenface_unst_src }}
+
+            
+############## build the unstable version of yarpOpenFace ##############
+            - name: Build yarpOpenFace Docker thin image
+              run: docker build --build-arg ${{ github.event.client_payload.extra_payload.unst_sb_base_image_for_YOF_bin }} --build-arg ${{ github.event.client_payload.extra_payload.unst_base_image_for_YOF_bin }} ${{ github.event.client_payload.extra_payload.docker_path }} --file ${{ github.event.client_payload.extra_payload.docker_path }}/Dockerfile4Production --tag ${{ github.event.client_payload.extra_payload.yarpopenface_unst_bin }}
+            - name: Push yarpOpenFace Docker thin image
+              run: docker push ${{ github.event.client_payload.extra_payload.yarpopenface_unst_bin }}
+              
+
+############## build the stable version of yarpOpenFace ##############
+            - name: Build yarpOpenFace Docker full image
+              run: docker build --build-arg ${{ github.event.client_payload.extra_payload.stab_sb_base_image_for_YOF_src }} --build-arg ${{ github.event.client_payload.extra_payload.stab_sb_base_image_for_YOF_bin }} ${{ github.event.client_payload.extra_payload.docker_path }} --file ${{ github.event.client_payload.extra_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.extra_payload.yarpopenface_stab_src }}
+            - name: Push yarpOpenFace Docker full image
+              run: docker push ${{ github.event.client_payload.extra_payload.yarpopenface_stab_src }}
+
+############## build the stable version of yarpOpenFace ##############
+            - name: Build yarpOpenFace Docker thin image
+              run: docker build --build-arg ${{ github.event.client_payload.extra_payload.stab_sb_base_image_for_YOF_bin }} --build-arg ${{ github.event.client_payload.extra_payload.stab_base_image_for_YOF_bin }} ${{ github.event.client_payload.extra_payload.docker_path }} --file ${{ github.event.client_payload.extra_payload.docker_path }}/Dockerfile4Production --tag ${{ github.event.client_payload.extra_payload.yarpopenface_stab_bin }}
+            - name: Push yarpOpenFace Docker thin image
+              run: docker push ${{ github.event.client_payload.extra_payload.yarpopenface_stab_bin }}

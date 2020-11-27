@@ -1,0 +1,107 @@
+version: "3.7"
+
+x-yarp-base: &yarp-base
+  image: icubteamcode/speech:master_master-unstable_sources
+  environment:
+    - DISPLAY=${DISPLAY}
+    - QT_X11_NO_MITSHM=1
+    - XAUTHORITY=/root/.Xauthority
+    - YARP_FORWARD_LOG_ENABLE=1
+    - FILE_INPUT
+    - INPUT_BOX
+    - GOOGLE_INPUT
+    - GOOGLE_SYNTHESIS_INPUT
+    - VOICE_NAME_INPUT
+    - LANGUAGE_SYNTHESIS_INPUT
+  volumes:
+    - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
+    - "${XAUTHORITY}:/root/.Xauthority:rw"
+    - "${YARP_CONF_PATH}:/root/.config/yarp"
+    - "${FILE_INPUT_PATH}:/root/authorization"
+  networks:
+    - hostnet
+
+#note: following services that need yarpRobotinterface is running, I write yarp wait /yarpRobotInterface;
+#just to remember us to solve thi issue. Such yarp port doesn't exist.
+
+services:
+#following service are configured in icub-main/app/iCubStartup/scripts/iCubStartup.xml.template
+  yserver:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp where | grep 'is available at ip' > /dev/null ; if [ ! $$? -eq 0 ]; then yarpserver --write; fi"
+  
+#------------------------------------------------------------------------------------------------
+  yDemoGoogleSpeech:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "if [ ${GOOGLE_INPUT} = 'True' ]; then yarp wait /microphone/audio:o; googleSpeech --language_code ${LANGUAGE_SYNTHESIS_INPUT}; fi" 
+ 
+  yDemoGoogleDialog:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "googleDialog --agent ${INPUT_BOX} --language ${LANGUAGE_SYNTHESIS_INPUT}"
+
+  yConnectToGoogleSynthesis:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "if [ ${GOOGLE_SYNTHESIS_INPUT} = 'True' ];then yarp wait /googleDialog/result:o; yarp wait /googleSynthesis/text:i; yarp connect /googleDialog/result:o /googleSynthesis/text:i; fi"
+
+  yConnectToGoogleDialog:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "if [ ${GOOGLE_INPUT} = 'True' ];then yarp wait /googleSpeech/result:o; yarp wait /googleDialog/text:i; yarp connect /googleSpeech/result:o /googleDialog/text:i; fi"
+  
+  yconnect_audio:
+    <<: *yarp-base
+    container_name: yconnect_audio
+    deploy:
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp wait /microphone/audio:o; yarp wait /googleSpeech/sound:i; yarp connect /microphone/audio:o /googleSpeech/sound:i tcp"
+
+  yconnect_rpc:
+    <<: *yarp-base
+    container_name: yconnect_rpc
+    deploy:
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp wait /microphone/rpc; yarp wait /googleSpeech/commands:rpc; yarp connect /googleSpeech/commands:rpc /microphone/rpc tcp"
+
+
+
+#------------------------------------------------------------------------------------------------
+
+  #use network.peer ip address and port 8080 to see the containers status in browser
+  visualizer:
+    image: dockersamples/visualizer:stable
+    ports:
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+
+networks:
+  hostnet:
+    external: true
+    name: host
+
