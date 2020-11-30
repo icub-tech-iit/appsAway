@@ -1,7 +1,7 @@
 # this workflow will generate the containers on push. These containers are for test only, so ideally they should be uploaded to a private repo, not available to the public. tag=superbuild_devel (?)
 # for the stable versions, use superbuild_builder_stable.yml, triggered on release
 
-name: SB_onCodeChanges
+name: SB_onSBRelease
 
 on: 
     repository_dispatch:
