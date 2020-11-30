@@ -48,7 +48,7 @@ jobs:
 
 ######## Command to build the full Docker image#########
             - name: Build superbuild Docker full image
-              run: docker build --build-arg ${{ github.event.client_payload.base_image_for_SB_src}} --build-arg $(cat DATE_TAG) --build-arg $(cat RELEASE_ARG) ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.superbuild_src }}
+              run: docker build --build-arg ${{ github.event.client_payload.base_image_for_SB_src }} --build-arg $(cat DATE_TAG) --build-arg $(cat RELEASE_ARG) ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.superbuild_src }}
 #########################################################################################
 
 ######### Command to push the full Docker Image online ##################################
@@ -58,12 +58,12 @@ jobs:
 
 ######## Command to build the thin Docker image #########
             - name: Build superbuild Docker thin image
-              run: docker build  --build-arg ${{ github.event.client_payload.base_image_for_SB_bin}} --build-arg ${{ github.event.client_payload.base_image_for_SB_src}} ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile4Production --tag ${{ github.event.client_payload.superbuild_bin}}
+              run: docker build  --build-arg ${{ github.event.client_payload.base_image_for_SB_bin }} --build-arg ${{ github.event.client_payload.base_image_for_SB_src }} ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile4Production --tag ${{ github.event.client_payload.superbuild_bin }}
 #########################################################################################
 
 ######### Command to push the thin Docker Image online ##################################
             - name: Push superbuild Docker thin image
-              run: docker push ${{ github.event.client_payload.superbuild_bin}}
+              run: docker push ${{ github.event.client_payload.superbuild_bin }}
 #########################################################################################
 
 

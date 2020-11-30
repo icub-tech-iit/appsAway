@@ -21,7 +21,7 @@ jobs:
 
 ############## build the unstable full version of googleSpeech ##############
             - name: Build googleSpeech Docker full image
-              run: docker build --build-arg ${{ github.event.client_payload.base_image_for_G_S_src}} ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.speech_src}}
+              run: docker build --build-arg ${{ github.event.client_payload.base_image_for_G_S_src }} ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.speech_src }}
             - name: Push googleSpeech Docker full image
               run: docker push ${{ github.event.client_payload.speech_src }}
               
@@ -29,7 +29,7 @@ jobs:
 
 ############## build the unstable thin version of googleSpeech ##############
             - name: Build googleSpeech Docker thin image
-              run: docker build --build-arg ${{ github.event.client_payload.base_image_for_G_S_bin }} --build-arg ${{ github.event.client_payload.sb_base_image_for_G_S_bin }} ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile4Production --tag ${{ github.event.client_payload.speech_bin}}
+              run: docker build --build-arg ${{ github.event.client_payload.base_image_for_G_S_bin }} --build-arg ${{ github.event.client_payload.sb_base_image_for_G_S_bin }} ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile4Production --tag ${{ github.event.client_payload.speech_bin }}
             - name: Push googleSpeech Docker thin image
               run: docker push ${{ github.event.client_payload.speech_bin }}
 

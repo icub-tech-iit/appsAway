@@ -5,7 +5,7 @@ name: GRGZ_onCodeChanges
 
 on: 
     repository_dispatch:
-        types: [GRGZ_onCodeChanges,GRGZ_onSBRelease]
+        types: [GRGZ_onCodeChanges]
 
 jobs:
     build:
@@ -32,10 +32,10 @@ jobs:
 
 ######## Command to build the thin Docker image, using only unstable tag #########
             - name: Build superbuild Docker thin image
-              run: docker build --build-arg ${{ github.event.client_payload.unst_base_image_for_GRGZ_bin }} --build-arg ${{ github.event.client_payload.unst_base_image_for_GRGZ_src }} ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile4production --tag ${{ github.event.client_payload.graspgazebo_unst_bin}}
+              run: docker build --build-arg ${{ github.event.client_payload.unst_base_image_for_GRGZ_bin }} --build-arg ${{ github.event.client_payload.unst_base_image_for_GRGZ_src }} ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile4production --tag ${{ github.event.client_payload.graspgazebo_unst_bin }}
 #########################################################################################
 
 ######### Command to push the thin Docker Image online ##################################
             - name: Push superbuild Docker thin image
-              run: docker push ${{ github.event.client_payload.graspgazebo_unst_bin}}
+              run: docker push ${{ github.event.client_payload.graspgazebo_unst_bin }}
 #########################################################################################

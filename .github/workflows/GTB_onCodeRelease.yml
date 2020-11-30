@@ -22,7 +22,7 @@ jobs:
 
 ############## build the release version of graspTheBall ##############
             - name: Build graspTheBall Docker full image
-              run: docker build --build-arg ${{ github.event.client_payload.extra_payload.base_image_for_GTB_src }} --build-arg ${{ github.event.client_payload.extra_payload.sb_base_image_for_GTB_bin }} ${{ github.event.client_payload.extra_payload.docker_path }} --file ${{ github.event.client_payload.extra_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.extra_payload.grasptheball_src}}
+              run: docker build --build-arg ${{ github.event.client_payload.extra_payload.base_image_for_GTB_src }} --build-arg ${{ github.event.client_payload.extra_payload.sb_base_image_for_GTB_bin }} ${{ github.event.client_payload.extra_payload.docker_path }} --file ${{ github.event.client_payload.extra_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.extra_payload.grasptheball_src }}
             - name: Push graspTheBall Docker full image
               run: docker push ${{ github.event.client_payload.extra_payload.grasptheball_src }}
  

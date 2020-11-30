@@ -8,7 +8,7 @@ on:
         types: [SB_NVIDIA_onCodeChanges, SB_NVIDIA_onSBRelease]
 
 jobs:
-    build:
+    job_1:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v2
@@ -27,7 +27,7 @@ jobs:
 #########################################################################################
 
 #########################################################################################
-################ THIS IS THE IMPLEMENTATION WITH STABLE/UNSTABLE VERSION ################
+################### THIS IS THE IMPLEMENTATION WITH UNSTABLE VERSION ####################
 #########################################################################################
 
 ########### This command sets the stable/unstable variable ##############################
@@ -41,14 +41,9 @@ jobs:
 ########### This command sets the master/release variable ##############################
             - name: set release/master argument for Docker build
               run: |
-                echo "master" > RELEASE_TAG
+                echo ${{ github.event.client_payload.version }} > RELEASE_TAG
                 echo "release=$(cat RELEASE_TAG)" > RELEASE_ARG
                 echo $(cat RELEASE_ARG)
-#########################################################################################
-
-######## Command to build the full Docker image, using only stable tag #########
-            - name: Build nvidia-superbuild Docker stable full image
-              run: docker build --build-arg ${{ github.event.client_payload.base_image_for_SB_NVIDIA_src }} --build-arg $(cat DATE_TAG) --build-arg $(cat RELEASE_ARG) ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.superbuild_nvidia_stab_src}}
 #########################################################################################
 
 ######## Command to build the full Docker image, using only unstable tag #########
@@ -56,14 +51,49 @@ jobs:
               run: docker build --build-arg ${{ github.event.client_payload.base_image_for_SB_NVIDIA_src }} --build-arg $(cat DATE_TAG) --build-arg $(cat SBTAG_ARG) --build-arg $(cat RELEASE_ARG) ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.superbuild_nvidia_unst_src }}
 #########################################################################################
 
-######### Command to push the full stable Docker Image online ##################################
-            - name: Push nvidia-superbuild Docker stable full image
-              run: docker push ${{ github.event.client_payload.superbuild_nvidia_stab_src }}
-#########################################################################################
-
 ######### Command to push the full unstable Docker Image online ##################################
             - name: Push nvidia-superbuild Docker unstable full image
               run: docker push ${{ github.event.client_payload.superbuild_nvidia_unst_src }}
+#########################################################################################
+
+    job_2:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+              with:
+                  repository: icub-tech-iit/code
+                  token: ${{ secrets.CODE_REPO_ACCSS_TOKEN }}
+            - name: Login to DockerHub Registry
+              run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+
+##################### Command to set the tag for the date argument ######################
+            - name: set date argument for Docker build
+              run: |
+                echo "$(date +'%d/%m/%Y')" > DATE_
+                echo "metadata=$(cat DATE_)" > DATE_TAG
+                echo $(cat DATE_TAG)
+#########################################################################################
+
+#########################################################################################
+##################### THIS IS THE IMPLEMENTATION WITH STABLE VERSION ####################
+#########################################################################################
+
+########### This command sets the master/release variable ##############################
+            - name: set release/master argument for Docker build
+              run: |
+                echo ${{ github.event.client_payload.version }} > RELEASE_TAG
+                echo "release=$(cat RELEASE_TAG)" > RELEASE_ARG
+                echo $(cat RELEASE_ARG)
+#########################################################################################
+
+######## Command to build the full Docker image, using only stable tag #########
+            - name: Build nvidia-superbuild Docker stable full image
+              run: docker build --build-arg ${{ github.event.client_payload.base_image_for_SB_NVIDIA_src }} --build-arg $(cat DATE_TAG) --build-arg $(cat RELEASE_ARG) ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.superbuild_nvidia_stab_src }}
+#########################################################################################
+
+######### Command to push the full stable Docker Image online ##################################
+            - name: Push nvidia-superbuild Docker stable full image
+              run: docker push ${{ github.event.client_payload.superbuild_nvidia_stab_src }}
 #########################################################################################
 
 ######## Command to build the thin Docker image, using only stable tag #########
