@@ -19,10 +19,7 @@ jobs:
           token: ${{ secrets.CODE_REPO_ACCSS_TOKEN }}
           path: code
           ref: ${{ github.event.client_payload.branch_name }}
-      #- name: cloning code
-      #  run: git clone https://github.com/icub-tech-iit/code
             
-          
       - name: check working directory
         run: |
             ls
@@ -38,15 +35,6 @@ jobs:
       - uses: actions/checkout@v2
         with:
           path: appsAway
-      #- name: cloning appsAway
-      #  run: |
-      #      git clone https://github.com/icub-tech-iit/appsAway
-
-      #- uses: peterjgrainger/action-create-branch@v1.0.0
-      #  env:
-      #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #  with:
-      #    branch: ${{ github.event.client_payload.branch_name }}
       - name: Create branch
         run: |
             cd appsAway

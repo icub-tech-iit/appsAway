@@ -22,7 +22,7 @@ jobs:
 
 ############## build the unstable full version of humanSensing ##############
             - name: Build humanSensing Docker full image
-              run: docker build --build-arg ${{ github.event.client_payload.unst_base_image_for_HS_src}} ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.humansensing_unst_src}}
+              run: docker build --build-arg ${{ github.event.client_payload.unst_base_image_for_HS_src }} ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.humansensing_unst_src }}
             - name: Push humanSensing Docker full image
               run: docker push ${{ github.event.client_payload.humansensing_unst_src }}
               
@@ -30,7 +30,7 @@ jobs:
 
 ############## build the unstable thin version of humanSensing ##############
             - name: Build humanSensing Docker thin image
-              run: docker build --build-arg ${{ github.event.client_payload.unst_base_image_for_HS_bin }} --build-arg ${{ github.event.client_payload.unst_sb_base_image_for_HS_bin }} ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile4Production --tag ${{ github.event.client_payload.humansensing_unst_bin}}
+              run: docker build --build-arg ${{ github.event.client_payload.unst_base_image_for_HS_bin }} --build-arg ${{ github.event.client_payload.unst_sb_base_image_for_HS_bin }} ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile4Production --tag ${{ github.event.client_payload.humansensing_unst_bin }}
             - name: Push humanSensing Docker thin image
               run: docker push ${{ github.event.client_payload.humansensing_unst_bin }}
 

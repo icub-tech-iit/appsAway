@@ -20,7 +20,7 @@ jobs:
 
 ############## build the unstable full version of googleVisionAI ##############
             - name: Build googleVisionAI Docker full image
-              run: docker build --build-arg ${{ github.event.client_payload.unst_base_image_for_G_V_src}} ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.googlevision_unst_src}}
+              run: docker build --build-arg ${{ github.event.client_payload.unst_base_image_for_G_V_src }} ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.googlevision_unst_src }}
             - name: Push googleVisionAI Docker full image
               run: docker push ${{ github.event.client_payload.googlevision_unst_src }}
               
@@ -28,7 +28,7 @@ jobs:
 
 ############## build the unstable thin version of googleVisionAI ##############
             #- name: Build googleVisionAI Docker thin image
-            #  run: docker build --build-arg ${{ github.event.client_payload.unst_base_image_for_G_V_bin }} --build-arg ${{ github.event.client_payload.unst_sb_base_image_for_G_V_bin }} ${#{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile4Production --tag ${{ github.event.client_payload.googlevision_unst_bin}}
+            #  run: docker build --build-arg ${{ github.event.client_payload.unst_base_image_for_G_V_bin }} --build-arg ${{ github.event.client_payload.unst_sb_base_image_for_G_V_bin }} ${#{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile4Production --tag ${{ github.event.client_payload.googlevision_unst_bin }}
             #- name: Push googleVisionAI Docker thin image
             #  run: docker push ${{ github.event.client_payload.googlevision_unst_bin }}
 

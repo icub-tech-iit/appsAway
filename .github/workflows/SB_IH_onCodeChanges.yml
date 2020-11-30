@@ -21,12 +21,6 @@ jobs:
             - name: Check AppsAway version
               run: if [ "${{ github.event.client_payload.type }}" == "AppsAway_update" ]; then echo '${{ github.event.client_payload.version }}'; fi
 
-
-
-
-
-
-
 ##################### Command to set the tag for the date argument ######################
             - name: set date argument for Docker build
               run: |
@@ -47,16 +41,17 @@ jobs:
                 echo $(cat SBTAG_ARG)
 #########################################################################################
 
-######## This command sets the release version (not used for the unstable version) ######            
-#            - name: set release argument for Docker build
-#              run: |
-#                echo "release=$(cat VERSION_FILE)" > RELEASE_ARG
-#                echo $(cat RELEASE_ARG)
+########### This command sets the master/release variable ###############################
+            - name: set release/master argument for Docker build
+              run: |
+                echo ${{ github.event.client_payload.version }} > RELEASE_TAG
+                echo "release=$(cat RELEASE_TAG)" > RELEASE_ARG
+                echo $(cat RELEASE_ARG)
 #########################################################################################
 
 ######## Command to build the full Docker image, using only stable/unstable tag #########
             - name: Build superbuild-icubhead Docker full image
-              run: docker build --build-arg $(cat DATE_TAG) --build-arg $(cat SBTAG_ARG)  ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.superbuild_icubhead_unst_src }}
+              run: docker build --build-arg $(cat DATE_TAG) --build-arg $(cat SBTAG_ARG) --build-arg $(cat RELEASE_ARG) ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.superbuild_icubhead_unst_src }}
 #########################################################################################
 
 ######### Command to push the full Docker Image online ##################################

@@ -41,14 +41,14 @@ jobs:
 ########### This command sets the master/release variable ##############################
             - name: set release/master argument for Docker build
               run: |
-                echo "master" > RELEASE_TAG
+                echo ${{ github.event.client_payload.version }} > RELEASE_TAG
                 echo "release=$(cat RELEASE_TAG)" > RELEASE_ARG
                 echo $(cat RELEASE_ARG)
 #########################################################################################
 
 ######## Command to build the full Docker image #########
             - name: Build nvidia-superbuild Docker full image
-              run: docker build --build-arg ${{ github.event.client_payload.base_image_for_SB_NVIDIA_src }} --build-arg $(cat DATE_TAG) --build-arg $(cat RELEASE_ARG) ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.superbuild_nvidia_src}}
+              run: docker build --build-arg ${{ github.event.client_payload.base_image_for_SB_NVIDIA_src }} --build-arg $(cat DATE_TAG) --build-arg $(cat RELEASE_ARG) ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.superbuild_nvidia_src }}
 #########################################################################################
 
 ######### Command to push the full Docker Image online ##################################

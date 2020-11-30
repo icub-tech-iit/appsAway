@@ -18,9 +18,17 @@ jobs:
             - name: Login to DockerHub Registry
               run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
 
+########### This command sets the master/release variable ##############################
+            - name: set release/master argument for Docker build
+              run: |
+                echo ${{ github.event.client_payload.version }} > RELEASE_TAG
+                echo "release=$(cat RELEASE_TAG)" > RELEASE_ARG
+                echo $(cat RELEASE_ARG)
+#########################################################################################
+
 ######## Command to build the full Docker image#########
             - name: Build superbuild Docker full image
-              run: docker build ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.superbuild_gazebo_src}}
+              run: docker build ${{ github.event.client_payload.docker_path }} --build-arg $(cat RELEASE_ARG) --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.superbuild_gazebo_src}}
 #########################################################################################
 
 ######### Command to push the full Docker Image online ##################################
