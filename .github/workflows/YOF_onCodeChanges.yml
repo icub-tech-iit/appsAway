@@ -11,6 +11,8 @@ jobs:
     build-unstable:
         runs-on: ubuntu-latest
         steps:
+            - name: Clean up space
+              run: apt clean
             - uses: actions/checkout@v2
               with:
                   repository: icub-tech-iit/code
@@ -36,6 +38,8 @@ jobs:
     build-stable:
         runs-on: ubuntu-latest
         steps:
+            - name: Clean up space
+              run: apt clean
             - uses: actions/checkout@v2
               with:
                   repository: icub-tech-iit/code
