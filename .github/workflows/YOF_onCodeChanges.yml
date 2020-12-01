@@ -44,7 +44,12 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Clean up space
-              run: apt clean
+              run: | 
+                sudo swapoff -a
+                sudo rm -f /swapfile
+                sudo apt clean
+                docker rmi $(docker image ls -aq)
+                df -h
             - uses: actions/checkout@v2
               with:
                   repository: icub-tech-iit/code
