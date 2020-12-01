@@ -1,11 +1,11 @@
 # this workflow will generate the containers on push. These containers are for test only, so ideally they should be uploaded to a private repo, not available to the public. tag=superbuild_devel (?)
 # for the stable versions, use superbuild_builder_stable.yml, triggered on release
 
-name: SB_NVIDIA_onCodeChanges
+name: SB_NVIDIA_onSBRelease
 
 on: 
     repository_dispatch:
-        types: [SB_NVIDIA_onCodeChanges]
+        types: [SB_NVIDIA_onSBRelease]
 
 jobs:
     job_1:
@@ -115,4 +115,24 @@ jobs:
 #            - name: Push nvidia-superbuild Docker unstable thin image
 #              run: docker push ${{ github.event.client_payload.superbuild_nvidia_unst_bin }}
 #########################################################################################
+
+
+    job_3:
+        needs: [job_1, job_2]
+        runs-on: ubuntu-latest
+        steps:
+            - name: Repository Dispatch
+              uses: peter-evans/repository-dispatch@v1
+              with:
+                token: ${{ secrets.CODE_REPO_ACCSS_TOKEN }}
+                repository: icub-tech-iit/appsAway
+                event-type: HS_onSBRelease
+                client-payload: '{"version": "${{ github.event.client_payload.version }}", "type": "HS_onSBRelease", 
+                  "humansensing_unst_src": "icubteamcode/humansensing:${{ github.event.client_payload.version }}_master-unstable_sources", 
+                  "humansensing_unst_bin": "icubteamcode/humansensing:${{ github.event.client_payload.version }}_master-unstable_binaries", 
+                  "unst_base_image_for_HS_bin": "START_IMAGE_FULL_NAME=icubteamcode/humansensing:${{ github.event.client_payload.version }}_master-unstable_sources", 
+                  "unst_sb_base_image_for_HS_bin": "START_IMAGE_THIN_NAME=icubteamcode/nvidia-superbuild:${{ github.event.client_payload.version }}_master-unstable_binaries", 
+                  "unst_base_image_for_HS_src": "STARTING_IMAGE=icubteamcode/nvidia-superbuild:${{ github.event.client_payload.version }}_master-unstable_sources", 
+                  "docker_path": "./dockerfile_images/demos/human_sensing"}'
+           
 
