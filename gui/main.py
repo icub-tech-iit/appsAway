@@ -16,9 +16,6 @@ import time
 import subprocess
 import os 
 
-import pygame
-from pygame import mixer 
-
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
@@ -568,12 +565,8 @@ class WidgetGallery(QDialog):
         sel_voice=[el.button.currentText() for el in list(filter(lambda x: x.varName == 'VOICE_NAME_INPUT', self.button_list)) ] #to avoid another for loop on all the buttons, we do a filter 
         sel_lang=[el.button.currentText() for el in list(filter(lambda x: x.varName == 'LANGUAGE_SYNTHESIS_INPUT', self.button_list)) ] #here we have the selected voice
         
-        pygame.mixer.pre_init(24000, -16, 1, 2048)
-        pygame.init()
-        mixer.init()
-        mixer.music.load(os.path.join('..','gui','target','appGUI','Archive','language '+ sel_lang[0] + '_' + sel_voice[0] + '.mp3'))
-        mixer.music.play()
-        mixer.stop()
+        rc = subprocess.call(["play", os.path.join('..','gui','target','appGUI','Archive','language '+ sel_lang[0] + '_' + sel_voice[0] + '.mp3')])
+
       return play
 
 

@@ -18,7 +18,7 @@ echo -ne "[              ] installing GUI...\r"
 os=`uname -s`
 if [ "$os" = "Darwin" ]
 then
-  echo ${password} | HOMEBREW_NO_AUTO_UPDATE=1 brew install pyenv > /dev/null 
+  echo ${password} | HOMEBREW_NO_AUTO_UPDATE=1 brew install pyenv pulseaudio > /dev/null 
   echo ${password} | env PYTHON_CONFIGURE_OPTS="--enable-framework" pyenv install -f 3.6.1 > /dev/null 
   PYTHON_VERSION=$( pyenv global )
   echo ${password} | pyenv global 3.6.1 > /dev/null 
@@ -33,7 +33,7 @@ else
   echo -ne "[....          ] installing GUI...\r"
   echo ${password} | sudo -S update-alternatives --set python3 /usr/bin/python3.6 > /dev/null 2>&1
   echo -ne "[.....         ] installing GUI...\r"
-  echo ${password} | sudo -S apt -y install python3-pip > /dev/null 2>&1
+  echo ${password} | sudo -S apt -y install python3-pip pulseaudio > /dev/null 2>&1
   echo -ne "[......        ] installing GUI...\r"
 fi
 
