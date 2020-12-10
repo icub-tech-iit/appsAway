@@ -169,7 +169,6 @@ class MyHandler(FileSystemEventHandler):
           line = pipe_file.readline()
           if line == '':
             return
-          print(line)
           curVal = int(line)
           maxVal = self.progressBar.maximum()
           self.progressBar.setValue(curVal + (maxVal - curVal) / 100)
