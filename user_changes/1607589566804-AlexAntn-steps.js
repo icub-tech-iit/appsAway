@@ -1,3 +1,0 @@
-//AlexAntn
-//&<h3>Field changed in app: <ins>Google Vision Application</ins></h3><ul><li>requirements: [Ssh keyless access on machines allows to run smoothly without inserting password at every command,Google cloud account activation,Service account key,Coffee/tea<b>,git (version control system)</b>]</li></ul>
-db.steps.update ({_id: ObjectId("5fc116d32bffcf958ca16940")},{$set: { requirements: ["Ssh keyless access on machines allows to run smoothly without inserting password at every command","Google cloud account activation","Service account key","Coffee/tea","git (version control system)"]}});
