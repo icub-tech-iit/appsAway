@@ -4,7 +4,7 @@ on:
 
 
 #            mv -v ./appsAway/user_changes/* ./icub-tech-apps/dist/database/upgrade/
-#            mv -v ./appsAway/user_changes/images/* ./icub-tech-apps/dist/express/images/
+#            mv -v ./appsAway/user_changes/* ./icub-tech-apps/dist/express/images/
 
 jobs:
   update_code:
@@ -34,9 +34,9 @@ jobs:
             mkdir -p ../test/
             mv -v ./user_changes/*.js ../test/ 2>/dev/null || :
             mv -v ./user_changes/*.json ../test/ 2>/dev/null || :
-            mv -v ./user_changes/images/*.png ../test/ 2>/dev/null || :
-            mv -v ./user_changes/images/*.jpg ../test/ 2>/dev/null || :
-            mv -v ./user_changes/images/*.jpeg ../test/ 2>/dev/null || :
+            mv -v ./user_changes/*.png ../test/ 2>/dev/null || :
+            mv -v ./user_changes/*.jpg ../test/ 2>/dev/null || :
+            mv -v ./user_changes/*.jpeg ../test/ 2>/dev/null || :
             ls
             ls ./user_changes
             git config --local user.email "actions@github.com"
