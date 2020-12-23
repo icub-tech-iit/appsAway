@@ -16,12 +16,26 @@ In this folder we can find all the available demos, in their respective folders.
 ```bash
 .
 ├── basicDockerDeploy
+├── cameraPanCalib
 ├── demoTemplate
+├── faceAndPoseDetection
+├── googleDialog
+├── googleSpeechApp
+├── googleSpeechProcessing
+├── googleVisionAI
 ├── graspTheBall
+├── graspTheBallGazebo
 ├── graspTheBallNoFT
+├── iCubGazeboGrasping
 ├── robotBaseStartup
+├── speechToText
+├── startQA
+├── superbuildPyTorch
+├── superbuildTensorflow
+├── textToSpeech
+├── yarpBasicDeploy
+├── yarpOpenFace
 └── robotGazebo
-```
 
 </details>
 
