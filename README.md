@@ -37,6 +37,7 @@ In this folder we can find all the available demos, in their respective folders.
 ├── yarpOpenFace
 └── robotGazebo
 
+```
 </details>
 
 
