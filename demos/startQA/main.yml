@@ -58,7 +58,7 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c ""if [ ${GOOGLE_INPUT} = 'True' ]; then yarp wait /googleSpeech/result:o; yarp wait /start-ask/speech:i; yarp connect /googleSpeech/result:o /start-ask/speech:i; fi"
+    command: sh -c "if [ ${GOOGLE_INPUT} = 'True' ]; then yarp wait /googleSpeech/result:o; yarp wait /start-ask/speech:i; yarp connect /googleSpeech/result:o /start-ask/speech:i; fi"
 
 
   yConnectToGoogleSynthesis:
