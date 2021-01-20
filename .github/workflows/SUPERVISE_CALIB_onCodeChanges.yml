@@ -1,0 +1,34 @@
+# this workflow will generate the containers on push. 
+name: SUPERVISE_CALIB_onCodeChanges
+
+on: 
+    repository_dispatch:
+        types: [SUPERVISE_CALIB_onCodeChanges,SUPERVISE_CALIB_onSBRelease]
+
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+              with:
+                  repository: icub-tech-iit/code
+                  token: ${{ secrets.CODE_REPO_ACCSS_TOKEN }}
+
+            - name: Login to DockerHub Registry
+              run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+
+############## build the unstable full version of Supervise Calibration ##############
+            - name: Build Supervise Calibration Docker full image
+              run: docker build --build-arg ${{ github.event.client_payload.unst_base_image_for_SUPERVISE_CALIB_src}} ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.supervisecalib_unst_src}}
+            - name: Push Supervise Calibration Docker full image
+              run: docker push ${{ github.event.client_payload.supervisecalib_unst_src }}
+              
+#########################################################################################
+
+############## build the unstable thin version of Supervise Calibration ##############
+            #- name: Build Supervise Calibration Docker thin image
+            #  run: docker build --build-arg ${{ github.event.client_payload.unst_base_image_for_SUPERVISE_CALIB_bin }} --build-arg ${{ github.event.client_payload.unst_sb_base_image_for_SUPERVISE_CALIB_bin }} ${#{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile4Production --tag ${{ github.event.client_payload.supervisecalib_unst_bin}}
+            #- name: Push Supervise Calibration Docker thin image
+            #  run: docker push ${{ github.event.client_payload.supervisecalib_unst_bin }}
+
