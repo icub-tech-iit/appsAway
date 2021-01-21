@@ -1,0 +1,70 @@
+version: "3.7"
+
+x-yarp-base: &yarp-base
+  image: icubteamcode/stereocalib-supervisor:master_master-unstable_sources
+  environment:
+    - DISPLAY=${DISPLAY}
+    - XAUTHORITY=/root/.Xauthority
+    - YARP_FORWARD_LOG_ENABLE=1
+    - YARP_ROBOT_NAME
+  volumes:
+    - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
+    - "${XAUTHORITY}:/root/.Xauthority:rw"
+    - "${YARP_CONF_PATH}:/root/.config/yarp"
+    - "/dev:/dev"
+  ports:
+    - "10000:10000"
+  network_mode: "host"
+  privileged: true
+
+
+
+services:
+
+#------------------------------------------------------------------------------------------------
+  #Opening we open the viewer to see the raw left camera
+  yview_left:
+    <<: *yarp-base
+    container_name: yview_left
+    command: yarpview --name /viewer/left
+
+  #Opening we open the viewer to see the raw right camera
+  yview_right:
+    <<: *yarp-base
+    container_name: yview_right
+    command: yarpview --name /viewer/right
+
+  #Opening the viewer to see the display of calibSupervisor
+  yview_calib_display:
+    <<: *yarp-base
+    container_name: yview_calib_display
+    command: yarpview --name /display
+
+  #Opening we open the viewer to see the output of calibSupervisor
+  yview_calib_output:
+    <<: *yarp-base
+    container_name: yview_calib_output
+    command: yarpview --name /sendtocalib
+
+  #Opening we open the viewer to see the left output of camCalib after calibration
+  yview_camcalib_left:
+    <<: *yarp-base
+    container_name: yview_camcalib_left
+    command: yarpview --name /viewer_calib/left
+
+  #Opening we open the viewer to see the right output of camCalib after calibration
+  yview_camcalib_right:
+    <<: *yarp-base
+    container_name: yview_camcalib_right
+    command: yarpview --name /viewer_calib/right
+
+
+
+
+
+
+
+
+
+
+

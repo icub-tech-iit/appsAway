@@ -215,6 +215,8 @@ merge_environment()
     # if there is no app running, we just overwrite the local environment file
     mv appsAway_setEnvironment.temp.sh appsAway_setEnvironment.local.sh
   fi
+
+  echo "export APPSAWAY_CALIB_CONTEXT=$(yarp resource --context cameraCalibration --from icubEyes.ini)" >>appsAway_setEnvironment.local.sh
 }
 
 

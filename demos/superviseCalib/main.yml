@@ -1,0 +1,188 @@
+version: "3.7"
+
+x-yarp-base: &yarp-base
+  image: icubteamcode/stereocalib-supervisor:master_master-unstable_sources
+  environment:
+    - YARP_FORWARD_LOG_ENABLE=1
+    - APPSAWAY_CALIB_CONTEXT
+  volumes:
+    - "${YARP_CONF_PATH}:/root/.config/yarp"
+    - "${APPSAWAY_CALIB_CONTEXT}:/usr/local/share/iCub/contexts/cameraCalibration/icubEyes.ini"
+  networks:
+    - hostnet
+
+#note: following services that need yarpRobotinterface is running, I write yarp wait /yarpRobotInterface;
+#just to remember us to solve thi issue. Such yarp port doesn't exist.
+
+services:
+#following service are configured in icub-main/app/iCubStartup/scripts/iCubStartup.xml.template
+  yserver:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp where | grep 'is available at ip' > /dev/null ; if [ ! $$? -eq 0 ]; then yarpserver --write; fi"
+
+#------------------------------------------------------------------------------------------------
+  #Modules
+  yCalibSupervisor:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "calibSupervisor --file calibrations_gazebo-testmoving.ini"
+
+  yUpdateFile:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp wait /calibSupervisor/imageLeft:o ; modify-params.sh /usr/local/share/iCub/contexts/cameraCalibration/icubEyes.ini outputCalib.ini cameraCalibration"
+
+  yStartCalib:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp wait /stereoCalib/cmd; echo "start" | yarp rpc /stereoCalib/cmd"
+
+
+#------------------------------------------------------------------------------------------------
+  #Connections to the ports of the modules 
+
+  yConnectToLeftRaw:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp wait /icub/cam/left; yarp wait /viewer/left ; yarp connect /icub/cam/left /viewer/left fast_tcp;"
+
+  yConnectToRightRaw:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp wait /icub/cam/right; yarp wait /viewer/right ; yarp connect /icub/cam/right /viewer/right fast_tcp;"
+
+  yConnectToLeftInImage:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp wait /icub/cam/left; yarp wait /calibSupervisor/imageLeft:i ; yarp connect /icub/cam/left /calibSupervisor/imageLeft:i fast_tcp;"
+
+
+  yConnectToRightInImage:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp wait /icub/cam/right; yarp wait /calibSupervisor/imageRight:i ; yarp connect /icub/cam/right /calibSupervisor/imageRight:i fast_tcp;"
+
+  yConnectToLeftStereoCalib:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp wait /calibSupervisor/imageLeft:o ; yarp wait /stereoCalib/cam/left:i; yarp connect /calibSupervisor/imageLeft:o /stereoCalib/cam/left:i fast_tcp ;"
+
+  yConnectToRightStereoCalib:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp wait /calibSupervisor/imageRight:o ; yarp wait /stereoCalib/cam/right:i; yarp connect /calibSupervisor/imageRight:o /stereoCalib/cam/right:i fast_tcp ;"
+  
+  yConnectToDisplay:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp wait /calibSupervisor/display:o ; yarp wait /display; yarp connect  /calibSupervisor/display:o /display fast_tcp;"
+
+  yConnectToViewerCalib:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp wait /calibSupervisor/imageLeft:o ; yarp wait /sendtocalib; yarp connect /calibSupervisor/imageLeft:o /sendtocalib fast_tcp ;"
+
+  yConnectToLeftInCamCalib:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp wait /icub/cam/left ; yarp wait /camCalib/left/in; yarp connect /icub/cam/left /camCalib/left/in fast_tcp ;"
+  
+  yConnectToRightInCamCalib:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp wait /icub/cam/right ; yarp wait /camCalib/right/in; yarp connect /icub/cam/right /camCalib/right/in fast_tcp ;"
+
+  yConnectToLeftOutCamCalib:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp wait /camCalib/left/out ; yarp wait /viewer_calib/left; yarp connect /camCalib/left/out /viewer_calib/left fast_tcp ;"
+  
+  yConnectToRightOutCamCalib:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp wait /camCalib/right/out ; yarp wait /viewer_calib/right; yarp connect camCalib/right/out /viewer_calib/right fast_tcp ;"
+    
+ #------------------------------------------------------------------------------------------------
+
+  #use network.peer ip address and port 8080 to see the containers status in browser
+  visualizer:
+    image: dockersamples/visualizer:stable
+    ports:
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+
+networks:
+  hostnet:
+    external: true
+    name: host
+
