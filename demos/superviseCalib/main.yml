@@ -7,7 +7,7 @@ x-yarp-base: &yarp-base
     - APPSAWAY_CALIB_CONTEXT
   volumes:
     - "${YARP_CONF_PATH}:/root/.config/yarp"
-    - "${APPSAWAY_CALIB_CONTEXT}:/usr/local/share/iCub/contexts/cameraCalibration/icubEyes.ini"
+    - "${APPSAWAY_CALIB_CONTEXT}:/usr/local/share/iCub/contexts/cameraCalibration/"
   networks:
     - hostnet
 
@@ -43,7 +43,7 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "yarp wait /calibSupervisor/imageLeft:o ; modify-params.sh /usr/local/share/iCub/contexts/cameraCalibration/icubEyes.ini outputCalib.ini cameraCalibration"
+    command: sh -c "yarp wait /calibSupervisor/imageLeft:o ; modify-params.sh icubEyes.ini outputCalib.ini cameraCalibration"
 
   yStartCalib:
     <<: *yarp-base

@@ -216,7 +216,9 @@ merge_environment()
     mv appsAway_setEnvironment.temp.sh appsAway_setEnvironment.local.sh
   fi
 
-  echo "export APPSAWAY_CALIB_CONTEXT=$(yarp resource --context cameraCalibration --from icubEyes.ini)" >>appsAway_setEnvironment.local.sh
+  yarpResource=$(yarp resource --context cameraCalibration --from icubEyes.ini)
+  resourcePath=$(echo "$yarpResource" | awk -F'"' '{print $2}' | awk -F'icubEyes.ini' '{print $1}')
+  echo "export APPSAWAY_CALIB_CONTEXT=$resourcePath" >>appsAway_setEnvironment.local.sh
 }
 
 
