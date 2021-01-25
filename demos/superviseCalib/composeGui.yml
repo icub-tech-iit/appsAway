@@ -26,45 +26,41 @@ services:
   yview_left:
     <<: *yarp-base
     container_name: yview_left
-    command: yarpview --name /viewer/left
+    command: yarpview --name /viewer/left --x 635 --y 0
 
   #Opening we open the viewer to see the raw right camera
   yview_right:
     <<: *yarp-base
     container_name: yview_right
-    command: yarpview --name /viewer/right
+    command: yarpview --name /viewer/right --x 940 --y 0
 
   #Opening the viewer to see the display of calibSupervisor
   yview_calib_display:
     <<: *yarp-base
     container_name: yview_calib_display
-    command: yarpview --name /display
+    command: yarpview --name /display --x 0 --y 0 --w 550 --h 550
 
   #Opening we open the viewer to see the output of calibSupervisor
-  yview_calib_output:
-    <<: *yarp-base
-    container_name: yview_calib_output
-    command: yarpview --name /sendtocalib
+  #yview_calib_output:
+  #  <<: *yarp-base
+  #  container_name: yview_calib_output
+  #  command: yarpview --name /sendtocalib
 
   #Opening we open the viewer to see the left output of camCalib after calibration
   yview_camcalib_left:
     <<: *yarp-base
     container_name: yview_camcalib_left
-    command: yarpview --name /viewer_calib/left
+    command: yarpview --name /viewer_calib/left --x 635 --y 400
 
   #Opening we open the viewer to see the right output of camCalib after calibration
   yview_camcalib_right:
     <<: *yarp-base
     container_name: yview_camcalib_right
-    command: yarpview --name /viewer_calib/right
+    command: yarpview --name /viewer_calib/right --x 940 --y 400
 
-
-
-
-
-
-
-
-
-
+  #Opening we open the viewer to see the template during calibration
+  yview_template:
+    <<: *yarp-base
+    container_name: yview_template
+    command: yarpview --name /viewer_template --x 0 --y 650 --w 450 --h 450
 

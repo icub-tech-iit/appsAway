@@ -34,7 +34,7 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "calibSupervisor --file calibrations_gazebo-testmoving.ini"
+    command: sh -c "yarp wait /viewer_template; calibSupervisor --file calibrations.ini"
 
   yUpdateFile:
     <<: *yarp-base
@@ -65,7 +65,7 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "yarp wait /icub/cam/left; yarp wait /viewer/left ; yarp connect /icub/cam/left /viewer/left fast_tcp;"
+    command: sh -c "yarp wait /icub/cam/left; yarp wait /viewer/left ; yarp wait /camCalib/left/out;  yarp connect /icub/cam/left /viewer/left fast_tcp;"
 
   yConnectToRightRaw:
     <<: *yarp-base
@@ -74,7 +74,7 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "yarp wait /icub/cam/right; yarp wait /viewer/right ; yarp connect /icub/cam/right /viewer/right fast_tcp;"
+    command: sh -c "yarp wait /icub/cam/right; yarp wait /viewer/right ; yarp wait /camCalib/right/out; yarp connect /icub/cam/right /viewer/right fast_tcp;"
 
   yConnectToLeftInImage:
     <<: *yarp-base
@@ -122,14 +122,14 @@ services:
         condition: on-failure
     command: sh -c "yarp wait /calibSupervisor/display:o ; yarp wait /display; yarp connect  /calibSupervisor/display:o /display fast_tcp;"
 
-  yConnectToViewerCalib:
-    <<: *yarp-base
-    deploy:
-      placement:
-        constraints: [node.labels.type != head]
-      restart_policy:
-        condition: on-failure
-    command: sh -c "yarp wait /calibSupervisor/imageLeft:o ; yarp wait /sendtocalib; yarp connect /calibSupervisor/imageLeft:o /sendtocalib fast_tcp ;"
+  #yConnectToViewerCalib:
+  #  <<: *yarp-base
+  #  deploy:
+  #    placement:
+  #      constraints: [node.labels.type != head]
+  #    restart_policy:
+  #      condition: on-failure
+  #  command: sh -c "yarp wait /calibSupervisor/imageLeft:o ; yarp wait /sendtocalib; yarp connect /calibSupervisor/imageLeft:o /sendtocalib fast_tcp ;"
 
   yConnectToLeftInCamCalib:
     <<: *yarp-base
@@ -165,7 +165,16 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "yarp wait /camCalib/right/out ; yarp wait /viewer_calib/right; yarp connect camCalib/right/out /viewer_calib/right fast_tcp ;"
+    command: sh -c "yarp wait /camCalib/right/out ; yarp wait /viewer_calib/right; yarp connect /camCalib/right/out /viewer_calib/right fast_tcp ;"
+
+  yConnectToTemplate:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp wait /calibSupervisor/template:o ; yarp wait /viewer_template; yarp connect /calibSupervisor/template:o /viewer_template fast_tcp ;"
     
  #------------------------------------------------------------------------------------------------
 
