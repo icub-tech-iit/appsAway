@@ -1,7 +1,7 @@
 version: "3.7"
 
 x-yarp-base: &yarp-base
-  image: icubteamcode/camera_pan_calib:master_master-unstable_sources
+  image: icubteamcode/calib-supervisor:master_master-unstable_sources
   environment:
     - YARP_FORWARD_LOG_ENABLE=1
     - LEFT_CUSTOM_PORT
@@ -37,7 +37,7 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "if [ ! -z ${LEFT_CUSTOM_PORT} ]; then yarp wait $LEFT_CUSTOM_PORT ; yarp wait /CameraPanCalibration/leftImage:i ; yarp connect $LEFT_CUSTOM_PORT /CameraPanCalibration/leftImage:i tcp ; else yarp wait /icub/cam/left; yarp wait /CameraPanCalibration/leftImage:i ; yarp connect /icub/cam/left /CameraPanCalibration/leftImage:i tcp; fi"
+    command: sh -c "if [ ! -z ${LEFT_CUSTOM_PORT} ]; then yarp wait $LEFT_CUSTOM_PORT ; yarp wait /calibCamTilt/leftImage:i ; yarp connect $LEFT_CUSTOM_PORT /calibCamTilt/leftImage:i tcp ; else yarp wait /icub/cam/left; yarp wait /calibCamTilt/leftImage:i ; yarp connect /icub/cam/left /calibCamTilt/leftImage:i tcp; fi"
 
 
   yConnectToRightInImage:
@@ -47,7 +47,7 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "if [ ! -z ${RIGHT_CUSTOM_PORT} ]; then yarp wait $RIGHT_CUSTOM_PORT ; yarp wait /CameraPanCalibration/rightImage:i ; yarp connect $RIGHT_CUSTOM_PORT /CameraPanCalibration/rightImage:i tcp ; else yarp wait /icub/cam/right; yarp wait /CameraPanCalibration/rightImage:i ; yarp connect /icub/cam/right /CameraPanCalibration/rightImage:i tcp; fi"
+    command: sh -c "if [ ! -z ${RIGHT_CUSTOM_PORT} ]; then yarp wait $RIGHT_CUSTOM_PORT ; yarp wait /calibCamTilt/rightImage:i ; yarp connect $RIGHT_CUSTOM_PORT /calibCamTilt/rightImage:i tcp ; else yarp wait /icub/cam/right; yarp wait /calibCamTilt/rightImage:i ; yarp connect /icub/cam/right /calibCamTilt/rightImage:i tcp; fi"
   
   yConnectToLeftOutImage:
     <<: *yarp-base
@@ -56,7 +56,7 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "yarp wait /CameraPanCalibration/leftImage:o ; yarp wait /leftImageOutput; yarp connect /CameraPanCalibration/leftImage:o /leftImageOutput tcp ;"
+    command: sh -c "yarp wait /calibCamTilt/leftImage:o ; yarp wait /leftImageOutput; yarp connect /calibCamTilt/leftImage:o /leftImageOutput tcp ;"
   
   yConnectToRightOutImage:
     <<: *yarp-base
@@ -65,7 +65,7 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "yarp wait /CameraPanCalibration/rightImage:o ; yarp wait /rightImageOutput; yarp connect /CameraPanCalibration/rightImage:o /rightImageOutput tcp ;"
+    command: sh -c "yarp wait /calibCamTilt/rightImage:o ; yarp wait /rightImageOutput; yarp connect /calibCamTilt/rightImage:o /rightImageOutput tcp ;"
     
  #------------------------------------------------------------------------------------------------
 

@@ -1,7 +1,7 @@
 version: "3.7"
 
 x-yarp-base: &yarp-base
-  image: icubteamcode/camera_pan_calib:master_master-unstable_sources
+  image: icubteamcode/calib-supervisor:master_master-unstable_sources
   environment:
     - DISPLAY=${DISPLAY}
     - XAUTHORITY=/root/.Xauthority
@@ -20,11 +20,11 @@ x-yarp-base: &yarp-base
 services:
   
  #------------------------------------------------------------------------------------------------
-  #Calling CameraPanCalibration module 
+  #Calling calibCamTilt module 
   
-  yDemoCameraPanCalibration:
+  yDemoCalibCamTilt:
     <<: *yarp-base
-    command: sh -c "CameraPanCalibration" 
+    command: sh -c "calibCamTilt" 
  
 #------------------------------------------------------------------------------------------------
   #Opening the viewer to see the left output image
