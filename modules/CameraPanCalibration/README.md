@@ -1,2 +1,0 @@
-Camera Pan Calibration Module
-==========================
