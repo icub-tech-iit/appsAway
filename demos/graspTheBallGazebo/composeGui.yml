@@ -33,6 +33,11 @@ x-yarp-gazebo: &yarp-gazebo
     - "${HOME}/teamcode/appsAway/demos/graspTheBallGazebo/gazebo/models/red-ball:/workspace/iCubContrib/share/gazebo/models/red-ball"
     - "${HOME}/teamcode/appsAway/demos/graspTheBallGazebo/gazebo/worlds/grasp-ball-gazebo.sdf:/workspace/iCubContrib/share/gazebo/worlds/grasp-ball-gazebo.sdf"
     - "${HOME}/teamcode/appsAway/demos/graspTheBallGazebo/gazebo/libdemoRedBall-world.so:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins/libdemoRedBall-world.so"
+    - "/usr/local/cuda/lib64:/usr/lib/nvidia"
+    - "/usr/local/cuda:/usr/local/cuda"
+    - "/usr/lib/x86_64-linux-gnu:/usr/lib/projects/x86_64-linux-gnu"
+    - "/usr/bin:/usr/projects/bin"
+    - "/dev/dri:/dev/dri"
   ports:
     - "10000:10000"
   network_mode: "host"
