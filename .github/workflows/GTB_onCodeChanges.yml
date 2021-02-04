@@ -82,21 +82,21 @@ jobs:
 
 ############## build the unstable version of graspTheBall for gazebo ##############
             - name: Test payload information
-              run: echo ${{ github.event.client_payload }}
+              run: echo ${{ github.event.client_payload.extra_payload.unst_base_image_for_GTBGZ_bin }}
             - name: Build graspTheBall Docker thin image for gazebo
-              run: docker build --build-arg ${{ github.event.client_payload.unst_base_image_for_GTBGZ_bin }} --build-arg ${{ github.event.client_payload.unst_gz_base_image_for_GTBGZ_bin }} ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile4Production --tag ${{ github.event.client_payload.grasptheballgazebo_unst_bin }}
+              run: docker build --build-arg ${{ github.event.client_payload.extra_payload.unst_base_image_for_GTBGZ_bin }} --build-arg ${{ github.event.client_payload.extra_payload.unst_gz_base_image_for_GTBGZ_bin }} ${{ github.event.client_payload.extra_payload.docker_path }} --file ${{ github.event.client_payload.extra_payload.docker_path }}/Dockerfile4Production --tag ${{ github.event.client_payload.extra_payload.grasptheballgazebo_unst_bin }}
             - name: Push graspTheBall Docker thin image for gazebo
-              run: docker push ${{ github.event.client_payload.grasptheballgazebo_unst_bin }}
+              run: docker push ${{ github.event.client_payload.extra_payload.grasptheballgazebo_unst_bin }}
 
 
 ############## build the unstable version of graspTheBall for gazebo ##############
             
             - name: Test payload information
-              run: echo ${{ github.event.client_payload.unst_gz_base_image_for_GTBGZ_src }}
+              run: echo ${{ github.event.client_payload.extra_payload.unst_gz_base_image_for_GTBGZ_src }}
             - name: Build graspTheBall Docker full image for gazebo
-              run: docker build --build-arg ${{ github.event.client_payload.unst_gz_base_image_for_GTBGZ_src }} ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.grasptheballgazebo_unst_src }}
+              run: docker build --build-arg ${{ github.event.client_payload.extra_payload.unst_gz_base_image_for_GTBGZ_src }} ${{ github.event.client_payload.extra_payload.docker_path }} --file ${{ github.event.client_payload.extra_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.extra_payload.grasptheballgazebo_unst_src }}
             - name: Push graspTheBall Docker full image for gazebo
-              run: docker push ${{ github.event.client_payload.grasptheballgazebo_unst_src }}
+              run: docker push ${{ github.event.client_payload.extra_payload.grasptheballgazebo_unst_src }}
  
 #########################################################################################
 
