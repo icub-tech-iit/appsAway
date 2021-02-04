@@ -85,6 +85,7 @@ jobs:
 ############## build the unstable version of graspTheBall for gazebo ##############
             - name: Test payload information for job 3
               run: echo ${{ github.event.client_payload.extra_payload.grasptheball_unst_bin }}
+            - name: Build graspTheBall Docker thin image for gazebo
               run: docker build --build-arg ${{ github.event.client_payload.extra_payload.unst_base_image_for_GTB_bin }} --build-arg ${{ github.event.client_payload.extra_payload.unst_sb_base_image_for_GTB_bin }} ${{ github.event.client_payload.extra_payload.docker_path }} --file ${{ github.event.client_payload.extra_payload.docker_path }}/Dockerfile4Production --tag ${{ github.event.client_payload.extra_payload.grasptheball_unst_bin }}
             - name: Push graspTheBall Docker thin image for gazebo
               run: docker push ${{ github.event.client_payload.extra_payload.grasptheball_unst_bin }}
@@ -97,4 +98,34 @@ jobs:
               run: docker push ${{ github.event.client_payload.extra_payload.grasptheball_unst_src }}
  
 #########################################################################################
+
+    job_4:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+              with:
+                  repository: icub-tech-iit/code
+                  token: ${{ secrets.CODE_REPO_ACCSS_TOKEN }}
+
+            - name: Login to DockerHub Registry
+              run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+
+
+############## build the stable version of graspTheBall for gazebo ##############
+            - name: Test payload information for job 4
+              run: echo ${{ github.event.client_payload.extra_payload.grasptheball_stab_bin }}
+            - name: Build graspTheBall Docker thin image for gazebo
+              run: docker build --build-arg ${{ github.event.client_payload.extra_payload.stab_base_image_for_GTB_bin }} --build-arg ${{ github.event.client_payload.extra_payload.stab_sb_base_image_for_GTB_bin }} ${{ github.event.client_payload.extra_payload.docker_path }} --file ${{ github.event.client_payload.extra_payload.docker_path }}/Dockerfile4Production --tag ${{ github.event.client_payload.extra_payload.grasptheball_stab_bin }}
+            - name: Push graspTheBall Docker thin image for gazebo
+              run: docker push ${{ github.event.client_payload.extra_payload.grasptheball_stab_bin }}
+
+
+############## build the unstable version of graspTheBall for gazebo ##############
+            - name: Build graspTheBall Docker full image for gazebo
+              run: docker build --build-arg ${{ github.event.client_payload.extra_payload.stab_base_image_for_GTB_src }} ${{ github.event.client_payload.extra_payload.docker_path }} --file ${{ github.event.client_payload.extra_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.extra_payload.grasptheball_stab_src }}
+            - name: Push graspTheBall Docker full image for gazebo
+              run: docker push ${{ github.event.client_payload.extra_payload.grasptheball_stab_src }}
+ 
+#########################################################################################
+
 
