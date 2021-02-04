@@ -23,7 +23,7 @@ jobs:
 ############## build the unstable version of graspTheBall ##############
             
             - name: Test payload information
-              run: echo ${{ github.event.client_payload }}
+              run: echo ${{ github.event.client_payload.extra_payload.a }}
             - name: Build graspTheBall Docker full image
               run: docker build --build-arg ${{ github.event.client_payload.extra_payload.unst_base_image_for_GTB_src }} --build-arg ${{ github.event.client_payload.extra_payload.unst_sb_base_image_for_GTB_bin }} ${{ github.event.client_payload.extra_payload.docker_path }} --file ${{ github.event.client_payload.extra_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.extra_payload.grasptheball_unst_src }}
             - name: Push graspTheBall Docker full image
@@ -53,6 +53,8 @@ jobs:
 
 
 ############## build the stable version of graspTheBall ##############
+            - name: Test payload information job 2
+              run: echo ${{ github.event.client_payload.extra_payload.a }}
             - name: Build graspTheBall Docker full image
               run: docker build --build-arg ${{ github.event.client_payload.extra_payload.stab_base_image_for_GTB_src }} --build-arg ${{ github.event.client_payload.extra_payload.stab_sb_base_image_for_GTB_bin }} ${{ github.event.client_payload.extra_payload.docker_path }} --file ${{ github.event.client_payload.extra_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.extra_payload.grasptheball_stab_src }}
             - name: Push graspTheBall Docker full image
