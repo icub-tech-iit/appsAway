@@ -25,22 +25,30 @@ jobs:
                 echo $(cat RELEASE_ARG)
 #########################################################################################
 
-######## Command to build the full Docker image, using only unstable tag #########
+######## Full unstable Docker image #########
             - name: Build gazebo Docker full image
-              run: docker build ${{ github.event.client_payload.docker_path }} --build-arg $(cat RELEASE_ARG) --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.gazebo_unst_src}}
-#########################################################################################
-
-######### Command to push the full Docker Image online ##################################
+              run: docker build ${{ github.event.client_payload.extra_payload.docker_path }} --build-arg $(cat RELEASE_ARG) --file ${{ github.event.client_payload.extra_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.extra_payload.gazebo_unst_src}}
             - name: Push gazebo Docker full image
-              run: docker push ${{ github.event.client_payload.gazebo_unst_src }}
+              run: docker push ${{ github.event.client_payload.extra_payload.gazebo_unst_src }}
 #########################################################################################
 
-######## Command to build the thin Docker image, using only unstable tag #########
+######## Thin unstable Docker image #########
             - name: Build gazebo Docker thin image
-              run: docker build --build-arg ${{ github.event.client_payload.unst_base_image_for_GZ_bin }} --build-arg ${{ github.event.client_payload.unst_base_image_for_GZ_src }} ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile4production --tag ${{ github.event.client_payload.gazebo_unst_bin }}
+              run: docker build --build-arg ${{ github.event.client_payload.extra_payload.unst_base_image_for_GZ_src }} --build-arg ${{ github.event.client_payload.extra_payload.base_image_for_GZ_src }} ${{ github.event.client_payload.extra_payload.docker_path }} --file ${{ github.event.client_payload.extra_payload.docker_path }}/Dockerfile4production --tag ${{ github.event.client_payload.extra_payload.gazebo_unst_bin }}
+            - name: Push gazebo Docker thin image
+              run: docker push ${{ github.event.client_payload.extra_payload.gazebo_unst_bin}}
 #########################################################################################
 
-######### Command to push the full Docker Image online ##################################
+######## Full stable Docker image #########
+            - name: Build gazebo Docker full image
+              run: docker build ${{ github.event.client_payload.extra_payload.docker_path }} --build-arg $(cat RELEASE_ARG) --file ${{ github.event.client_payload.extra_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.extra_payload.gazebo_stab_src}}
+            - name: Push gazebo Docker full image
+              run: docker push ${{ github.event.client_payload.extra_payload.gazebo_stab_src }}
+#########################################################################################
+
+######## Thin stable Docker image #########
+            - name: Build gazebo Docker thin image
+              run: docker build --build-arg ${{ github.event.client_payload.extra_payload.stab_base_image_for_GZ_src }} --build-arg ${{ github.event.client_payload.extra_payload.base_image_for_GZ_src }} ${{ github.event.client_payload.extra_payload.docker_path }} --file ${{ github.event.client_payload.extra_payload.docker_path }}/Dockerfile4production --tag ${{ github.event.client_payload.extra_payload.gazebo_stab_bin }}
             - name: Push gazebo Docker thin image
-              run: docker push ${{ github.event.client_payload.gazebo_unst_bin}}
+              run: docker push ${{ github.event.client_payload.extra_payload.gazebo_stab_bin}}
 #########################################################################################
