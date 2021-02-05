@@ -7,7 +7,7 @@ on:
         types: [GZ_onCodeRelease]
 
 jobs:
-    build:
+    job_1:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v2
@@ -20,28 +20,39 @@ jobs:
 
 
 ######## Full unstable Docker image #########
-            - name: Build gazebo Docker full image
+            - name: Build gazebo unstable Docker full image
               run: docker build ${{ github.event.client_payload.extra_payload.docker_path }} --file ${{ github.event.client_payload.extra_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.extra_payload.gazebo_unst_src }}
             - name: Push gazebo Docker full image
               run: docker push ${{ github.event.client_payload.extra_payload.gazebo_unst_src }}
 #########################################################################################
 
 ######## Thin unstable Docker image #########
-            - name: Build gazebo Docker thin image
+            - name: Build gazebo unstable Docker thin image
               run: docker build --build-arg ${{ github.event.client_payload.unst_base_image_for_GZ_src }} --build-arg ${{ github.event.client_payload.base_image_for_GZ_src }} ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile4production --tag ${{ github.event.client_payload.gazebo_unst_bin }}
             - name: Push superbuild Docker thin image
               run: docker push ${{ github.event.client_payload.gazebo_unst_bin }}
 #########################################################################################
 
+    job_2:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+              with:
+                  repository: icub-tech-iit/code
+                  token: ${{ secrets.CODE_REPO_ACCSS_TOKEN }}
+
+            - name: Login to DockerHub Registry
+              run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+
 ######## Full stable Docker image #########
-            - name: Build gazebo Docker full image
+            - name: Build gazebo stable Docker full image
               run: docker build ${{ github.event.client_payload.extra_payload.docker_path }} --file ${{ github.event.client_payload.extra_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.extra_payload.gazebo_stab_src}}
             - name: Push gazebo Docker full image
               run: docker push ${{ github.event.client_payload.extra_payload.gazebo_stab_src }}
 #########################################################################################
 
 ######## Thin stable Docker image #########
-            - name: Build gazebo Docker thin image
+            - name: Build gazebo stable Docker thin image
               run: docker build --build-arg ${{ github.event.client_payload.extra_payload.stab_base_image_for_GZ_src }} --build-arg ${{ github.event.client_payload.extra_payload.base_image_for_GZ_src }} ${{ github.event.client_payload.extra_payload.docker_path }} --file ${{ github.event.client_payload.extra_payload.docker_path }}/Dockerfile4production --tag ${{ github.event.client_payload.extra_payload.gazebo_stab_bin }}
             - name: Push gazebo Docker thin image
               run: docker push ${{ github.event.client_payload.extra_payload.gazebo_stab_bin}}
