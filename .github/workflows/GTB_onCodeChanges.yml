@@ -7,6 +7,12 @@ on:
     repository_dispatch:
         types: [GTB_onCodeChanges,GTB_onSBRelease]
 
+    # this workflow is also triggered when GZ_onCodeChanges has completed
+    workflow_run:
+        workflows: ["GZ_onCodeChanges"]
+        types:
+          - completed
+
 jobs:
     job_1:
         runs-on: ubuntu-latest
