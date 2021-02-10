@@ -1,24 +1,7 @@
 version: "3.7"
 
-x-yarp-base: &yarp-base
-  image: icubteamcode/superbuild:master_master-unstable_sources
-  environment:
-    - DISPLAY=${DISPLAY}
-    - QT_X11_NO_MITSHM=1
-    - XAUTHORITY=/root/.Xauthority
-    - YARP_FORWARD_LOG_ENABLE=1
-  volumes:
-    - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
-    - "${XAUTHORITY}:/root/.Xauthority:rw"
-    - "${YARP_CONF_PATH}:/root/.config/yarp"
-  ports:
-    - "10000:10000"
-  network_mode: "host"
-  privileged: true
-  #ipc: host
-
 x-yarp-gazebo: &yarp-gazebo
-  image: icubteamcode/icubgraspgazebo:master_master-unstable_sources
+  image: icubteamcode/gazebo:devel_master-unstable_sources
   environment:
     - DISPLAY=${DISPLAY}
     - QT_X11_NO_MITSHM=1
@@ -30,9 +13,9 @@ x-yarp-gazebo: &yarp-gazebo
     - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
     - "${XAUTHORITY}:/root/.Xauthority:rw"
     - "${YARP_CONF_PATH}:/root/.config/yarp"
-    - "${HOME}/teamcode/appsAway/demos/graspTheBallGazebo/gazebo/models/red-ball:/workspace/iCubContrib/share/gazebo/models/red-ball"
-    - "${HOME}/teamcode/appsAway/demos/graspTheBallGazebo/gazebo/worlds/grasp-ball-gazebo.sdf:/workspace/iCubContrib/share/gazebo/worlds/grasp-ball-gazebo.sdf"
-    - "${HOME}/teamcode/appsAway/demos/graspTheBallGazebo/gazebo/libdemoRedBall-world.so:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins/libdemoRedBall-world.so"
+    - "${HOME}/teamcode/appsAway/demos/graspTheBallGazebo/gazebo/models/red-ball:/projects/iCubContrib/share/gazebo/models/red-ball"
+    - "${HOME}/teamcode/appsAway/demos/graspTheBallGazebo/gazebo/worlds/grasp-ball-gazebo.sdf:/projects/iCubContrib/share/gazebo/worlds/grasp-ball-gazebo.sdf"
+    - "${HOME}/teamcode/appsAway/demos/graspTheBallGazebo/gazebo/libdemoRedBall-world.so:/projects/iCubContrib/lib/libdemoRedBall-world.so"
     - "/usr/local/cuda/lib64:/usr/lib/nvidia"
     - "/usr/local/cuda:/usr/local/cuda"
     - "/usr/lib/x86_64-linux-gnu:/usr/lib/projects/x86_64-linux-gnu"
@@ -53,12 +36,12 @@ services:
 
 #following services are configured in ./icub-main/app/default/scripts/cameras_calib.xml.template
   yview_l:
-    <<: *yarp-base
+    <<: *yarp-gazebo
     container_name: yview_l
     command: yarpview --name /icubSim/view/left --x 0 --y 0 --p 50 --compact
 
   yview_r:
-    <<: *yarp-base
+    <<: *yarp-gazebo
     container_name: yview_r
     command: yarpview --name /icubSim/view/right --x 400 --y 0 --p 50 --compact
 
@@ -66,7 +49,7 @@ services:
 #-----------------------------------------------------------------------------------------------------------------------------------------------------
 #Following services are configured in icub-basic-demos/demoRedBall/app/scripts/demoRedBall.xml.template
   yview:
-    <<: *yarp-base
+    <<: *yarp-gazebo
     container_name: yview_demo
     command: yarpview --name /PF3DTracker_viewer --x 750 --y 0 --p 50 --compact
 

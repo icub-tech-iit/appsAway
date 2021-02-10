@@ -2,12 +2,15 @@
 
 <sdf version="1.7">
   <model name="red-ball">
-
+    
     <link name ='root_link'>
     <pose>0 0 0 0 0 0</pose>
+    <inertial>
+      <mass>700</mass>
+    </inertial>
     <collision name ='collision'>
       <geometry>
-        <sphere><radius>0.025</radius></sphere>
+        <sphere><radius>0.020</radius></sphere>
       </geometry>
     </collision>
     <visual name ='visual'>
