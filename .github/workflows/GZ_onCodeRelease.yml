@@ -57,3 +57,28 @@ jobs:
             - name: Push gazebo Docker thin image
               run: docker push ${{ github.event.client_payload.extra_payload.gazebo_stab_bin}}
 #########################################################################################
+
+######## Trigger grasp the ball after gazebo images have been built #########
+
+    job_3: 
+      needs: [job-1, job2]
+      runs-on: [ubuntu-latest]
+      steps:
+      - uses: actions/checkout@v2
+      - name: Get the version
+        id: get_version
+        run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3)
+      
+      - name: Repository Dispatch
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.APPS_AWAY_TOKEN }}
+          repository: icub-tech-iit/appsAway
+          event-type: GTB_onCodeRelease
+          client-payload: '{"version": "devel", "type": "GTB_onCodeRelease", 
+            "grasptheball_src": "icubteamcode/grasptheballgazebo:devel_{{ steps.get_version.outputs.VERSION }}_sources", 
+            "grasptheball_bin": "icubteamcode/grasptheballgazebo:devel_{{ steps.get_version.outputs.VERSION }}_binaries", 
+            "base_image_for_GTB_src": "FULL_NAME=icubteamcode/gazebo:devel_{{ steps.get_version.outputs.VERSION }}_sources", 
+            "sb_base_image_for_GTB_bin": "THIN_NAME=icubteamcode/gazebo:devel_{{ steps.get_version.outputs.VERSION }}_binaries", 
+            "base_image_for_GTB_bin": "START_IMAGE_FULL=icubteamcode/grasptheball:devel_{{ steps.get_version.outputs.VERSION }}_sources", 
+            "docker_path": "./dockerfile_images/demos/graspTheBall"}'

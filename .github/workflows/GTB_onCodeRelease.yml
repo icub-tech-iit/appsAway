@@ -7,12 +7,6 @@ on:
     repository_dispatch:
         types: [GTB_onCodeRelease]
 
-    # this workflow is also triggered when GZ_onCodeRelease has completed
-    workflow_run:
-        workflows: ["GZ_onCodeRelease"]
-        types:
-          - completed
-
 jobs:
     build:
         runs-on: ubuntu-latest

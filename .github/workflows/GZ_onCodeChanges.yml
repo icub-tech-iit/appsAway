@@ -69,3 +69,29 @@ jobs:
             - name: Push gazebo Docker thin image
               run: docker push ${{ github.event.client_payload.extra_payload.gazebo_stab_bin}}
 #########################################################################################
+
+######## Trigger grasp the ball after gazebo images have been built #########
+
+    job_3: 
+      needs: [job-1, job2]
+      runs-on: [ubuntu-latest]
+      steps:
+      - name: Repository Dispatch
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.APPS_AWAY_TOKEN }}
+          repository: icub-tech-iit/appsAway
+          event-type: GTB_onCodeChanges
+          client-payload: '{"version": "devel", "type": "GTB_onCodeChanges", 
+            "extra_payload": {
+              "grasptheball_unst_src": "icubteamcode/grasptheballgazebo:devel_master-unstable_sources",  
+              "grasptheball_unst_bin": "icubteamcode/grasptheballgazebo:devel_master-unstable_binaries", 
+              "grasptheball_stab_src": "icubteamcode/grasptheballgazebo:devel_master-stable_sources", 
+              "grasptheball_stab_bin": "icubteamcode/grasptheballgazebo:devel_master-stable_binaries", 
+              "unst_base_image_for_GTB_src": "FULL_NAME=icubteamcode/gazebo:devel_master-unstable_sources", 
+              "stab_base_image_for_GTB_src": "FULL_NAME=icubteamcode/gazebo:devel_master-stable_sources", 
+              "unst_sb_base_image_for_GTB_bin": "THIN_NAME=icubteamcode/gazebo:devel_master-unstable_binaries", 
+              "stab_sb_base_image_for_GTB_bin": "THIN_NAME=icubteamcode/gazebo:devel_master-stable_binaries", 
+              "unst_base_image_for_GTB_bin": "START_IMAGE_FULL=icubteamcode/grasptheballgazebo:devel_master-unstable_sources", 
+              "stab_base_image_for_GTB_bin": "START_IMAGE_FULL=icubteamcode/grasptheballgazebo:devel_master-stable_sources",
+              "docker_path": "./dockerfile_images/demos/graspTheBall"}}'
