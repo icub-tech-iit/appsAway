@@ -73,7 +73,7 @@ jobs:
 ######## Trigger grasp the ball after gazebo images have been built #########
 
     job_3: 
-      needs: [job-1, job2]
+      needs: [job_1, job_2]
       runs-on: [ubuntu-latest]
       steps:
       - name: Repository Dispatch
