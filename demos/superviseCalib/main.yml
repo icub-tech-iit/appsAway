@@ -6,6 +6,8 @@ x-yarp-base: &yarp-base
     - YARP_FORWARD_LOG_ENABLE=1
     - APPSAWAY_CALIB_CONTEXT
     - CUSTOM_FILE
+    - EVENT_CAMERAS
+    - MONO_CALIB
   volumes:
     - "${YARP_CONF_PATH}:/root/.config/yarp"
     - "${APPSAWAY_CALIB_CONTEXT}:/usr/local/share/iCub/contexts/cameraCalibration/"
@@ -36,7 +38,8 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "yarp wait /viewer_template; calibSupervisor --file calibrations.ini"
+    command: sh -c "yarp wait /viewer_template; if [ ${MONO_CALIB} = false ]; then if [ ${EVENT_CAMERAS} = true ]; then calibSupervisor --file calibrations_event-cameras.ini --eventCam true --percentageThresh 86.0; else calibSupervisor --file calibrations.ini; fi; else if [ ${EVENT_CAMERAS} = true ]; then calibSupervisor --file calibrations_event-cameras.ini --eventCam true --stereo false --percentageThresh 86.0; else calibSupervisor --file calibrations.ini --stereo false; fi; fi;"
+
 
   yUpdateFile:
     <<: *yarp-base
@@ -45,7 +48,7 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "yarp wait /calibSupervisor/imageLeft:o ; if [ ! -z ${CUSTOM_FILE} ]; then modify-params.sh /usr/local/share/iCub/contexts/cameraCalibration/customEyes.ini outputCalib.ini cameraCalibration custom; else modify-params.sh icubEyes.ini outputCalib.ini cameraCalibration; fi"
+    command: sh -c "yarp wait /calibSupervisor/imageLeft:o ; if [ ! -z ${CUSTOM_FILE} ]; then run-all.sh /usr/local/share/iCub/contexts/cameraCalibration/customEyes.ini outputCalib.ini cameraCalibration $MONO_CALIB; else run-all.sh icubEyes.ini outputCalib.ini cameraCalibration $MONO_CALIB; fi"
 
   yStartCalib:
     <<: *yarp-base
