@@ -70,7 +70,7 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "yarp wait /icub/cam/left; yarp wait /viewer/left ; yarp wait /camCalib/left/out;  yarp connect /icub/cam/left /viewer/left fast_tcp;"
+    command: sh -c "if [ ${EVENT_CAMERAS} = true ]; then yarp wait /vFramer/left/image:o; else yarp wait /icub/cam/left; fi; yarp wait /viewer/left ; yarp wait /camCalib/left/out; if [ ${EVENT_CAMERAS} = true ]; then yarp connect /vFramer/left/image:o /viewer/left fast_tcp; else yarp connect /icub/cam/left /viewer/left fast_tcp; fi;"
 
   yConnectToRightRaw:
     <<: *yarp-base
@@ -79,7 +79,7 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "yarp wait /icub/cam/right; yarp wait /viewer/right ; yarp wait /camCalib/right/out; yarp connect /icub/cam/right /viewer/right fast_tcp;"
+    command: sh -c "if [ ${EVENT_CAMERAS} = true ]; then yarp wait /vFramer/right/image:o; else yarp wait /icub/cam/right; fi; yarp wait /viewer/right ; yarp wait /camCalib/right/out; if [ ${EVENT_CAMERAS} = true ]; then yarp connect /vFramer/right/image:o /viewer/right fast_tcp; else yarp connect /icub/cam/right /viewer/right fast_tcp; fi;"
 
   yConnectToLeftInImage:
     <<: *yarp-base
@@ -88,7 +88,7 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "yarp wait /icub/cam/left; yarp wait /calibSupervisor/imageLeft:i ; yarp connect /icub/cam/left /calibSupervisor/imageLeft:i fast_tcp;"
+    command: sh -c "if [ ${EVENT_CAMERAS} = true ]; then yarp wait /vFramer/left/image:o; else yarp wait /icub/cam/left; fi; yarp wait /calibSupervisor/imageLeft:i ; if [ ${EVENT_CAMERAS} = true ]; then yarp connect /vFramer/left/image:o /calibSupervisor/imageLeft:i fast_tcp; else yarp connect /icub/cam/left /calibSupervisor/imageLeft:i fast_tcp; fi;"
 
 
   yConnectToRightInImage:
@@ -98,7 +98,7 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "yarp wait /icub/cam/right; yarp wait /calibSupervisor/imageRight:i ; yarp connect /icub/cam/right /calibSupervisor/imageRight:i fast_tcp;"
+    command: sh -c "if [ ${EVENT_CAMERAS} = true ]; then yarp wait /vFramer/right/image:o; else yarp wait /icub/cam/right; fi; yarp wait /calibSupervisor/imageRight:i ; if [ ${EVENT_CAMERAS} = true ]; then yarp connect /vFramer/right/image:o; /calibSupervisor/imageRight:i fast_tcp; else yarp connect /icub/cam/right /calibSupervisor/imageRight:i fast_tcp; fi;"
 
   yConnectToLeftStereoCalib:
     <<: *yarp-base
@@ -143,7 +143,7 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "yarp wait /icub/cam/left ; yarp wait /camCalib/left/in; yarp connect /icub/cam/left /camCalib/left/in fast_tcp ;"
+    command: sh -c "if [ ${EVENT_CAMERAS} = true ]; then yarp wait /vFramer/left/image:o; else yarp wait /icub/cam/left ; fi; yarp wait /camCalib/left/in; if [ ${EVENT_CAMERAS} = true ]; then yarp connect /vFramer/left/image:o /camCalib/left/in fast_tcp ; else yarp connect /icub/cam/left /camCalib/left/in fast_tcp ; fi;"
   
   yConnectToRightInCamCalib:
     <<: *yarp-base
@@ -152,7 +152,7 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "yarp wait /icub/cam/right ; yarp wait /camCalib/right/in; yarp connect /icub/cam/right /camCalib/right/in fast_tcp ;"
+    command: sh -c "if [ ${EVENT_CAMERAS} = true ]; then yarp wait /vFramer/right/image:o; else yarp wait /icub/cam/right ; fi; yarp wait /camCalib/right/in; if [ ${EVENT_CAMERAS} = true ]; then yarp connect /vFramer/right/image:o /camCalib/right/in fast_tcp ; else yarp connect /icub/cam/right /camCalib/right/in fast_tcp ; fi;"
 
   yConnectToLeftOutCamCalib:
     <<: *yarp-base
