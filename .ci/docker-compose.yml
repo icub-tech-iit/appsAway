@@ -28,4 +28,4 @@ services:
       deploy:
         restart_policy:
           condition: on-failure
-      command: sh -c "yarp detect --write && echo \"Hello world\" | yarp write ... /test_read" && pkill yarp
+      command: sh -c "yarp detect --write && echo \"Hello world\" | yarp write ... /test_read" && ps aux | grep yarp && pkill yarp
