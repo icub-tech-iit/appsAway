@@ -3,7 +3,7 @@ name: Testing docker compose
 on: workflow_dispatch
 
 jobs:
-  test:
+  docker_compose_test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
