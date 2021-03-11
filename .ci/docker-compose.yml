@@ -10,7 +10,7 @@ services:
       deploy:
         restart_policy:
           condition: on-failure
-      command: sh -c "yarp where | grep 'is available at ip' > /dev/null ; if [ ! $$? -eq 0 ]; then yarpserver --write; fi"
+      command: sh -c "yarp where | grep 'is available at ip' > /dev/null ; if [ ! $$? -eq 0 ]; then yarpserver --write &; fi"
 
     listener:
       <<: *yarp-base
@@ -19,7 +19,7 @@ services:
       deploy:
         restart_policy:
           condition: on-failure
-      command: sh -c "yarp detect --write && yarp read /test_read"
+      command: sh -c "yarp detect --write && yarp read /test_read &"
 
     talker:
       <<: *yarp-base

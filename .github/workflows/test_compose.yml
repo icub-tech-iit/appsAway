@@ -8,4 +8,4 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Build the stack
-        run: cd .ci && docker-compose up -d
+        run: cd .ci && docker-compose up
