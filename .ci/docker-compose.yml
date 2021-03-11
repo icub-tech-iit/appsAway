@@ -30,11 +30,8 @@ services:
           condition: on-failure
       command: sh -c "yarp detect --write && echo \"Hello world\" | yarp write ... /test_read"
 
-    teardown:
-      <<: *yarp-base
-      depends_on:
-        - talker
-      deploy:
-        restart_policy:
-          condition: on-failure
-      command: pkill yarp
+    #teardown:
+    #  <<: *yarp-base
+    #  depends_on:
+    #    - talker
+    #  command: pkill yarp
