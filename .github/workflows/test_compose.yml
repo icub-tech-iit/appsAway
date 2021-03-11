@@ -1,0 +1,12 @@
+name: Testing docker compose
+
+on:
+    workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build the stack
+        run: cd .ci && docker-compose up
