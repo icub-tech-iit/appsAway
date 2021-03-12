@@ -50,6 +50,7 @@ services:
         condition: on-failure
     command: sh -c "yarp wait /calibSupervisor/imageLeft:o ; if [ ! -z ${CUSTOM_FILE} ]; then run-all.sh /usr/local/share/iCub/contexts/cameraCalibration/customEyes.ini outputCalib.ini cameraCalibration $MONO_CALIB; else run-all.sh icubEyes.ini outputCalib.ini cameraCalibration $MONO_CALIB; fi"
 
+
   yStartCalib:
     <<: *yarp-base
     deploy:
@@ -58,7 +59,6 @@ services:
       restart_policy:
         condition: on-failure
     command: sh -c "yarp wait /stereoCalib/cmd; echo "start" | yarp rpc /stereoCalib/cmd"
-
 
 #------------------------------------------------------------------------------------------------
   #Connections to the ports of the modules 
@@ -70,7 +70,7 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "if [ ${EVENT_CAMERAS} = true ]; then yarp wait /vFramer/left/image:o; else yarp wait /icub/cam/left; fi; yarp wait /viewer/left ; yarp wait /camCalib/left/out; if [ ${EVENT_CAMERAS} = true ]; then yarp connect /vFramer/left/image:o /viewer/left fast_tcp; else yarp connect /icub/cam/left /viewer/left fast_tcp; fi;"
+    command: sh -c "if [ ${EVENT_CAMERAS} = true ]; then yarp wait /vFramer/left/image:o; else yarp wait /icub/cam/left; fi; yarp wait /viewer/left ; if [ ${EVENT_CAMERAS} = true ]; then yarp connect /vFramer/left/image:o /viewer/left fast_tcp; else yarp connect /icub/cam/left /viewer/left fast_tcp; fi;"
 
   yConnectToRightRaw:
     <<: *yarp-base
@@ -79,7 +79,7 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "if [ ${EVENT_CAMERAS} = true ]; then yarp wait /vFramer/right/image:o; else yarp wait /icub/cam/right; fi; yarp wait /viewer/right ; yarp wait /camCalib/right/out; if [ ${EVENT_CAMERAS} = true ]; then yarp connect /vFramer/right/image:o /viewer/right fast_tcp; else yarp connect /icub/cam/right /viewer/right fast_tcp; fi;"
+    command: sh -c "if [ ${EVENT_CAMERAS} = true ]; then yarp wait /vFramer/right/image:o; else yarp wait /icub/cam/right; fi; yarp wait /viewer/right ; if [ ${EVENT_CAMERAS} = true ]; then yarp connect /vFramer/right/image:o /viewer/right fast_tcp; else yarp connect /icub/cam/right /viewer/right fast_tcp; fi;"
 
   yConnectToLeftInImage:
     <<: *yarp-base
