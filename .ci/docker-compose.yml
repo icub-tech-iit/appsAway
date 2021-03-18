@@ -4,7 +4,7 @@ x-yarp-base: &yarp-base
   image: robotology/yarp
   network_mode: bridge
   volumes: 
-    - "/Users/vtikha/Dev/tmp:/outcome"
+    - "${GITHUB_WORKSPACE}/.ci/:/outcome"
 
 services:
     yarp-server:
