@@ -8,7 +8,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Run the stack
-        run: cd  .ci && docker-compose up -d && sleep 30
+        run: cd .ci && docker-compose up -d && sleep 30
 
       - name: Sanity check service yarp-server
         run: docker exec -it $(docker ps -qf "name=ci_yarp-server_1") sh -c "if pgrep yarpserver >/dev/null 2>&1; then pkill yarpserver; else touch /outcome/ci_yarp-server_1.fail; fi"
