@@ -3,29 +3,22 @@ version: "3.7"
 x-yarp-base: &yarp-base
   image: robotology/yarp
   network_mode: bridge
+  volumes: 
+    - "/Users/vtikha/Dev/tmp:/outcome"
 
 services:
     yarp-server:
       <<: *yarp-base
-      deploy:
-        restart_policy:
-          condition: on-failure
       command: sh -c "yarp where | grep 'is available at ip' > /dev/null ; if [ ! $$? -eq 0 ]; then yarpserver --write; fi"
 
     listener:
       <<: *yarp-base
       depends_on:
-        - yarp-server
-      deploy:
-        restart_policy:
-          condition: on-failure
+        - yarp-server      
       command: sh -c "yarp detect --write && yarp read /test_read"
 
     talker:
       <<: *yarp-base
       depends_on:
         - listener
-      deploy:
-        restart_policy:
-          condition: on-failure
-      command: sh -c "yarp detect --write && echo \"Hello world\" | yarp write ... /test_read" && ps aux | grep yarp && pkill yarp
+      command: sh -c "yarp detect --write && echo \"Hello world\" | yarp write ... /test_read"
