@@ -1,9 +1,9 @@
 # this workflow will generate the containers on push. 
 name: SUPERVISE_CALIB_onCodeChanges
 
-on: 
-    repository_dispatch:
-        types: [SUPERVISE_CALIB_onCodeChanges,SUPERVISE_CALIB_onSBRelease]
+on: workflow_dispatch
+    #repository_dispatch:
+    #    types: [SUPERVISE_CALIB_onCodeChanges,SUPERVISE_CALIB_onSBRelease]
 
 
 jobs:
