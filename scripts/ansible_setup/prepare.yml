@@ -18,7 +18,7 @@
           - software-properties-common
         state: latest
         autoclean: yes
-        update_cache: true
+        update_cache: false
       when: ansible_distribution != 'MacOSX'
 
     - name: Add Docker’s official GPG key
