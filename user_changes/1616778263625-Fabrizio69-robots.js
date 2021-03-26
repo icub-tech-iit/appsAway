@@ -1,0 +1,3 @@
+//Fabrizio69
+//&<h3>Field changed in robot manager</h3><br><ul><li>ID: <ins>45</ins><ul><li>current_version: <b>v2.7</b></li><li>current_version_array: <b>v2.7</b></li><li>head_cpu_type: <b>COMe-cKL6i7-7600 8GB32S</b></li><li>head_cpu_type_array: <b>COMe-cKL6i7-7600 8GB32S</b></li><li>logic_harness_version: <b>iCub 2.7 E3.6</b></li><li>logic_harness_version_array: <b>iCub 2.7 E3.6</b></li></ul></li></ul>
+db.robots.update ({id: 45},{$set: { current_version: "v2.7", current_version_array: "v2.7", head_cpu_type: "COMe-cKL6i7-7600 8GB32S", head_cpu_type_array: "COMe-cKL6i7-7600 8GB32S", logic_harness_version: "iCub 2.7 E3.6", logic_harness_version_array: "iCub 2.7 E3.6"}});
