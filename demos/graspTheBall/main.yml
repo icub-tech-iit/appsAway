@@ -1,12 +1,15 @@
 version: "3.7"
 
 x-yarp-base: &yarp-base
-  image: icubteamcode/grasptheball:devel_prod
+  image: icubteamcode/grasptheball:master_master-unstable_sources
   environment:
     - DISPLAY=${DISPLAY}
     - QT_X11_NO_MITSHM=1
     - XAUTHORITY=/root/.Xauthority
     - YARP_FORWARD_LOG_ENABLE=1
+    - CALIB_COLOR
+    - CALIB_OFFSETS
+    - HAND_VERSION
   volumes:
     - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
     - "${XAUTHORITY}:/root/.Xauthority:rw"
@@ -170,7 +173,7 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "yarp wait /icub/camcalib/left/out; yarp wait /iKinGazeCtrl/rpc; yarp wait /icub/cartesianController/right_arm/state:o; yarp wait /icub/cartesianController/left_arm/state:o; yarp wait /wholeBodyDynamics/right_arm/FT:i; yarp wait /wholeBodyDynamics/left_arm/FT:i; demoRedBall"
+    command: sh -c "if [ ${CALIB_OFFSETS} = false ]; then yarp wait /icub/camcalib/left/out; yarp wait /iKinGazeCtrl/rpc; yarp wait /icub/cartesianController/right_arm/state:o; yarp wait /icub/cartesianController/left_arm/state:o; yarp wait /wholeBodyDynamics/right_arm/FT:i; yarp wait /wholeBodyDynamics/left_arm/FT:i; demoRedBall; fi;"
 
   yConnectCam2Traker:
     <<: *yarp-base
@@ -201,6 +204,123 @@ services:
         condition: on-failure
     command: sh -c "yarp wait /demoRedBall/cmdFace:rpc; yarp wait /icub/face/emotions/in; yarp connect /demoRedBall/cmdFace:rpc /icub/face/emotions/in tcp"
 
+  yCalibOffsets:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "if [ ${CALIB_OFFSETS} = true ]; then yarp wait /skinManager/skin_events:o; yarp wait /pf3dTracker/data:o; calibOffsets; fi;"
+
+  yCalibColor:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "if [ ${CALIB_COLOR} = true ]; then yarp wait /icub/cam/left; yarp wait /pf3dTracker/video:i; calibColor; fi;"
+ 
+  ySkinManager:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "if [ ${CALIB_OFFSETS} = true ]; then checkRobotInterface; skinManager --from skinManAll.ini --context skinGui; fi;"
+
+  yiCubSkinGuiLeft:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "if [ ${CALIB_OFFSETS} = true ]; then iCubSkinGui --from left_hand_${HAND_VERSION}.ini --useCalibration --xpos 320 --ypos 0 --width 300 --height 300; fi;"
+
+  yiCubSkinGuiRight:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "if [ ${CALIB_OFFSETS} = true ]; then iCubSkinGui --from right_hand_${HAND_VERSION}.ini --useCalibration --xpos 320 --ypos 0 --width 300 --height 300; fi;"
+
+  yConnectLeftSkin:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "if [ ${CALIB_OFFSETS} = true ]; then yarp wait /icub/skin/left_hand_comp; yarp wait /skinGui/left_hand:i; yarp connect /icub/skin/left_hand_comp /skinGui/left_hand:i fast_tcp; fi;"
+
+  yConnectRightSkin:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "if [ ${CALIB_OFFSETS} = true ]; then yarp wait /icub/skin/right_hand_comp; yarp wait /skinGui/right_hand:i; yarp connect /icub/skin/right_hand_comp /skinGui/right_hand:i fast_tcp; fi;"
+
+  yConnectLeftCam2Color:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "if [ ${CALIB_COLOR} = true ]; then yarp wait /icub/cam/left; yarp wait /calibColor/image:i; yarp connect /icub/cam/left /calibColor/image:i fast_tcp; fi;"
+    #connect right image to calibColor
+
+  yConnectLeftColor2Tracker:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "if [ ${CALIB_COLOR} = true ]; then yarp wait /calibColor/image:o; yarp wait /pf3dTracker/video:i; yarp connect /calibColor/image:o /pf3dTracker/video:i fast_tcp; fi;"
+
+  yConnectSkin2Calib:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "if [ ${CALIB_OFFSETS} = true ]; then yarp wait /skinManager/skin_events:o; yarp wait /calibOffsets/handSkin:i; yarp connect /skinManager/skin_events:o /calibOffsets/handSkin:i fast_tcp; fi;"
+
+  yConnectTracker2Calib:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "if [ ${CALIB_OFFSETS} = true ]; then yarp wait /pf3dTracker/data:o; yarp wait /calibOffsets/tracker:i; yarp connect /pf3dTracker/data:o /calibOffsets/tracker:i fast_tcp; fi;"
+
+  yWriteOffsets:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "if [ ${CALIB_OFFSETS} = true ]; then status=$(echo writeToFile | yarp rpc /calibOffsets/rpc | cut -d$' ' -f2); if [ $status = "[fail]" ]; then exit 1; fi;"
+
+  yCalibrateAndRun:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "if [ ${CALIB_OFFSETS} = true ]; then yarp wait /icub/camcalib/left/out; yarp wait /iKinGazeCtrl/rpc; yarp wait /icub/cartesianController/right_arm/state:o; yarp wait /icub/cartesianController/left_arm/state:o; yarp wait /wholeBodyDynamics/right_arm/FT:i; yarp wait /wholeBodyDynamics/left_arm/FT:i; calibrateAndRun.sh calibOffsetsResults.txt; fi;"
 
 #------------------------------------------------------------------------------------------------
 
