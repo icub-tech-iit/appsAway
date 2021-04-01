@@ -1,7 +1,7 @@
 version: "3.7"
 
 x-yarp-base: &yarp-base
-  image: icubteamcode/grasptheball:master_master-unstable_sources
+  image: icubteamcode/grasptheball:v2021.02.feat-01_master-stable_sources
   environment:
     - DISPLAY=${DISPLAY}
     - QT_X11_NO_MITSHM=1
@@ -10,21 +10,23 @@ x-yarp-base: &yarp-base
     - CALIB_COLOR
     - CALIB_OFFSETS
     - HAND_VERSION
+    - YARP_ROBOT_NAME
   volumes:
     - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
     - "${XAUTHORITY}:/root/.Xauthority:rw"
     - "${YARP_CONF_PATH}:/root/.config/yarp"
+    - "${APPSAWAY_DEMOREDBALL_CONTEXT}:/usr/local/share/ICUBcontrib/contexts/demoRedBall/"
   networks:
     - hostnet
 
-x-yarp-head: &yarp-head
-  image: icubteamcode/superbuild-icubhead:master-unstable_binaries
-  environment:
-    - YARP_FORWARD_LOG_ENABLE=1
-    - YARP_ROBOT_NAME
-  volumes:
-    - "${YARP_CONF_PATH}:/root/.config/yarp"
-  network_mode: "host"
+#x-yarp-head: &yarp-head
+#  image: icubteamcode/superbuild-icubhead:master-unstable_binaries
+#  environment:
+#    - YARP_FORWARD_LOG_ENABLE=1
+#    - YARP_ROBOT_NAME
+#  volumes:
+#    - "${YARP_CONF_PATH}:/root/.config/yarp"
+#  network_mode: "host"
 
 #note: following services that need yarpRobotinterface is running, I write yarp wait /yarpRobotInterface;
 #just to remember us to solve thi issue. Such yarp port doesn't exist.
@@ -40,7 +42,7 @@ services:
         condition: on-failure
     command: sh -c "yarp where | grep 'is available at ip' > /dev/null ; if [ ! $$? -eq 0 ]; then yarpserver --write; fi"
 
-  yCartisianSolver_r:
+  yCartesianSolver_r:
     <<: *yarp-base
     deploy:
       placement:
@@ -48,7 +50,7 @@ services:
     command: sh -c "checkRobotInterface; iKinCartesianSolver --part right_arm"
     #<port timeout="60.0" request="is_ready" reply="[ok]">/icub/yarprobotinterface</port>
 
-  yCartisianSolver_l:
+  yCartesianSolver_l:
     <<: *yarp-base
     deploy:
       placement:
@@ -61,7 +63,7 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "checkRobotInterface; yarp wait /imuFilter/measures:o; iKinGazeCtrl --from config_imu_filter.ini"
+    command: sh -c "checkRobotInterface; yarp wait /imuFilter/measures:o; iKinGazeCtrl --from iKinGazeCrl.ini"
     #note: in our issue we used this configuration file config_no_imu_filter.ini,, but I could not find it.
     #<port timeout="60.0" request="is_ready" reply="[ok]">/icub/yarprobotinterface</port>
 
@@ -85,13 +87,13 @@ services:
 
 #------------------------------------------------------------------------------------------------
 #Following services are configured in ./icub-main/app/default/scripts/cameras_calib.xml.template
-  yGrabberCameras:
-    <<: *yarp-base
-    deploy:
-      placement:
-        constraints: [node.labels.type == head]
+  #yGrabberCameras:
+  #  <<: *yarp-base
+   # deploy:
+   #   placement:
+   #     constraints: [node.labels.type == head]
         #command: sh -c "yarpdev --from camera/ServerGrabberDualDragon.ini --split true"
-    command: sh -c "yarpdev --device usbCamera --d /dev/video0 --camModel leopard_python --name /icub/cam/left"
+   # command: sh -c "yarpdev --device usbCamera --d /dev/video0 --camModel leopard_python --name /icub/cam/left"
 
   yCamCalib_l:
     <<: *yarp-base
@@ -114,7 +116,7 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "yarp wait /icub/cam/left; yarp wait /icub/camcalib/left/in; yarp connect /icub/cam/left /icub/camcalib/left/in udp"
+    command: sh -c "yarp wait /icub/cam/left; yarp wait /icub/camcalib/left/in; yarp connect /icub/cam/left /icub/camcalib/left/in tcp"
 
   yConnectCam_r:
     <<: *yarp-base
@@ -123,8 +125,7 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "yarp wait /icub/cam/right; yarp wait /icub/camcalib/right/in; yarp connect /icub/cam/right /icub/camcalib/right/in udp"
-
+    command: sh -c "yarp wait /icub/cam/right; yarp wait /icub/camcalib/right/in; yarp connect /icub/cam/right /icub/camcalib/right/in tcp"
 #------------------------------------------------------------------------------------------------
 #Following services are configured in icub-main/app/faceExpressions/scripts/faceExpressions.xml.template
   yserialDevice4Emotions:
@@ -182,7 +183,7 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "yarp wait /icub/camcalib/left/out; yarp wait /pf3dTracker/video:i; yarp connect /icub/camcalib/left/out /pf3dTracker/video:i udp"
+    command: sh -c "yarp wait /icub/camcalib/left/out; yarp wait /pf3dTracker/video:i; yarp connect /icub/camcalib/left/out /pf3dTracker/video:i fast_tcp"
 
 
   yConnectTraker2Demo:
@@ -192,7 +193,7 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "yarp wait /pf3dTracker/data:o; yarp wait /demoRedBall/trackTarget:i; yarp connect /pf3dTracker/data:o /demoRedBall/trackTarget:i udp"
+    command: sh -c "yarp wait /pf3dTracker/data:o; yarp wait /demoRedBall/trackTarget:i; yarp connect /pf3dTracker/data:o /demoRedBall/trackTarget:i fast_tcp"
 
 
   yConnectDemo2Emotions:
@@ -202,7 +203,7 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "yarp wait /demoRedBall/cmdFace:rpc; yarp wait /icub/face/emotions/in; yarp connect /demoRedBall/cmdFace:rpc /icub/face/emotions/in tcp"
+    command: sh -c "yarp wait /demoRedBall/cmdFace:rpc; yarp wait /icub/face/emotions/in; yarp connect /demoRedBall/cmdFace:rpc /icub/face/emotions/in fast_tcp"
 
   yCalibOffsets:
     <<: *yarp-base
@@ -311,7 +312,7 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "if [ ${CALIB_OFFSETS} = true ]; then status=$(echo writeToFile | yarp rpc /calibOffsets/rpc | cut -d$' ' -f2); if [ $status = "[fail]" ]; then exit 1; fi;"
+    command: sh -c "if [ ${CALIB_OFFSETS} = true ]; then status=$$(echo "writeToFile" | yarp rpc /calibOffsets/rpc | cut -d$$' ' -f2); if [ $${status} = "[fail]" ]; then exit 1; fi; fi;"
 
   yCalibrateAndRun:
     <<: *yarp-base

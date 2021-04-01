@@ -1,7 +1,7 @@
 version: "3.7"
 
 x-yarp-base: &yarp-base
-  image: icubteamcode/superbuild:master-unstable_binaries
+  image: icubteamcode/superbuild:v2021.02.feat-01_master-stable_binaries
   environment:
     - DISPLAY=${DISPLAY}
     - QT_X11_NO_MITSHM=1
@@ -41,7 +41,7 @@ services:
     container_name: yconnect_l
     depends_on:
       - yview
-    command: sh -c "yarp wait /icub/camcalib/left/out; yarp wait /icub/view/left; yarp connect /icub/camcalib/left/out /icub/view/left udp"
+    command: sh -c "yarp wait /icub/camcalib/left/out; yarp wait /icub/view/left; yarp connect /icub/camcalib/left/out /icub/view/left fast_tcp"
     restart: on-failure
 
   yconnect_r:
@@ -49,7 +49,7 @@ services:
     container_name: yconnect_r
     depends_on:
       - yview
-    command: sh -c "yarp wait /icub/camcalib/right/out; yarp wait /icub/view/right; yarp connect /icub/camcalib/right/out /icub/view/right udp"
+    command: sh -c "yarp wait /icub/camcalib/right/out; yarp wait /icub/view/right; yarp connect /icub/camcalib/right/out /icub/view/right fast_tcp"
     restart: on-failure
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -64,7 +64,7 @@ services:
     container_name: yconnect_demo
     depends_on:
       - yview
-    command: sh -c "yarp wait /pf3dTracker/video:o; yarp wait /PF3DTracker_viewer; yarp connect /pf3dTracker/video:o /PF3DTracker_viewer udp"
+    command: sh -c "yarp wait /pf3dTracker/video:o; yarp wait /PF3DTracker_viewer; yarp connect /pf3dTracker/video:o /PF3DTracker_viewer fast_tcp"
     restart: on-failure
 
 
