@@ -219,6 +219,10 @@ merge_environment()
   yarpResource=$(yarp resource --context cameraCalibration --from icubEyes.ini)
   resourcePath=$(echo "$yarpResource" | awk -F'"' '{print $2}' | awk -F'icubEyes.ini' '{print $1}')
   echo "export APPSAWAY_CALIB_CONTEXT=$resourcePath" >>appsAway_setEnvironment.local.sh
+  
+  yarpResource=$(yarp resource --context demoRedBall --from config.ini)
+  resourcePath=$(echo "$yarpResource" | awk -F'"' '{print $2}' | awk -F'config.ini' '{print $1}')
+  echo "export APPSAWAY_DEMOREDBALL_CONTEXT=$resourcePath" >>appsAway_setEnvironment.local.sh
 }
 
 
