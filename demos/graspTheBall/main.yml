@@ -183,7 +183,7 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "yarp wait /icub/camcalib/left/out; yarp wait /pf3dTracker/video:i; yarp connect /icub/camcalib/left/out /pf3dTracker/video:i fast_tcp"
+    command: sh -c "if [ ${CALIB_COLOR} = false ]; then yarp wait /icub/camcalib/left/out; yarp wait /pf3dTracker/video:i; yarp connect /icub/camcalib/left/out /pf3dTracker/video:i fast_tcp; fi;"
 
 
   yConnectTraker2Demo:
@@ -221,7 +221,7 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "if [ ${CALIB_COLOR} = true ]; then yarp wait /icub/cam/left; yarp wait /pf3dTracker/video:i; calibColor; fi;"
+    command: sh -c "if [ ${CALIB_COLOR} = true ]; then yarp wait /icub/camcalib/left/out; yarp wait /pf3dTracker/video:i; calibColor; fi;"
  
   ySkinManager:
     <<: *yarp-base
@@ -275,7 +275,7 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "if [ ${CALIB_COLOR} = true ]; then yarp wait /icub/cam/left; yarp wait /calibColor/image:i; yarp connect /icub/cam/left /calibColor/image:i fast_tcp; fi;"
+    command: sh -c "if [ ${CALIB_COLOR} = true ]; then yarp wait /icub/camcalib/left/out; yarp wait /calibColor/image:i; yarp connect /icub/camcalib/left/out /calibColor/image:i fast_tcp; fi;"
     #connect right image to calibColor
 
   yConnectLeftColor2Tracker:
