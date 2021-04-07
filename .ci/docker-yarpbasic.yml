@@ -4,7 +4,7 @@ x-yarp-base: &yarp-base
   image: icubteamcode/superbuild:v2020.05_binaries
   network_mode: bridge
   volumes: 
-    - "${GITHUB_WORKSPACE}/.ci/:/outcome"
+    - "/Users/vtikha/Dev/robot-site/appsAway/.ci/:/outcome"
   environment:
     - DISPLAY=${DISPLAY}
     - QT_X11_NO_MITSHM=1
@@ -30,5 +30,5 @@ services:
     yarp-connect:
       <<: *yarp-base
       depends_on:
-        - yarp-dev
+        - yarp-view
       command: sh -c "yarp detect --write && yarp wait /grabber && yarp wait /view && yarp connect /grabber /view tcp"
