@@ -312,7 +312,7 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "if [ ${CALIB_OFFSETS} = true ]; then status=$$(echo "writeToFile" | yarp rpc /calibOffsets/rpc | cut -d$$' ' -f2); if [ $${status} = "[fail]" ]; then exit 1; fi; fi;"
+    command: sh -c "if [ ${CALIB_OFFSETS} = true ]; then echo 'writeToFile' | yarp rpc /calibOffsets/rpc | cut -d ' ' -f2 | grep '[fail]' > /dev/null; if [ $$? -eq 0 ]; then echo 'File not written'; exit 1; fi; fi;"
 
   yCalibrateAndRun:
     <<: *yarp-base
