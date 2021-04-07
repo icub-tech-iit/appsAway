@@ -11,7 +11,7 @@ jobs:
         run: cd .ci && docker-compose up -d && sleep 30
 
       - name: Sanity check service yarp-server
-        run: docker exec $(docker ps -qf "name=ci_yarp-server_1") sh -c "if pgrep yarpserver >/dev/null 2>&1; then pkill yarpserver; else touch /outcome/ci_yarp-server_1.fail && docker logs -t $(docker ps -qf "name=ci_yarp-server_1") >> /outcome/ci_yarp-server_1.fail ; fi"
+        run: docker exec $(docker ps -qf "name=ci_yarp-server_1") sh -c "if pgrep yarpAserver >/dev/null 2>&1; then pkill yarpserver; else touch /outcome/ci_yarp-server_1.fail && docker logs -t $(docker ps -qf "name=ci_yarp-server_1") >> /outcome/ci_yarp-server_1.fail ; fi"
 
       - name: Sanity check service listener
         run: docker exec $(docker ps -qf "name=ci_listener_1") sh -c "if pgrep yarp >/dev/null 2>&1; then pkill yarp; else touch /outcome/ci_listener_1.fail && docker logs -t $(docker ps -qf "name=ci_listener_1") >> /outcome/ci_listener_1.fail; fi"
