@@ -1,0 +1,36 @@
+name: Testing yarp basic deployment
+
+on: workflow_dispatch
+
+jobs:
+  docker_compose_run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run the stack
+        run: cd .ci && docker-compose -f docker-yarpbasic.yml up -d && sleep 30
+
+      - name: Sanity check service yarp-server
+        run: docker exec $(docker ps -qf "name=ci_yarp-server_1") sh -c "if pgrep yarpserver >/dev/null 2>&1; then pkill yarpserver; else touch /outcome/ci_yarp-server_1.fail; fi"
+
+      - name: Sanity check service yarp-dev
+        run: docker exec $(docker ps -qf "name=ci_yarp-dev_1") sh -c "if pgrep yarpdev >/dev/null 2>&1; then pkill yarpdev; else touch /outcome/ci_yarp-dev_1.fail; fi"
+        
+      - name: Sanity check service yarp-view
+        run: docker exec $(docker ps -qf "name=ci_yarp-view_1") sh -c "if pgrep yarpview >/dev/null 2>&1; then pkill yarpview; else touch /outcome/ci_yarp-view_1.fail; fi"
+
+      - name: Check if something failed
+        run: |
+          cd .ci 
+          find . -name "*.fail" -print0 | while read -d $'\0' file 
+          do 
+            tmp=$(echo "$file" | cut -c 3-) 
+            containerName=$(echo "$tmp" | cut -f 1 -d '.') 
+            containerID=$(docker ps -aqf "name=$containerName") 
+            echo "Fetching logs from container name: $containerName with ID:$containerID" 
+            docker logs $containerID 
+          done
+          if [ -n "$(find . -name '*.fail')" ]; then exit 1; fi
+          
+      - name: Stop the stack
+        run: cd .ci && docker-compose down
