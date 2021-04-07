@@ -14,20 +14,10 @@ jobs:
         run: docker exec $(docker ps -qf "name=ci_yarp-server_1") sh -c "if pgrep yarpserver >/dev/null 2>&1; then pkill yarpserver; else touch /outcome/ci_yarp-server_1.fail; fi"
 
       - name: Sanity check service listener
-        run: docker exec $(docker ps -qf "name=ci_listener_1") sh -c "if pgrep yasssrp >/dev/null 2>&1; then pkill yarp; else touch /outcome/ci_listener_1.fail; fi"
+        run: docker exec $(docker ps -qf "name=ci_listener_1") sh -c "if pgrep yarp >/dev/null 2>&1; then pkill yarp; else touch /outcome/ci_listener_1.fail; fi"
 
       - name: Check if something failed
-        run: |
-          cd .ci 
-          find . -name "*.fail" -print0 | while read -d $'\0' file 
-          do 
-            tmp=$(echo "$file" | cut -c 3-) 
-            containerName=$(echo "$tmp" | cut -f 1 -d '.') 
-            containerID=$(docker ps -aqf "name=$containerName") 
-            echo "Fetching logs from container name: $containerName with ID:$containerID" 
-            echo $(docker logs $containerID) > $file 
-            docker logs $containerID 
-          done
+        run: cd .ci && if [ -n "$(find . -name '*.fail')" ]; then echo $(find . -name '*.fail'); exit 1; fi
 
       - name: Stop the stack
         run: cd .ci && docker-compose down
