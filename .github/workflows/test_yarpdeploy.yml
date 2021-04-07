@@ -17,7 +17,7 @@ jobs:
         run: docker exec $(docker ps -qf "name=ci_yarp-dev_1") sh -c "if pgrep yarpdev >/dev/null 2>&1; then pkill yarpdev; else touch /outcome/ci_yarp-dev_1.fail; fi"
         
       - name: Sanity check service yarp-view
-        run: docker logs $(docker ps -qf "name=ci_yarp-view_1")
+        run: docker ps -qf "name=ci_yarp-view_1"
 
       - name: Check if something failed
         run: |
