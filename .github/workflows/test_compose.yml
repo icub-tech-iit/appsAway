@@ -27,7 +27,7 @@ jobs:
             echo "Fetching logs from container name: $containerName with ID:$containerID" 
             docker logs $containerID 
           done
-          exit 1;
+          if [ -n "$(find . -name '*.fail')" ]; then exit 1; fi
           
       - name: Stop the stack
         run: cd .ci && docker-compose down
