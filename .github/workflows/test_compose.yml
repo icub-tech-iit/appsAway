@@ -4,7 +4,7 @@ on: workflow_dispatch
 
 jobs:
   docker_compose_run:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - name: Run the stack
