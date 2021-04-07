@@ -25,7 +25,6 @@ jobs:
             containerName=$(echo "$tmp" | cut -f 1 -d '.') 
             containerID=$(docker ps -aqf "name=$containerName") 
             echo "Fetching logs from container name: $containerName with ID:$containerID" 
-            echo $(docker logs $containerID) > $file 
             docker logs $containerID 
           done
           
