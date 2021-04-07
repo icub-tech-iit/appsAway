@@ -31,4 +31,4 @@ services:
       <<: *yarp-base
       depends_on:
         - yarp-dev
-      command: sh -c "yarp detect --write && sh -c "yarp wait /grabber; yarp wait /view; yarp connect /grabber /view tcp"
+      command: sh -c "yarp detect --write && yarp wait /grabber && yarp wait /view && yarp connect /grabber /view tcp"
