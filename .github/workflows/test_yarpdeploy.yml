@@ -7,6 +7,10 @@ jobs:
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@v2
+
+      - name: Cleanup the stack
+        run: cd .ci && docker-compose -f docker-yarpbasic.yml down
+
       - name: Run the stack
         run: cd .ci && docker-compose -f docker-yarpbasic.yml up -d && sleep 30
 
