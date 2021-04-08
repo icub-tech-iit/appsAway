@@ -1,4 +1,4 @@
-name: Testing yarp basic deployment
+name: Testing gazebo deployment
 
 on: workflow_dispatch
 
