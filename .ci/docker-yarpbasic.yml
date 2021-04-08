@@ -23,7 +23,7 @@ services:
       <<: *yarp-base
       depends_on:
         - yarp-server      
-      command: sh -c "yarp detect --write && yarpdev --device test_grabber --period 0.5 --width 640 --height 480"
+      command: sh -c "yarp detect --write && yarpdev --device fakeFrameGrabber --width 640 --height 480"
 
     yarp-view:
       <<: *yarp-base
