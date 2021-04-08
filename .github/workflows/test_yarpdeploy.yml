@@ -40,4 +40,4 @@ jobs:
           if [ -n "$(find . -name '*.fail')" ]; then exit 1; fi
           
       - name: Stop the stack
-        run: cd .ci && docker-compose down
+        run: cd .ci && docker-compose -f docker-yarpbasic.yml down
