@@ -1,3 +1,0 @@
-//violadelbono
-//&<h3>Field changed in robot: <ins>iCubWaterloo01</ins></h3><ul><li>report: [{filename:Configuration report of the SN044 iCubWaterloo01 - Release Version v1.17.1,url:https://github.com/robotology/robots-configuration/releases/download/v1.17.1/<del>SN044_</del>iCubWaterloo01_<b>044_live_</b>report<b>_MATLAB</b>.html}]</li></ul>
-db.robots.update ({_id: ObjectId("5fdbf1db9d8a3bc1ead6ee60")},{$set: { report: [{"filename":"Configuration report of the SN044 iCubWaterloo01 - Release Version v1.17.1","url":"https://github.com/robotology/robots-configuration/releases/download/v1.17.1/iCubWaterloo01_044_live_report_MATLAB.html"}]}});
