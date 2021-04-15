@@ -10,6 +10,7 @@ x-yarp-base: &yarp-base
     - CALIB_COLOR
     - CALIB_OFFSETS
     - HAND_VERSION
+    - ARM
     - YARP_ROBOT_NAME
   volumes:
     - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
@@ -310,7 +311,7 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "if [ ${CALIB_OFFSETS} = true ]; then echo 'writeToFile' | yarp rpc /calibOffsets/rpc | cut -d ' ' -f2 | grep '[fail]' > /dev/null; if [ $$? -eq 0 ]; then echo 'File not written'; exit 1; fi; fi;"
+    command: sh -c "if [ ${CALIB_OFFSETS} = true ]; then echo 'writeToFile ${ARM}' | yarp rpc /calibOffsets/rpc | cut -d ' ' -f2 | grep '[fail]' > /dev/null; if [ $$? -eq 0 ]; then echo 'File not written'; exit 1; fi; fi;"
 
   yCalibrateAndRun:
     <<: *yarp-base
