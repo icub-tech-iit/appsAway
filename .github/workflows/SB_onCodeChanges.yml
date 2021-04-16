@@ -53,6 +53,7 @@ jobs:
 
             - name: Test superbuild Docker unstable full image
               run: |
+                      ls -la
                       cd .ci && docker-compose -f docker-yarpbasic.yml down
                       docker-compose -f docker-yarpbasic.yml up -d && sleep 30
                       docker exec $(docker ps -qf "name=ci_yarp-server_1") sh -c "if pgrep yarpserver >/dev/null 2>&1; then pkill yarpserver; else touch /outcome/ci_yarp-server_1.fail; fi"
