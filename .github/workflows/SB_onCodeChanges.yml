@@ -55,9 +55,7 @@ jobs:
               run: |
                       # We need to clone it because at the beginning we use checkout to code 
                       git clone https://github.com/icub-tech-iit/appsAway --depth 1
-                      ls -la
                       cd appsAway
-                      ls -la
                       cd .ci && docker-compose -f docker-yarpbasic.yml down
                       docker-compose -f docker-yarpbasic.yml up -d && sleep 30
                       docker exec $(docker ps -qf "name=ci_yarp-server_1") sh -c "if pgrep yarpserver >/dev/null 2>&1; then pkill yarpserver; else touch /outcome/ci_yarp-server_1.fail; fi"
