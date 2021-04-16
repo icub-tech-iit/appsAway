@@ -9,7 +9,7 @@ on:
 
 jobs:
     job_1:
-        runs-on: ubuntu-latest
+        runs-on: self-hosted
         steps:
             - uses: actions/checkout@v2
               with:
@@ -50,6 +50,25 @@ jobs:
             - name: Build superbuild Docker unstable full image
               run: docker build --build-arg ${{ github.event.client_payload.base_image_for_SB_src }} --build-arg $(cat DATE_TAG) --build-arg $(cat SBTAG_ARG) --build-arg $(cat RELEASE_ARG) ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.superbuild_unst_src }}
 #########################################################################################
+
+            - name: Test superbuild Docker unstable full image
+              run: |
+                      cd .ci && docker-compose -f docker-yarpbasic.yml down
+                      docker-compose -f docker-yarpbasic.yml up -d && sleep 30
+                      docker exec $(docker ps -qf "name=ci_yarp-server_1") sh -c "if pgrep yarpserver >/dev/null 2>&1; then pkill yarpserver; else touch /outcome/ci_yarp-server_1.fail; fi"
+                      docker exec $(docker ps -qf "name=ci_yarp-dev_1") sh -c "if pgrep yarpdev >/dev/null 2>&1; then pkill yarpdev; else touch /outcome/ci_yarp-dev_1.fail; fi"
+                      docker exec $(docker ps -qf "name=ci_yarp-view_1") sh -c "if pgrep yarpview >/dev/null 2>&1; then pkill yarpview; else touch /outcome/ci_yarp-view_1.fail; fi"
+                      docker logs $(docker ps -aqf "name=ci_yarp-connect_1")
+                      find . -name "*.fail" -print0 | while read -d $'\0' file 
+                      do 
+                        tmp=$(echo "$file" | cut -c 3-) 
+                        containerName=$(echo "$tmp" | cut -f 1 -d '.') 
+                        containerID=$(docker ps -aqf "name=$containerName") 
+                        echo "Fetching logs from container name: $containerName with ID:$containerID" 
+                        docker logs $containerID 
+                      done
+                      if [ -n "$(find . -name '*.fail')" ]; then exit 1; fi
+                      docker-compose -f docker-yarpbasic.yml down
 
 ######### Command to push the full unstable Docker Image online ##################################
             - name: Push superbuild Docker unstable full image
