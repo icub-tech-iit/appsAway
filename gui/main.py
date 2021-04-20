@@ -760,10 +760,11 @@ class WidgetGallery(QDialog):
                   image_line = main_list[i+1]
                   image_line = image_line.split(':')
                   for f in range(len(list_images)):
-                    if image_line[1] == list_images[f]: # if the name is correct (the image name contains also the repository name - 'icubteamcode/superbuild')
+                    if image_line[1].strip() == list_images[f].strip(): # if the name is correct (the image name contains also the repository name - 'icubteamcode/superbuild')
                       image_line[2] = list_versions[f] + "_" + list_tags[f] # we update the version
                       break
                   main_list[i+1] = image_line[0] + ':' + image_line[1] + ':' + image_line[2]
+
           else:
             for i in range(len(main_list)):
               if main_list[i].find("x-yarp-base") != -1 or main_list[i].find("x-yarp-head") != -1 or main_list[i].find("x-yarp-gui") != -1:
