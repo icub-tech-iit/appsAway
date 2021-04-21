@@ -1,21 +1,48 @@
+#!/usr/bin/python3
+
 from xml.dom import minidom
 import ruamel.yaml
+import argparse
 
-xmldoc = minidom.parse('demo.xml')
+# Define list of supported gui
+
+gui_list = ["yarpview", "yarplogger", "yarpviz", "yarpmotorgui", "yarpdataplayer"
+            "yarpscope", "yarpmobilebasegui", "yarplaserscannergui", "yarpbatterygui",
+            "frameGrabberGui2", "iCubSkinGui", "iCubGui", "iCub_SIM", "skinManagerGui",
+            "gzclient", "gazebo"]
+
+# Parse arguments
+parser = argparse.ArgumentParser(description='Convert yarpmanager xml to RAPID yaml.')
+
+parser.add_argument('--file', dest='fileName',
+                    help='Path to the yarpamanger xml file to be converted')
+
+args = parser.parse_args()
+
+xmldoc = minidom.parse(args.fileName)
 dependencieslist = xmldoc.getElementsByTagName('dependencies')
 
 modulelist = xmldoc.getElementsByTagName('module')
 connectionslist = xmldoc.getElementsByTagName('connection')
 
 service_list = []
-print("\nModules\n")
 
-index = 0 
-service_str = """"""
+index = 0
+service_gui_str = """"""
+service_str = """
+        yserver:
+          <<: *yarp-base
+          deploy:
+            placement:
+              constraints: [node.role == manager]
+            restart_policy:
+              condition: on-failure
+          command: sh -c "yarp where | grep 'is available at ip' > /dev/null ; if [ ! $$? -eq 0 ]; then yarpserver --write; fi"
+"""
 
 for m in modulelist:
     name = m.getElementsByTagName('name')
-    
+
     service_list.append(name[0].firstChild.nodeValue)
     service_list[index] += "_"
     service_list[index] += str(index)
@@ -24,21 +51,21 @@ for m in modulelist:
     dependencies = m.getElementsByTagName('port')
 
     moduleCmd = "yarp detect --write; "
-    
+
     for d in dependencies:
         moduleCmd += "yarp wait "
         moduleCmd += d.firstChild.nodeValue
         moduleCmd += "; "
-        
+
     moduleCmd += name[0].firstChild.nodeValue
 
     if parameters:
-        moduleCmd += " " 
+        moduleCmd += " "
         moduleCmd += parameters[0].firstChild.nodeValue
-    
-    print(moduleCmd)
 
-    service_str += f"""
+
+    if name[0].firstChild.nodeValue in gui_list:
+      service_gui_str += f"""
         {service_list[index]}:
           <<: *yarp-base
           deploy:
@@ -47,16 +74,19 @@ for m in modulelist:
             restart_policy:
               condition: on-failure
           command: sh -c "{moduleCmd}"
-    """
+      """
+    else:
+      service_str += f"""
+        {service_list[index]}:
+          <<: *yarp-base
+          deploy:
+            placement:
+              constraints: [node.labels.type != head]
+            restart_policy:
+              condition: on-failure
+          command: sh -c "{moduleCmd}"
+      """
     index += 1
-
-print("\nConnections\n")
-
-print(service_list[0], service_list[1])
-print(f"this is super string {service_list[0]}")
-
-#print(f"this is a {service_list[0]}")
-#name[1].firstChild.nodeValue
 
 index = 0
 for c in connectionslist:
@@ -79,7 +109,7 @@ for c in connectionslist:
     connectionCmd += toName[0].firstChild.nodeValue
     connectionCmd += " "
     connectionCmd += protocol[0].firstChild.nodeValue
-    
+
     service_str += f"""
         yconnect_{index}:
           <<: *yarp-base
@@ -89,7 +119,6 @@ for c in connectionslist:
           command: sh -c "{connectionCmd}"
     """
     index += 1
-    print(connectionCmd)
 
 service_str += f"""
         visualizer:
@@ -103,13 +132,11 @@ service_str += f"""
               constraints: [node.role == manager]
 """
 
-#print (service_str)
-
 yaml_str = f"""
-version: "3.7" 
+version: "3.7"
 x-yarp-base: &yarp-base
 
-  image: icubteamcode/superbuild:v2020.05_binaries
+  image: icubteamcode/superbuild:v2021.02.feat-01_master-stable_binaries
   environment:
     - DISPLAY=${{DISPLAY}}
     - QT_X11_NO_MITSHM=1
@@ -122,15 +149,24 @@ x-yarp-base: &yarp-base
     - "${{YARP_CONF_PATH}}:/root/.config/yarp"
   network_mode: bridge
   privileged: true
+"""
 
+yaml_gui_str = yaml_str
+
+yaml_str += f"""
 services:
     {service_str}
 """
-#
-    #{service_list[0]}:
-    #<<: *yarp-base
-    #deploy:
-    #  P
-with open('data.yml', 'w') as outfile:
+if service_gui_str :
+  yaml_gui_str += f"""
+services:
+      {service_gui_str}
+  """
+
+with open('main.yml', 'w') as outfile:
     data = ruamel.yaml.round_trip_load(yaml_str, preserve_quotes=True)
     ruamel.yaml.round_trip_dump(data, outfile, explicit_start=False)
+if service_gui_str :
+  with open('composeGui.yml', 'w') as outfile:
+      data = ruamel.yaml.round_trip_load(yaml_gui_str, preserve_quotes=True)
+      ruamel.yaml.round_trip_dump(data, outfile, explicit_start=False)
