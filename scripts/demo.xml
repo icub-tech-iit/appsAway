@@ -1,0 +1,24 @@
+<application>
+<name>basic yarp deployment</name>
+        <dependencies>
+        </dependencies>
+
+        <module>
+                <name>yarpdev</name>
+                <node>icub-head</node>
+                <parameters>--device test_grabber --width 640 --height 480</parameters>
+        </module>
+        <module>
+                <name>yarpview</name>
+                <parameters>--name /view --x 320 --y 0 --p 50 --compact</parameters>
+                <dependencies>
+                    <port timeout="60.0">/grabber</port>
+                </dependencies>
+                <node>icub22</node>
+        </module>
+        <connection>
+                <from>/grabber</from>
+                <to>/view</to>
+                <protocol>fast_tcp</protocol>
+        </connection>
+</application>
