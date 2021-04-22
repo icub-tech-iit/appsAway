@@ -3,6 +3,8 @@
 from xml.dom import minidom
 import ruamel.yaml
 import argparse
+import os
+import errno
 
 # Define list of supported gui
 
@@ -26,6 +28,8 @@ modulelist = xmldoc.getElementsByTagName('module')
 connectionslist = xmldoc.getElementsByTagName('connection')
 
 service_list = []
+
+application_name = xmldoc.getElementsByTagName('name')[0].firstChild.nodeValue
 
 index = 0
 service_gui_str = """"""
@@ -130,6 +134,10 @@ service_str += f"""
           deploy:
             placement:
               constraints: [node.role == manager]
+networks:
+  hostnet:
+    external: true
+    name: host
 """
 
 yaml_str = f"""
@@ -147,18 +155,24 @@ x-yarp-base: &yarp-base
     - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
     - "${{XAUTHORITY}}:/root/.Xauthority:rw"
     - "${{YARP_CONF_PATH}}:/root/.config/yarp"
-  network_mode: bridge
-  privileged: true
 """
 
 yaml_gui_str = yaml_str
 
 yaml_str += f"""
+  networks:
+    - hostnet
+
 services:
     {service_str}
 """
 if service_gui_str :
   yaml_gui_str += f"""
+  ports:
+    - "10000:10000"
+  network_mode: "host"
+  privileged: true
+
 services:
       {service_gui_str}
   """
@@ -170,3 +184,24 @@ if service_gui_str :
   with open('composeGui.yml', 'w') as outfile:
       data = ruamel.yaml.round_trip_load(yaml_gui_str, preserve_quotes=True)
       ruamel.yaml.round_trip_dump(data, outfile, explicit_start=False)
+
+filename_ini = "./gui/gui_conf.ini"
+if not os.path.exists(os.path.dirname(filename_ini)):
+    try:
+        os.makedirs(os.path.dirname(filename_ini))
+    except OSError as exc: # Guard against race condition
+        if exc.errno != errno.EEXIST:
+            raise
+
+ini_str = f"""
+[setup]
+title "{application_name}"
+
+[top options]
+
+[right options]
+
+"""
+
+with open(filename_ini, "w") as f:
+    f.write(ini_str)
