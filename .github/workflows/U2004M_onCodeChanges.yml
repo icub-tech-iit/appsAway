@@ -1,0 +1,30 @@
+# this workflow will generate the containers on push. These containers are for test only, so ideally they should be uploaded to a private repo, not available to the public. tag=ubuntu2004mesa_devel (?)
+# for the stable versions, use ubuntu2004mesa_builder_stable.yml, triggered on release
+
+name: U2004M_onCodeChanges
+
+on: 
+    repository_dispatch:
+        types: [U2004M_onCodeChanges]
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+              with:
+                  repository: icub-tech-iit/code
+                  token: ${{ secrets.CODE_REPO_ACCSS_TOKEN }}
+
+            - name: Get the version
+              id: get_version
+              run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3)
+            - name: Login to DockerHub Registry
+              run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+
+            - name: Build ubuntu2004mesa Docker image
+              run: docker build ${{ github.event.client_payload.docker_path }} --file ${{ github.event.client_payload.docker_path }}/Dockerfile --tag ${{ github.event.client_payload.ubuntu_mesa_unst }}
+            - name: Push ubuntu2004mesa Docker image
+              run: docker push ${{ github.event.client_payload.ubuntu_mesa_unst }}
+
+
