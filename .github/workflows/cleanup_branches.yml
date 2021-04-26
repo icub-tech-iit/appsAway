@@ -11,7 +11,7 @@ jobs:
         uses: phpdocker-io/github-actions-delete-abandoned-branches@v1
         id: delete_stuff
         with:
-          github_token: ${{ secrets.TEST_APPSWAY_TOKEN }}
+          github_token: ${{ github.token }}
           last_commit_age_days: 15
           ignore_branches: GUI_terminal_sound,GUI_tests,GUI_working_sound,appRobotinterfaceOnly,fixUserDeployCleanup,importLocalfolder
 
