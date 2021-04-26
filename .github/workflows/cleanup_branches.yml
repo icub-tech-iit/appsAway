@@ -13,9 +13,10 @@ jobs:
         with:
           github_token: ${{ secrets.TEST_APPSWAY_TOKEN }}
           last_commit_age_days: 15
+          ignore_branches: GUI_terminal_sound,GUI_tests,GUI_working_sound,appRobotinterfaceOnly,fixUserDeployCleanup,importLocalfolder
 
           # Disable dry run and actually get stuff deleted
-          dry_run: yes
+          dry_run: no
 
       - name: Get output
         run: "echo 'Deleted branches: ${{ steps.delete_stuff.outputs.deleted_branches }}'"
