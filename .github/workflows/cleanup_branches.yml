@@ -1,0 +1,26 @@
+name: Cleanup dead branches
+
+on: 
+  workflow_dispatch
+  schedule:
+  # * is a special character in YAML so you have to quote this string
+  # Execute a "nightly" build at 2 AM UTC
+  - cron:  '0 2 * * *'
+
+jobs:
+  cleanup_old_branches:
+    runs-on: ubuntu-latest
+    name: Satisfy my repo CDO
+    steps:
+      - name: Delete those pesky dead branches
+        uses: phpdocker-io/github-actions-delete-abandoned-branches@v1
+        id: delete_stuff
+        with:
+          github_token: ${{ secrets.CODE_REPO_ACCSS_TOKEN }}
+          last_commit_age_days: 15
+
+          # Disable dry run and actually get stuff deleted
+          dry_run: yes
+
+      - name: Get output
+        run: "echo 'Deleted branches: ${{ steps.delete_stuff.outputs.deleted_branches }}'"
