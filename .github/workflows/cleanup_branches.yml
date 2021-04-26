@@ -11,7 +11,7 @@ jobs:
         uses: phpdocker-io/github-actions-delete-abandoned-branches@v1
         id: delete_stuff
         with:
-          github_token: ${{ secrets.CODE_REPO_ACCSS_TOKEN }}
+          github_token: ${{ secrets.TEST_APPSWAY_TOKEN }}
           last_commit_age_days: 15
 
           # Disable dry run and actually get stuff deleted
