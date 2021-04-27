@@ -1,0 +1,3 @@
+//ilaria-carlini
+//&<h3>Field changed in app: <ins>Basic Docker Deployment</ins></h3><ul><li>description: Deploy a pre configured Docker for your system<b>\n\nHere is how to install **Ansible** on the various platforms: `sudo apt-get update`, `sudo apt-get install openssh-server`, `sudo apt-get install net-tools`.</b></li></ul>
+db.apps.update ({_id: ObjectId("5f4375f118a3dc019958fedd")},{$set: { description: "Deploy a pre configured Docker for your system\n\nHere is how to install **Ansible** on the various platforms: `sudo apt-get update`, `sudo apt-get install openssh-server`, `sudo apt-get install net-tools`."}});
