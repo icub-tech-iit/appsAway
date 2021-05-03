@@ -1,5 +1,7 @@
 on:
   pull_request:
+    paths:
+      - 'user_changes/**'
     types: [closed]
 
 
