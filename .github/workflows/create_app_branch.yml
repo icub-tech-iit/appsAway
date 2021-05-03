@@ -1,0 +1,111 @@
+  
+name: Creating app branch
+
+on: 
+    repository_dispatch:
+        types: [app_add]
+
+
+#            mv -v ./appsAway/user_changes/* ./icub-tech-apps/dist/database/upgrade/
+#            mv -v ./appsAway/user_changes/images/* ./icub-tech-apps/dist/express/images/
+
+jobs:
+  update_code:
+    runs-on: ubuntu-latest
+    steps: 
+      # we checkout appsAway code
+      - uses: actions/checkout@v2
+        with:
+          repository: icub-tech-iit/code
+          token: ${{ secrets.CODE_REPO_ACCSS_TOKEN }}
+          path: code
+          ref: ${{ github.event.client_payload.branch_name }}
+            
+      - name: check working directory
+        run: |
+            ls
+            pwd
+      #      git checkout ${{ github.event.client-payload.branch_name }}
+      - name: copies app folder to temporary folder
+        run: |
+            cd code
+            mkdir -p ../test/
+            mv -v ./icub-tech-apps/dist/express/evaluate/* ../test/ 2>/dev/null || :
+      - uses: actions/checkout@v2
+        with:
+          path: appsAway
+      - name: Create branch
+        run: |
+            cd appsAway
+            git branch ${{ github.event.client_payload.branch_name }}
+          
+      - name: check working directory
+        run: |
+            ls
+            pwd
+      - name: checkout created branch
+        run: |
+            cd appsAway
+            git checkout ${{ github.event.client_payload.branch_name }}
+      - name: copies user_changes folder
+        run: |
+            mkdir -p ./appsAway/user_changes/
+            mv -v ./test/* ./appsAway/user_changes/
+      - name: Commit changes
+        run: |
+            cd appsAway
+            pwd
+            git status
+            git config --local user.email "actions@github.com"
+            git config --local user.name "GitHub Action"
+            git add -A
+            git commit -m "Merged user changes in appsAway" -a
+        
+      - name: push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.event.client_payload.branch_name }}
+          directory: "./appsAway/"
+      - name: clean working directory
+        run: |
+            rm -rf appsAway
+            rm -rf code
+      - uses: actions/checkout@v2
+        with:
+          repository: icub-tech-iit/appsAway
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.event.client_payload.branch_name }}
+
+      - name: get file data
+        id: get_filedata
+        run: |
+              cd user_changes
+              app_list=$(ls -p | grep / )
+              len_list=${#app_list[@]}
+              iter=0
+              for app in $app_list
+              do
+                if [ $iter != 0 ];
+                then
+                  user_list="$user_list,"
+                  appname_list="$appname_list<br/>"
+                fi
+                user_list="$user_list$(echo $app | awk -F'~' '{print $1}')"
+                appname_list="$appname_list$(echo $app | awk -F'~' '{print $2}')"
+                iter=$((iter+1))
+              done
+              echo $user_list
+              echo $appname_list
+              echo ::set-output name=user_list::$user_list
+              echo ::set-output name=appname_list::$appname_list
+              
+      - name: pull-request
+        uses: repo-sync/pull-request@v2
+        with:
+            pr_title: "Adding new applications to the website."
+            pr_body: ${{ steps.get_filedata.outputs.appname_list }}
+            pr_reviewer: "AlexAntn,vtikha,ilaria-carlini"
+            pr_assignee: ${{ steps.get_filedata.outputs.user_list }}
+            source_branch: ${{ github.event.client_payload.branch_name }}
+            github_token: ${{ secrets.GITHUB_TOKEN }}
