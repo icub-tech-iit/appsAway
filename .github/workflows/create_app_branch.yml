@@ -76,8 +76,9 @@ jobs:
               
       - name: copies user_changes folder
         run: |
-            mkdir -p ./appsAway/user_changes/
-            mv -v ./test/* ./appsAway/user_changes/
+            mv ./test/tmp.md ./
+            mv -v ./test/* ./appsAway/demos/
+            mv ./temp.md ./test/
       - name: Commit changes
         run: |
             cd appsAway
