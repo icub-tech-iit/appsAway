@@ -78,7 +78,7 @@ jobs:
         run: |
             mv ./test/tmp.md ./
             mv -v ./test/* ./appsAway/demos/
-            mv ./temp.md ./test/
+            mv ./tmp.md ./test/
       - name: Commit changes
         run: |
             cd appsAway
