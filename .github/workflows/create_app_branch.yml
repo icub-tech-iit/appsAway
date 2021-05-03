@@ -3,7 +3,7 @@ name: Creating app branch
 
 on: 
     repository_dispatch:
-        types: [app_add]
+        types: [add_app]
 
 
 #            mv -v ./appsAway/user_changes/* ./icub-tech-apps/dist/database/upgrade/
