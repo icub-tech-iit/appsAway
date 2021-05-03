@@ -1,6 +1,7 @@
 on:
   pull_request:
-    branches: 'user_changes*'
+    branches: 
+      - 'user_changes*'
     types: [closed]
 
 
