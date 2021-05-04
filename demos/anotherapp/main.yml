@@ -1,0 +1,35 @@
+version: "3.7"
+
+x-yarp-base: &yarp-gui
+  image: icubteamcode/superbuild:v2020.05_binaries
+  environment:
+    - DISPLAY=${DISPLAY}
+    - QT_X11_NO_MITSHM=1
+    - XAUTHORITY=/root/.Xauthority
+    - YARP_FORWARD_LOG_ENABLE=1
+    - YARP_ROBOT_NAME
+  volumes:
+    - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
+    - "${XAUTHORITY}:/root/.Xauthority:rw"  
+    - "${YARP_CONF_PATH}:/root/.config/yarp"
+  ports:
+    - "10000:10000"
+  network_mode: "host"
+  privileged: true
+
+services:
+
+  yview:
+    <<: *yarp-gui
+    container_name: yview
+    command: yarpview --name /view --x 0 --y 0 --p 50
+   
+  yconnect_demo:
+    <<: *yarp-gui
+    container_name: yconnect_demo
+    depends_on:
+      - yview
+    command: sh -c "yarp wait /grabber; yarp wait /view; yarp connect /grabber /view tcp"
+    restart: on-failure
+    
+
