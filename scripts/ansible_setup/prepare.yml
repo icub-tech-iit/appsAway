@@ -8,6 +8,12 @@
         state: absent
         update_cache: false
       when: ansible_distribution != 'MacOSX'
+      
+    - name: Uninstall user group docker
+      shell: groupdel docker
+      args:
+        warn: no
+      when: ansible_distribution != 'MacOSX'
 
     - name: Install packages to use a repository over HTTPS
       apt: 
@@ -48,20 +54,17 @@
       when: ansible_distribution != 'MacOSX'
 
     - name: Install docker-compose
-      shell: curl -L https://github.com/docker/compose/releases/download/1.25.0-rc2/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
-      args:
-        warn: no
-      when: ansible_distribution != 'MacOSX'
-    
-    - name: Install docker-compose
-      shell: chmod +x /usr/local/bin/docker-compose
-      args:
-        warn: no
+      apt: 
+        name:
+          - docker-compose
+        state: latest
+        autoclean: yes
+        update_cache: false
       when: ansible_distribution != 'MacOSX'
       
     - name: Make docker run without sudo
-      shell: groupadd docker && gpasswd -a $USER docker
-      ignore_errors: yes
+      shell: groupadd docker && usermod -aG docker $USER
+      ignore_errors: no
       when: ansible_distribution != 'MacOSX'
 
     - name: Start docker
