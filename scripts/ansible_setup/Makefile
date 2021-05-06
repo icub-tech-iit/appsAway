@@ -1,6 +1,6 @@
 .PHONY: prepare
 prepare:
-	ansible-playbook prepare.yml
+	ansible-playbook -i hosts.ini -e @passwords.enc --vault-password-file vault_password_file.txt prepare.yml 
 
 .PHONY: cluster
 cluster:
