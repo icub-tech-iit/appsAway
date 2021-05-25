@@ -1,0 +1,53 @@
+# this workflow will generate the containers on push. These containers are for test only, so ideally they should be uploaded to a private repo, not available to the public. tag=superbuild_devel (?)
+# for the stable versions, use superbuild_builder_stable.yml, triggered on release
+
+name: onAppsawayChanges
+
+on: 
+    push:
+        paths:
+            - 'demos/**'
+
+jobs:
+
+    check_files:
+      runs-on: ubuntu-latest
+      steps: 
+      - id: file_changes
+        uses: trilom/file-changes-action@v1.2.3
+      - name: files
+        run: |
+          cat $HOME/files.json
+          cat $HOME/files_modified.json
+          cat $HOME/files_added.json
+          echo '${{ steps.file_changes.outputs.files}}'
+          echo '${{ steps.file_changes.outputs.files_modified}}'
+          echo '${{ steps.file_changes.outputs.files_added}}'
+      - name: find demo name
+        id: set_app_list
+        run: |
+          parsed_list=($(echo '${{ steps.file_changes.outputs.files}}' | tr ',' '\n'))
+          app_name_list=""
+          iter_app_list=0
+          for i in "${parsed_list[@]}"
+          do 
+            if [ $(echo $i | awk '/demos/') ]
+            then
+              app_name=$(echo $i | awk -F'/' '{print $2}' | tr -d '"')
+              if [ $iter_app_list == 0 ]
+              then 
+                app_name_list="$app_name"
+                iter_app_list=$(($iter_app_list+1))
+              else
+                app_name_list="$app_name_list $app_name"
+              fi
+            fi
+          done
+          echo "::set-output name=apps::${app_name_list[@]}"
+      - name: Repository Dispatch
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.CODE_ACCESS_TOKEN }}
+          repository: icub-tech-iit/code
+          event-type: app_testing
+          client-payload: '{"type": "app_testing",  "app_list": "${{ steps.set_app_list.outputs.apps}}"}'
