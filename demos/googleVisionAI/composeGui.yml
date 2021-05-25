@@ -28,27 +28,23 @@ services:
     <<: *yarp-base
     devices: 
       - "/dev/video0:/dev/video0"
-    container_name: yGrabberCameras
     command: sh -c "if [ -z ${CUSTOM_PORT} ]; then yarpdev --from camera/ServerGrabberDualDragon.ini --split true; fi" 
 
 #------------------------------------------------------------------------------------------------
   #Here we open the viewer to see the output image
   yview_image_o:
     <<: *yarp-base
-    container_name: yview_o
     command: yarpview --name /outImage 
 
   #Here we open the viewer to see icub view
   yview_icub_l:
     <<: *yarp-base
-    container_name: yview_icub_l
     command: sh -c "if [ -z ${CUSTOM_PORT} ]; then yarpview --name  /icub/view/left; fi"
   
 
   #Here we open the viewer to see the input of the custom port
   yview_port_image_i:
     <<: *yarp-base
-    container_name: yview_port_input
     command: yarpview --name /startImage 
 
 

@@ -36,7 +36,6 @@ services:
     <<: *yarp-base
     devices: 
       - "/dev/snd:/dev/snd"
-    container_name: yMicrophone
     command: sh -c "yarp wait /root; yarpdev --device AudioRecorderWrapper --from /root/startaudio.ini --channels 1  --rate 16000 --samples 16000"
 
   yDemoGoogleSynthesis:

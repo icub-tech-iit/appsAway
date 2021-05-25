@@ -19,7 +19,6 @@ services:
     <<: *yarp-head
     devices: 
       - "/dev/bosch-i2c-imu:/dev/bosch-i2c-imu"
-    container_name: yrobotinterface
     command: yarprobotinterface
 
 #################################### ADD YOUR SERVICES HERE #####################################

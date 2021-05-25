@@ -70,7 +70,6 @@ services:
   
   yconnect_audio:
     <<: *yarp-base
-    container_name: yconnect_audio
     deploy:
       restart_policy:
         condition: on-failure
@@ -78,7 +77,6 @@ services:
 
   yconnect_rpc:
     <<: *yarp-base
-    container_name: yconnect_rpc
     deploy:
       restart_policy:
         condition: on-failure
