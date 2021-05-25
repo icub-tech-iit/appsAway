@@ -30,13 +30,11 @@ services:
   #Opening the viewer to see the left output image
   yview_right_img_o:
     <<: *yarp-base
-    container_name: yview_output_l
     command: yarpview --name /leftImageOutput
 
   #Opening we open the viewer to see the right output image
   yview_left_img_o:
     <<: *yarp-base
-    container_name: yview_output_r
     command: yarpview --name /rightImageOutput
 
 

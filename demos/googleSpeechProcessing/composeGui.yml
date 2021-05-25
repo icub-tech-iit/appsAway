@@ -27,19 +27,16 @@ services:
     <<: *yarp-base
     devices: 
       - "/dev/snd:/dev/snd"
-    container_name: yMicrophone
     command: sh -c "yarp wait /root; yarpdev --device AudioRecorderWrapper --from /root/startaudio.ini --channels 1  --rate 16000 --samples 16000"
   
   yconnect_audio:
     <<: *yarp-base
-    container_name: yconnect_audio
     depends_on:
       - yMicrophone
     command: sh -c "yarp wait /microphone/audio:o; yarp wait /googleSpeech/sound:i; yarp connect /microphone/audio:o /googleSpeech/sound:i tcp"
 
   yconnect_rpc:
     <<: *yarp-base
-    container_name: yconnect_rpc
     depends_on:
       - yMicrophone
     command: sh -c "yarp wait /microphone/rpc; yarp wait /googleSpeech/commands:rpc; yarp connect /googleSpeech/commands:rpc /microphone/rpc tcp"

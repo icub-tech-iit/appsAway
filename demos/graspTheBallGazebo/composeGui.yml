@@ -31,18 +31,15 @@ services:
 
   ygazebo:
     <<: *yarp-gazebo
-    container_name: ygazebo
     command: sh -c "sleep 10; gazebo grasp-ball-gazebo.sdf --verbose"
 
 #following services are configured in ./icub-main/app/default/scripts/cameras_calib.xml.template
   yview_l:
     <<: *yarp-gazebo
-    container_name: yview_l
     command: yarpview --name /icubSim/view/left --x 0 --y 0 --p 50 --compact
 
   yview_r:
     <<: *yarp-gazebo
-    container_name: yview_r
     command: yarpview --name /icubSim/view/right --x 400 --y 0 --p 50 --compact
 
 
@@ -50,6 +47,5 @@ services:
 #Following services are configured in icub-basic-demos/demoRedBall/app/scripts/demoRedBall.xml.template
   yview:
     <<: *yarp-gazebo
-    container_name: yview_demo
     command: yarpview --name /PF3DTracker_viewer --x 750 --y 0 --p 50 --compact
 

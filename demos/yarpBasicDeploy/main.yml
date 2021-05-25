@@ -1,7 +1,7 @@
 version: "3.7"
 
 x-yarp-base: &yarp-base
-  image: icubteamcode/superbuild:v2020.05_binaries
+  image: icubteamcode/superbuild:master-unstable_master_binaries
   environment:
     - DISPLAY=${DISPLAY}
     - QT_X11_NO_MITSHM=1
@@ -24,7 +24,7 @@ services:
           constraints: [node.role == manager]
         restart_policy:
           condition: on-failure
-    command: sh -c "yarp where | grep 'is available at ip' > /dev/null ; if [ ! $$? -eq 0 ]; then yarpserver --write; fi"
+      command: sh -c "yarp where | grep 'is available at ip' > /dev/null ; if [ ! $$? -eq 0 ]; then yarpserver --write; fi"
 
     ydevice:
       <<: *yarp-base

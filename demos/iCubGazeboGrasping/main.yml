@@ -37,7 +37,6 @@ services:
 
   yrobotinterface:
     <<: *yarp-base
-    container_name: yrobotinterface
     command: sh -c "yarp wait /icubSim/torso/state:o; yarp wait /icubSim/head/state:o; yarp wait /icubSim/left_arm/state:o; yarp wait /icubSim/right_arm/state:o; sleep 10; yarprobotinterface --context gazeboCartesianControl --config no_legs.xml "
 #    command: sh -c " yarp wait /icubSim/torso/state:o ; yarp wait /icubSim/left_arm/state:o ; yarp wait /icubSim/right_arm/state:o ; ( yarprobotinterface --context gazeboCartesianControl --config no_legs.xml & ) ; checkRobotInterface --robot icubSim ; yarp wait /icubSim/torso/state:o ; yarp wait /icubSim/right_arm/state:o ; ( iKinCartesianSolver --context gazeboCartesianControl --part right_arm & ) ; yarp wait /icubSim/torso/state:o ; yarp wait /icubSim/left_arm/state:o ; ( iKinCartesianSolver --context gazeboCartesianControl --part left_arm & ) ; yarp wait /icubSim/torso/state:o ; yarp wait /icubSim/head/state:o ; yarp wait /icubSim/inertial ; iKinGazeCtrl --context gazeboCartesianControl --from iKinGazeCtrl.ini"
 
@@ -46,28 +45,24 @@ services:
 
   iKinCartesianSolver_r:
     <<: *yarp-base
-    container_name: iKinCartesianSolver_r
     depends_on:
       - yrobotinterface
     command: sh -c "yarp wait /icubSim/torso/state:o; yarp wait /icubSim/right_arm/state:o; sleep 10; iKinCartesianSolver --context gazeboCartesianControl --part right_arm"
 
   iKinCartesianSolver_l:
     <<: *yarp-base
-    container_name: iKinCartesianSolver_l
     depends_on:
       - yrobotinterface
     command: sh -c "yarp wait /icubSim/torso/state:o; yarp wait /icubSim/left_arm/state:o; sleep 10; iKinCartesianSolver --context gazeboCartesianControl --part left_arm"
 
   iKinGazeCtrl:
     <<: *yarp-base
-    container_name: iKinGazeCtrl
     depends_on:
       - yrobotinterface
     command: sh -c "yarp wait /icubSim/torso/state:o; yarp wait /icubSim/head/state:o; yarp wait /icubSim/inertial; sleep 10; iKinGazeCtrl --context gazeboCartesianControl --from iKinGazeCtrl.ini"
 
 #  connect-world:
 #    <<: *yarp-base
-#    container_name: connect-world
 #    depends_on:
 #      - yrobotinterface
 #    deploy:
@@ -77,7 +72,6 @@ services:
 
   connect-mustard:
     <<: *yarp-base
-    container_name: connect-mustard
     depends_on:
       - yrobotinterface
     deploy:
@@ -87,7 +81,6 @@ services:
 
   connect-pudding:
     <<: *yarp-base
-    container_name: connect-pudding
     depends_on:
       - yrobotinterface
     deploy:
@@ -97,7 +90,6 @@ services:
 
   connect-view:
     <<: *yarp-base
-    container_name: connect-view
     depends_on:
       - yrobotinterface
     deploy:
@@ -107,7 +99,6 @@ services:
 
   connect-rgb:
     <<: *yarp-base
-    container_name: connect-rgb
     depends_on:
       - yrobotinterface
     deploy:
@@ -117,7 +108,6 @@ services:
 
   connect-depth:
     <<: *yarp-base
-    container_name: connect-depth
     depends_on:
       - yrobotinterface
     deploy:
@@ -127,7 +117,6 @@ services:
 
   connect-superquadric:
     <<: *yarp-base
-    container_name: connect-superquadric
     depends_on:
       - yrobotinterface
     deploy:
@@ -137,7 +126,6 @@ services:
 
 #  icub-gazebo-grasping-sandbox:
 #    <<: *yarp-base
-#    container_name: icub-gazebo-grasping-sandbox
 #    depends_on:
 #      - yrobotinterface
 #    command: sh -c "yarp wait /iKinGazeCtrl/rpc; yarp wait /icubSim/cartesianController/right_arm/state:o; yarp wait /icubSim/cartesianController/left_arm/state:o; icub-gazebo-grasping-sandbox"

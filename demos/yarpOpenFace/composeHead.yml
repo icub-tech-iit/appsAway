@@ -21,13 +21,11 @@ services:
     <<: *yarp-head
     devices: 
       - "/dev/bosch-i2c-imu:/dev/bosch-i2c-imu"
-    container_name: yrobotinterface
     command: yarprobotinterface
 
   yGrabberCameras:
     <<: *yarp-head
     devices: 
       - "/dev/video0:/dev/video0"
-    container_name: yGrabberCameras
     command: sh -c "if [ -z ${CUSTOM_PORT} ]; then yarpdev --from camera/ServerGrabberDualDragon.ini --split true; fi"
 
