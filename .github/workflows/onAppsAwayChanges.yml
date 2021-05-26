@@ -44,6 +44,7 @@ jobs:
             fi
           done
           app_name_list=$(echo "${app_name_list[@]}" | tr ' ' '\n' | sort -u | tr '\n' ' ')
+          app_name_list=$(echo ${app_name_list::-1})
           echo "::set-output name=apps::${app_name_list[@]}"
       - name: Repository Dispatch
         uses: peter-evans/repository-dispatch@v1
