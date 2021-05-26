@@ -35,7 +35,6 @@ services:
 
 #------------------------------------------------------------------------------------------------
 
-
   #use network.peer ip address and port 8080 to see the containers status in browser (http://localhost:8080/)
   visualizer:
     image: dockersamples/visualizer:stable
