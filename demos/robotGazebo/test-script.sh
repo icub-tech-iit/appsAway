@@ -84,10 +84,10 @@ failure_counter=0
 cd $HOME/teamcode/appsAway/scripts
 echo "#! /bin/bash
 export APPSAWAY_APP_NAME=$1
-export APPSAWAY_USER_NAME=runner
+export APPSAWAY_USER_NAME=icub
 export APPSAWAY_APP_PATH=\${HOME}/iCubApps/\${APPSAWAY_APP_NAME}
 export APPSAWAY_CONSOLENODE_ADDR=$2
-export APPSAWAY_CONSOLENODE_USERNAME=runner
+export APPSAWAY_CONSOLENODE_USERNAME=icub
 export APPSAWAY_IMAGES=\"icubteamcode/superbuild-gazebo\"
 export APPSAWAY_VERSIONS=\"master-unstable_master\"
 export APPSAWAY_TAGS=\"binaries\"
