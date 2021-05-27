@@ -19,7 +19,7 @@ x-yarp-base: &yarp-base
 
 
 x-yarp-demo: &yarp-demo
-  image: icubteamcode/humansensing:master_master-unstable_sources #this image name still need to be changed into face-and-pose-detection
+  image: icubteamcode/human-sensing:master_master-unstable_sources #this image name still need to be changed into face-and-pose-detection
   environment:
     - DISPLAY=${DISPLAY}
     - QT_X11_NO_MITSHM=1
