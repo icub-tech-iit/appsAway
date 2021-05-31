@@ -1,0 +1,3 @@
+//ilaria-carlini
+//&<h3>Field changed in app: <ins>Camera Tilt Calibration</ins></h3><ul><li>media_content: [https://storage.googleapis.com/robot-bazaar-files/apps/cameraTiltCalib/tilt_calib.gif<b>,https://storage.googleapis.com/robot-bazaar-files/apps/cameraTiltCalib/1622467331650-cameraTiltCalib-mediacontent0.png</b>]</li></ul>
+db.steps.update ({_id: ObjectId("5fc116d32bffcf958ca1693c")},{$set: {media_content: ["https://storage.googleapis.com/robot-bazaar-files/apps/cameraTiltCalib/tilt_calib.gif","https://storage.googleapis.com/robot-bazaar-files/apps/cameraTiltCalib/1622467331650-cameraTiltCalib-mediacontent0.png"]}});
