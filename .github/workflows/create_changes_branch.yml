@@ -93,16 +93,21 @@ jobs:
                 if [ $iter != 0 ];
                 then
                   user_list="$user_list,"
+                  exported_img_list="$exported_img_list "
                   changes_list="$changes_list<br/>"
                 fi
                 user_list="$user_list$(head -1 $file | awk -F'//' '{print $2}')"
+                exported_img_list="$exported_img_list$(head -2 $file | awk -F'//' '{print $2}')"
                 changes_list="$changes_list$(tail -n +1 $file | awk -F'//&' '{print $2}')"
                 iter=$((iter+1))
               done
               echo $user_list
+              exported_img_list=($exported_img_list)
+              echo ${exported_img_list[@]}
               echo $changes_list
               echo ::set-output name=user_list::$user_list
               echo ::set-output name=changes_list::$changes_list
+              echo ::set-output name=exported_img_list::${exported_img_list[@]}
               
       - name: pull-request
         id: open-pr
@@ -133,4 +138,7 @@ jobs:
 
       - name: add metadata to bucket
         run: |
-          gsutil setmeta -h "x-goog-meta-pr-number: ${{steps.open-pr.outputs.pr_number}}" gs://robot-bazaar-files/robots/iCubGenova01/iCub_black.png
+          for img in ${{ steps.get_filedata.outputs.exported_img_list }}
+          do
+            gsutil setmeta -h "x-goog-meta-pr-number: ${{steps.open-pr.outputs.pr_number}}" gs://$img
+          done
