@@ -748,7 +748,7 @@ class WidgetGallery(QDialog):
 
           custom_option_found = False
           end_environ_set = False
-          if os.environ.get('APPSAWAY_SENSORS') != '':
+          if os.environ.get('APPSAWAY_SENSORS') != None:
             list_sensors = os.environ.get('APPSAWAY_SENSORS').split(' ')
             if yml_file == "composeHead.yml":
               for i in range(len(main_list)):
