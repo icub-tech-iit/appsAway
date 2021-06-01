@@ -105,6 +105,7 @@ jobs:
               echo ::set-output name=changes_list::$changes_list
               
       - name: pull-request
+        id: open-pr
         uses: repo-sync/pull-request@v2
         with:
             pr_title: "Adding user changes into the website."
@@ -113,3 +114,15 @@ jobs:
             pr_assignee: ${{ steps.get_filedata.outputs.user_list }}
             source_branch: ${{ github.event.client_payload.branch_name }}
             github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: install and configure gsutil
+        run: |
+          echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list 
+          apt-get install apt-transport-https ca-certificates gnupg 
+          curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add - 
+          apt-get update && apt-get install google-cloud-sdk
+          gcloud auth activate-service-account --key-file=code/icub-tech-apps/server/team-code.json
+
+      - name: add metadata to bucket
+        run: |
+          gsutil setmeta -h "x-goog-meta-pr-number: ${{steps.open-pr.outputs.pr_number}}" gs://robot-bazaar-files/robots/iCubGenova01/iCub_black.png
