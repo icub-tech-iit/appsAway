@@ -13,6 +13,7 @@
       shell: groupdel docker
       args:
         warn: no
+      ignore_errors: yes
       when: ansible_distribution != 'MacOSX'
 
     - name: Install packages to use a repository over HTTPS
