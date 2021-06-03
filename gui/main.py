@@ -753,9 +753,17 @@ class WidgetGallery(QDialog):
             if yml_file == "composeHead.yml":
               for i in range(len(main_list)):
                 if main_list[i].find("devices:") != -1:
+                  device_list=[]
                   #main_list[i] = main_list[i] + "\n"
+                  for k in range(i+1,len(main_list),1):
+                    if main_list[k].find("command:") != -1:
+                      break
+                    tmp_device_shared = main_list[k].split('"')[1]    # device:device
+                    tmp_device = tmp_device_shared.split(":")[0]      # device
+                    device_list = device_list + [tmp_device]          # we create a list with all devices for this service
                   for sensor in list_sensors:
-                    main_list[i] = main_list[i] + "\n      - \"" + sensor + ":" + sensor + "\"" #- "/dev/snd:/dev/snd"
+                    if sensor not in device_list and sensor != "":
+                      main_list[i] = main_list[i] + "\n      - \"" + sensor + ":" + sensor + "\"" #- "/dev/snd:/dev/snd"
 
           if os.environ.get('APPSAWAY_IMAGES') != '':
             list_images = os.environ.get('APPSAWAY_IMAGES').split(' ')
