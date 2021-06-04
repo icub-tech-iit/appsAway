@@ -1,7 +1,7 @@
 version: "3.7"
 
 x-yarp-base: &yarp-base
-  image: icubteamcode/supervise-calib:master_master-unstable_sources
+  image: icubteamcode/supervise-calib:v2021.02.feat-01-stable_master_binaries
   environment:
     - DISPLAY=${DISPLAY}
     - XAUTHORITY=/root/.Xauthority
@@ -24,7 +24,7 @@ services:
   
   yDemoCalibCamTilt:
     <<: *yarp-base
-    command: sh -c "calibCamTilt" 
+    command: sh -c "if [ ! -z ${LEFT_CUSTOM_PORT} ]; then yarp wait ${LEFT_CUSTOM_PORT}; else yarp wait /icub/cam/left; fi; calibCamTilt" 
  
 #------------------------------------------------------------------------------------------------
   #Opening the viewer to see the left output image

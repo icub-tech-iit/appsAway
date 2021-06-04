@@ -1,7 +1,7 @@
 version: "3.7"
 
 x-yarp-base: &yarp-base
-  image: icubteamcode/superbuild-icubhead:master_master-unstable_sources
+  image: icubteamcode/superbuild-icubhead:v2021.02.feat-01-stable_master_binaries
   environment:
     - YARP_FORWARD_LOG_ENABLE=1
     - YARP_ROBOT_NAME
@@ -19,7 +19,8 @@ services:
     <<: *yarp-base
     devices: 
       - "/dev/video0:/dev/video0"
-    command: sh -c "if [ -z ${LEFT_CUSTOM_PORT} && -z ${RIGHT_CUSTOM_PORT} ]; then yarpdev --from camera/ServerGrabberDualDragon.ini --split true; fi"
+    command: sh -c "if [ -z ${LEFT_CUSTOM_PORT} ] && [ -z ${RIGHT_CUSTOM_PORT} ]; then yarpdev --from camera/ServerGrabberDualDragon.ini --split true; fi"
+
 
 
 
