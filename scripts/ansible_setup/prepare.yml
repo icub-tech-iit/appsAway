@@ -1,12 +1,17 @@
 - name: Uninstall old versions
   hosts: nodes
   become: yes
-  tasks:
-    - name: Uninstall docker old versions
-      apt:
-        name: docker docker-engine docker.io containerd runc
-        state: absent
-        update_cache: false
+  tasks:      
+    - name: Purge docker
+      shell: sudo apt-get -y purge docker-ce docker-ce-cli containerd.io
+      args:
+        warn: no
+      when: ansible_distribution != 'MacOSX'
+      
+    - name: Uninstall old docker versions
+      shell: sudo apt-get -y remove docker docker-engine docker.io containerd runc
+      args:
+        warn: no
       when: ansible_distribution != 'MacOSX'
       
     - name: Uninstall user group docker
@@ -23,22 +28,24 @@
           - ca-certificates
           - curl
           - software-properties-common
+          - gnupg
+          - lsb-release
         state: latest
         autoclean: yes
-        update_cache: false
+        update_cache: yes
       when: ansible_distribution != 'MacOSX'
 
     - name: Add Docker’s official GPG key
-      shell: curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+      shell: curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --yes --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
       args:
         warn: no
       when: ansible_distribution != 'MacOSX'
         
     - name: Add Docker.io repository
-      shell: add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs)  stable"
+      shell: echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
       ignore_errors: yes
       when: ansible_distribution != 'MacOSX'
-
+      
     - name: Install the latest version of Docker Engine - Community
       apt: 
         name:
@@ -47,7 +54,10 @@
           - containerd.io
         state: latest
         autoclean: yes
+        update_cache: yes
+      ignore_errors: yes
       when: ansible_distribution != 'MacOSX'
+#      no_log: true
 
     - name: Install docker plugin
       shell: docker plugin install --grant-all-permissions vieux/sshfs
@@ -64,18 +74,27 @@
       when: ansible_distribution != 'MacOSX'
       
     - name: Make docker run without sudo
-      shell: groupadd docker && usermod -aG docker $USER
+      shell: usermod -aG docker $USER
       ignore_errors: no
-      when: ansible_distribution != 'MacOSX'
-
-    - name: Start docker
-      shell: systemctl start docker
-      args:
-        warn: no
       when: ansible_distribution != 'MacOSX'
 
     - name: Enable docker.sock in all machines
       shell: chmod 666 /var/run/docker.sock
+      args:
+        warn: no
+      when: ansible_distribution != 'MacOSX'
+      
+    - name: Activate docker group changes
+      shell: echo "exit" | newgrp docker
+      ignore_errors: no
+      when: ansible_distribution != 'MacOSX'
+      
+    - name: Start docker
+      shell: sudo systemctl start docker
+      retries: 3
+      delay: 30
+      register: result
+      until: result.rc == 0
       args:
         warn: no
       when: ansible_distribution != 'MacOSX'
