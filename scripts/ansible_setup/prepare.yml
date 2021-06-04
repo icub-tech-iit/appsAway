@@ -74,7 +74,7 @@
       when: ansible_distribution != 'MacOSX'
       
     - name: Make docker run without sudo
-      shell: usermod -aG docker $USER
+      shell: usermod -aG docker {{ ansible_ssh_user }}
       ignore_errors: no
       when: ansible_distribution != 'MacOSX'
 
