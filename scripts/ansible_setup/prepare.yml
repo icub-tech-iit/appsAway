@@ -6,12 +6,14 @@
       shell: sudo apt-get -y purge docker-ce docker-ce-cli containerd.io
       args:
         warn: no
+      ignore_errors: yes
       when: ansible_distribution != 'MacOSX'
       
     - name: Uninstall old docker versions
       shell: sudo apt-get -y remove docker docker-engine docker.io containerd runc
       args:
         warn: no
+      ignore_errors: yes
       when: ansible_distribution != 'MacOSX'
       
     - name: Uninstall user group docker
@@ -72,12 +74,12 @@
         autoclean: yes
         update_cache: false
       when: ansible_distribution != 'MacOSX'
-      
+
     - name: Make docker run without sudo
-      shell: usermod -aG docker {{ ansible_ssh_user }}
+      shell: gpasswd -a {{ ansible_ssh_user }} docker
       ignore_errors: no
       when: ansible_distribution != 'MacOSX'
-
+      
     - name: Enable docker.sock in all machines
       shell: chmod 666 /var/run/docker.sock
       args:
@@ -88,7 +90,7 @@
       shell: echo "exit" | newgrp docker
       ignore_errors: no
       when: ansible_distribution != 'MacOSX'
-      
+
     - name: Start docker
       shell: sudo systemctl start docker
       retries: 3
