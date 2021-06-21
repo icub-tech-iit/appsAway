@@ -51,5 +51,5 @@ jobs:
         with:
           token: ${{ secrets.CODE_REPO_ACCSS_TOKEN }}
           repository: icub-tech-iit/code
-          event-type: app_testing
-          client-payload: '{"type": "app_testing",  "app_list": "${{ steps.set_app_list.outputs.apps}}"}'
+          event-type: app_testing_from_appsaway
+          client-payload: '{"type": "app_testing_from_appsaway",  "app_list": "${{ steps.set_app_list.outputs.apps}}"}'

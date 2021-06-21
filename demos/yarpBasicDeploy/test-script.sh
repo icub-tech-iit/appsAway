@@ -88,9 +88,9 @@ export APPSAWAY_USER_NAME=icub
 export APPSAWAY_APP_PATH=\${HOME}/iCubApps/\${APPSAWAY_APP_NAME}
 export APPSAWAY_CONSOLENODE_ADDR=$2
 export APPSAWAY_CONSOLENODE_USERNAME=icub
-export APPSAWAY_IMAGES=\"icubteamcode/superbuild\"
-export APPSAWAY_VERSIONS=\"master-unstable_master\"
-export APPSAWAY_TAGS=\"binaries\"
+export APPSAWAY_IMAGES=${3:-\"icubteamcode/superbuild\"}
+export APPSAWAY_VERSIONS=${4-\"master-unstable_master\"}
+export APPSAWAY_TAGS=${5-\"binaries\"}
 export APPSAWAY_DEPLOY_YAML_FILE_LIST=main.yml
 export APPSAWAY_GUI_YAML_FILE_LIST=composeGui.yml
 export APPSAWAY_STACK_NAME=mystack
@@ -100,6 +100,10 @@ export APPSAWAY_NODES_USERNAME_LIST=\"\${APPSAWAY_GUINODE_USERNAME} \${APPSAWAY_
 chmod +x appsAway_setEnvironment.local.sh
 source ./appsAway_setEnvironment.local.sh
  
+echo "images: $APPSAWAY_IMAGES"
+echo "versions: $APPSAWAY_VERSIONS"
+echo "tags: $APPSAWAY_TAGS"
+
 echo "about to setup the cluster..." 
 ./appsAway_setupCluster.sh
 ./appsAway_setupSwarm.sh
@@ -110,6 +114,12 @@ sleep 30
 check_failure ./testApp.sh $APPSAWAY_APP_NAME $APPSAWAY_STACK_NAME
 ./appsAway_stopApp.sh 
 
+CHILDREN_FLAG=${6:-true}
+if [ $CHILDREN_FLAG == false ]
+then
+  echo "Removing $APPSAWAY_IMAGES:$APPSAWAY_VERSIONS\_$APPSAWAY_TAGS"
+  docker image rm -f $APPSAWAY_IMAGES:$APPSAWAY_VERSIONS\_$APPSAWAY_TAGS
+fi
 
 if (( $failure_counter > 0 )) 
 then 
