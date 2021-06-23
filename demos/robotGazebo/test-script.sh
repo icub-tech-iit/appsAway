@@ -116,13 +116,6 @@ sleep 30
 check_failure ./testApp.sh $APPSAWAY_APP_NAME $APPSAWAY_STACK_NAME
 ./appsAway_stopApp.sh 
 
-CHILDREN_FLAG=${6:-true}
-if [ $CHILDREN_FLAG == false ]
-then
-  echo "Removing $APPSAWAY_IMAGES:$APPSAWAY_VERSIONS\_$APPSAWAY_TAGS"
-  docker image rm -f $APPSAWAY_IMAGES:$APPSAWAY_VERSIONS\_$APPSAWAY_TAGS
-fi
-
 if (( $failure_counter > 0 )) 
 then 
     echo "Some commands failed"
