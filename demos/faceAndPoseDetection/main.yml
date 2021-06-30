@@ -1,23 +1,5 @@
 version: "3.7"
 
-x-yarp-base: &yarp-base
-  image: icubteamcode/superbuild:master-unstable_sources
-  environment:
-    - DISPLAY=${DISPLAY}
-    - QT_X11_NO_MITSHM=1
-    - XAUTHORITY=/root/.Xauthority
-    - YARP_FORWARD_LOG_ENABLE=1
-    - CUSTOM_PORT
-    - YOP_INPUT
-    - FL_INPUT
-  volumes:
-    - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
-    - "${XAUTHORITY}:/root/.Xauthority:rw"
-    - "${YARP_CONF_PATH}:/root/.config/yarp"
-  networks:
-    - hostnet
-
-
 x-yarp-demo: &yarp-demo
   image: icubteamcode/human-sensing:master_master-unstable_sources #this image name still need to be changed into face-and-pose-detection
   environment:
@@ -62,7 +44,7 @@ services:
     command: sh -c "if [ ${FL_INPUT} = 'True' ]; then faceLandmarks; fi"
 
   yConnectCamToFL_l:
-    <<: *yarp-base
+    <<: *yarp-demo
     deploy:
       placement:
         constraints: [node.labels.type != head]
@@ -71,7 +53,7 @@ services:
     command: sh -c "if [ ! -z ${CUSTOM_PORT} ]; then yarp wait $CUSTOM_PORT ; yarp wait /faceLandmarks/image:i ; yarp connect $CUSTOM_PORT /faceLandmarks/image:i tcp ; else yarp wait /icub/camcalib/left/out; yarp wait /faceLandmarks/image:i ; yarp connect /icub/camcalib/left/out /faceLandmarks/image:i tcp; fi"
   
   yserver:
-    <<: *yarp-base
+    <<: *yarp-demo
     deploy:
       placement:
         constraints: [node.role == manager]
@@ -82,7 +64,7 @@ services:
 #--------------------------------------- Connects ----------------------------------------------
 
   yconnect_input:
-    <<: *yarp-base
+    <<: *yarp-demo
     deploy:
       placement:
         constraints: [node.labels.type != head]
@@ -92,7 +74,7 @@ services:
     restart: on-failure
 
   yconnect_output:
-    <<: *yarp-base
+    <<: *yarp-demo
     deploy:
       placement:
         constraints: [node.labels.type != head]
@@ -102,7 +84,7 @@ services:
     restart: on-failure
   
   yconnect_groundtruth:
-    <<: *yarp-base
+    <<: *yarp-demo
     deploy:
       placement:
         constraints: [node.labels.type != head]
@@ -117,21 +99,21 @@ services:
 
 
   yCamCalib_l:
-    <<: *yarp-base
+    <<: *yarp-demo
     deploy:
       placement:
         constraints: [node.labels.type != head]
     command: sh -c "if [ -z ${CUSTOM_PORT} ]; then camCalib --context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_LEFT --name /icub/camcalib/left; fi"
 
   yCamCalib_r:
-    <<: *yarp-base
+    <<: *yarp-demo
     deploy:
       placement:
         constraints: [node.labels.type != head]
     command: sh -c "if [ -z ${CUSTOM_PORT} ]; then camCalib --context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_RIGHT --name /icub/camcalib/right; fi"
 
   yConnectCam_l:
-    <<: *yarp-base
+    <<: *yarp-demo
     deploy:
       placement:
         constraints: [node.labels.type != head]
@@ -140,7 +122,7 @@ services:
     command: sh -c "if [ -z ${CUSTOM_PORT} ]; then yarp wait /icub/cam/left; yarp wait /icub/camcalib/left/in; yarp connect /icub/cam/left /icub/camcalib/left/in; fi"
 
   yConnectCam_r:
-    <<: *yarp-base
+    <<: *yarp-demo
     deploy:
       placement:
         constraints: [node.labels.type != head]
