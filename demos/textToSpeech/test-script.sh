@@ -110,7 +110,7 @@ echo "about to setup the cluster..."
 ./appsAway_setupCluster.sh
 
 echo "
-FILE_INPUT=team-code.jso
+FILE_INPUT=team-code.json
 FILE_INPUT_PATH=/home/icub/iCubApps
 TEXT_INPUT=True
 LANGUAGE_SYNTHESIS_INPUT=en-US
