@@ -1,7 +1,7 @@
 version: "3.7"
 
 x-yarp-base: &yarp-base
-  image: icubteamcode/superbuild:v2021.02.feat-01_master-stable_binaries
+  image: icubteamcode/grasp-the-ball:v2021.02.feat-01_master-stable_binaries
   environment:
     - DISPLAY=${DISPLAY}
     - QT_X11_NO_MITSHM=1
