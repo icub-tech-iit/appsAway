@@ -1,27 +1,33 @@
-- name: Uninstall old versions
+- name: Prepare system
   hosts: nodes
   become: yes
+
   tasks:      
-    - name: Purge docker
-      shell: sudo apt-get -y purge docker-ce docker-ce-cli containerd.io
-      args:
-        warn: no
-      ignore_errors: yes
-      when: ansible_distribution != 'MacOSX'
+    # - name: Purge docker
+    #   shell: sudo apt-get -y purge docker-ce docker-ce-cli containerd.io
+    #   args:
+    #     warn: no
+    #   when: ansible_distribution != 'MacOSX'
       
-    - name: Uninstall old docker versions
-      shell: sudo apt-get -y remove docker docker-engine docker.io containerd runc
-      args:
-        warn: no
+    # - name: Uninstall old docker versions
+    #   shell: sudo apt-get -y remove docker docker-engine docker.io containerd runc
+    #   args:
+    #     warn: no
+    #   when: ansible_distribution != 'MacOSX'
+
+    - name: Check if docker is installed
+      shell: docker --version
+      register: docker_version_ok
       ignore_errors: yes
-      when: ansible_distribution != 'MacOSX'
       
     - name: Uninstall user group docker
       shell: groupdel docker
       args:
         warn: no
       ignore_errors: yes
-      when: ansible_distribution != 'MacOSX'
+      when: 
+        - ansible_distribution != 'MacOSX'
+        - docker_version_ok.rc > 0
 
     - name: Install packages to use a repository over HTTPS
       apt: 
@@ -35,19 +41,25 @@
         state: latest
         autoclean: yes
         update_cache: yes
-      when: ansible_distribution != 'MacOSX'
+      when:         
+        - ansible_distribution != 'MacOSX'
+        - docker_version_ok.rc > 0
 
     - name: Add Docker’s official GPG key
       shell: curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --yes --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
       args:
         warn: no
-      when: ansible_distribution != 'MacOSX'
+      when: 
+        - ansible_distribution != 'MacOSX'
+        - docker_version_ok.rc > 0
         
     - name: Add Docker.io repository
       shell: echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
       ignore_errors: yes
-      when: ansible_distribution != 'MacOSX'
-      
+      when:         
+        - ansible_distribution != 'MacOSX'
+        - docker_version_ok.rc > 0
+
     - name: Install the latest version of Docker Engine - Community
       apt: 
         name:
@@ -58,7 +70,9 @@
         autoclean: yes
         update_cache: yes
       ignore_errors: yes
-      when: ansible_distribution != 'MacOSX'
+      when:         
+        - ansible_distribution != 'MacOSX'
+        - docker_version_ok.rc > 0
 #      no_log: true
 
     - name: Install docker plugin
@@ -86,11 +100,6 @@
         warn: no
       when: ansible_distribution != 'MacOSX'
       
-    - name: Activate docker group changes
-      shell: echo "exit" | newgrp docker
-      ignore_errors: no
-      when: ansible_distribution != 'MacOSX'
-
     - name: Start docker
       shell: sudo systemctl start docker
       retries: 3
