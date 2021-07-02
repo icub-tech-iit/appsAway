@@ -281,45 +281,60 @@ overwrite_yaml_files()
           echo "${yml_files[$i]}"
           if [ ${yml_files[$i]} == "composeHead.yml" ]
           then
-              device_found=false
-              list_devices=()
-              while read -r line || [ -n "$line" ]
-              do
-              if [[ $device_found == true ]]
-              then
-                  echo "device found"
-                  if [[ $line == -* ]]
-                  then
-                      device=$(echo $line | awk -F':' '{print $1}' | tr -d '"' | tr -d '-')
-                      device_ok=false
-                      if [[ ! "${list_sensors[@]}" =~ "$device" ]]
-                      then
-                          sed -i 's,'"${line}"'.*$, '"${line}/n"' '"- ${device}"':'"${device}"',g' ${yml_files[$i]}
-                      fi
-                      list_devices+=$(echo $line | awk -F':' '{print $1}' | tr -d '"' | tr -d '-')
-                      echo ${list_devices[@]}
-                      # IFS=':'     # space is set as delimiter
-                      # read -ra image_line_array <<< "$line"   # str is read into an array as tokens separated by IFS
-                      # echo "image line 0: ${image_line_array[0]}, image line 1: ${image_line_array[1]}" 
-                      # for (( j=0; j<${#list_images[@]}; j++ ))
-                      # do
-                      #     if [ ${image_line_array[1]} == ${list_images[$j]} ]
-                      #     then 
-                      #         image_line_array[2]=${list_versions[$j]} + "_" + ${list_tags[$j]}
-                      #         main_list[i+1] = ${image_line_array[0]} + ':' + ${image_line_array[1]} + ':' + ${image_line_array[2]}
-                      #         sed -i 's,image: '"${list_images[$j]}"'.*$,image: '"${list_images[$j]}"':'"${list_versions[$j]}"'_'"${list_tags[$j]}"',g' ${yml_files[$i]}
-                      #         break
-                      #     fi
-                      # done
-                  fi
-                  device_found=false
-              fi
-              device_result=$(echo $line | grep "devices")
-              if [ "$device_result" != "" ]
-              then
-                  device_found=true
-              fi
-              done < ${yml_files[$i]}
+            look_for_devices=false
+            append_sensors=false
+            list_devices=()
+            while read -r line || [ -n "$line" ]
+            do
+                device_result=$(echo $line | grep "devices")
+             
+                if [[ $look_for_devices == true ]]
+                then
+                    if [[ $line == -* || $line == \#* ]]
+                    then
+                        if [[ $line == -* ]]
+                        then
+                            device=$(echo $line | awk -F':' '{print $1}' | tr -d '"' | sed 's/-//' | tr -d ' ' )
+                            echo "Device: $device"
+                            devices_list="$devices_list $device"
+                            echo "Device list: $devices_list"
+                        fi
+                    else
+                        echo $line
+                        look_for_devices=false
+                        append_sensors=true
+                    fi
+                fi
+                if [[ $append_sensors == true ]]
+                then
+                    devices_list=${devices_list:1}
+                    devices_list=($devices_list)
+                    echo "Device list: ${devices_list[@]}"
+                    for sens in "${list_sensors[@]}"
+                    do
+                        if [[ ! "${devices_list[@]}" =~ "$sens" ]]
+                        then
+                            echo "The sensor is NOT in the device list"
+                            sensors_to_add="$sensors_to_add $sens"
+                        fi
+                    done  
+                    sensors_to_add=${sensors_to_add:1}
+                    sensors_to_add=($sensors_to_add)
+                    echo "sensors to add: ${sensors_to_add[@]}"
+                    for sens_to_add in "${sensors_to_add[@]}"
+                    do
+                      sed -i 's,'"${line}"'.*$,'"    - \"${sens_to_add}"':'"${sens_to_add}\"\n  ${line}"',g' ${yml_files[$i]}      
+                    done   
+                    append_sensors=false
+                    sensors_to_add=""
+                    devices_list=""
+                fi
+                if [[ "$device_result" != "" &&  "$line" != \#* ]]
+                then                   
+                    look_for_devices=true   
+                    echo "Device result: $device_result"                
+                fi            
+            done < ${yml_files[$i]}
           fi
       fi
   done
