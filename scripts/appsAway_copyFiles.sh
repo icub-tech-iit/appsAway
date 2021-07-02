@@ -127,7 +127,7 @@ init()
  os=`uname -s`
  if [ "$os" = "Darwin" ]
  then
-  _ALL_LOCAL_IP_ADDRESSES=$(arp -a | awk -F'[()]' '{print $2}')
+  #_ALL_LOCAL_IP_ADDRESSES=$(arp -a | awk -F'[()]' '{print $2}')
  else
   _ALL_LOCAL_IP_ADDRESSES=$(hostname --all-ip-address)
   _ALL_LOCAL_IP_ADDRESSES+=$(hostname --all-fqdns)
@@ -242,6 +242,162 @@ fill_hostname_list()
   
 #}
 
+overwrite_yaml_files()
+{
+  yml_files_default=("main.yml" "composeGui.yml" "composeHead.yml")
+  yml_files_default_len=${#yml_files_default[@]}
+  yml_files=()
+  
+  for (( i=0; i<$yml_files_default_len; i++ ))
+  do    
+      if [ -f "${yml_files_default[$i]}" ]
+      then
+          yml_files+=(${yml_files_default[$i]})
+      fi
+  done
+  echo "files: ${yml_files[@]}"
+  for (( i=0; i<${#yml_files[@]}; i++ ))
+  do
+      if [[ $APPSAWAY_IMAGES != '' ]] 
+      then
+          list_images=($APPSAWAY_IMAGES)
+          list_versions=($APPSAWAY_VERSIONS)
+          list_tags=($APPSAWAY_TAGS)
+      
+          if [[ $LOCAL_IMAGE_FLAG == true ]]
+          then
+              sed -i 's,image: .*$,image: '"localhost:5000/${LOCAL_IMAGE_NAME}"',g' ${yml_files[$i]}
+          else
+              for (( j=0; j<${#list_images[@]}; j++ ))
+              do
+                  sed -i 's,image: '"${list_images[$j]}"'.*$,image: '"${list_images[$j]}"':'"${list_versions[$j]}"'_'"${list_tags[$j]}"',g' ${yml_files[$i]}
+              done
+          fi    
+      fi
+
+      if [[ $APPSAWAY_SENSORS != '' ]] 
+      then
+          list_sensors=($APPSAWAY_SENSORS)
+          echo "${yml_files[$i]}"
+          if [ ${yml_files[$i]} == "composeHead.yml" ]
+          then
+              device_found=false
+              list_devices=()
+              while read -r line || [ -n "$line" ]
+              do
+              if [[ $device_found == true ]]
+              then
+                  echo "device found"
+                  if [[ $line == -* ]]
+                  then
+                      device=$(echo $line | awk -F':' '{print $1}' | tr -d '"' | tr -d '-')
+                      device_ok=false
+                      if [[ ! "${list_sensors[@]}" =~ "$device" ]]
+                      then
+                          sed -i 's,'"${line}"'.*$, '"${line}/n"' '"- ${device}"':'"${device}"',g' ${yml_files[$i]}
+                      fi
+                      list_devices+=$(echo $line | awk -F':' '{print $1}' | tr -d '"' | tr -d '-')
+                      echo ${list_devices[@]}
+                      # IFS=':'     # space is set as delimiter
+                      # read -ra image_line_array <<< "$line"   # str is read into an array as tokens separated by IFS
+                      # echo "image line 0: ${image_line_array[0]}, image line 1: ${image_line_array[1]}" 
+                      # for (( j=0; j<${#list_images[@]}; j++ ))
+                      # do
+                      #     if [ ${image_line_array[1]} == ${list_images[$j]} ]
+                      #     then 
+                      #         image_line_array[2]=${list_versions[$j]} + "_" + ${list_tags[$j]}
+                      #         main_list[i+1] = ${image_line_array[0]} + ':' + ${image_line_array[1]} + ':' + ${image_line_array[2]}
+                      #         sed -i 's,image: '"${list_images[$j]}"'.*$,image: '"${list_images[$j]}"':'"${list_versions[$j]}"'_'"${list_tags[$j]}"',g' ${yml_files[$i]}
+                      #         break
+                      #     fi
+                      # done
+                  fi
+                  device_found=false
+              fi
+              device_result=$(echo $line | grep "devices")
+              if [ "$device_result" != "" ]
+              then
+                  device_found=true
+              fi
+              done < ${yml_files[$i]}
+          fi
+      fi
+  done
+
+    # for yml_file in yml_files_default:
+    #   if os.path.isfile(yml_file):
+    #     yml_files = yml_files + [yml_file]
+
+    # for yml_file in yml_files:
+    #   main_file = open(yml_file, "r")
+    #   main_list = main_file.read().split('\n')
+
+    #   custom_option_found = False
+    #   end_environ_set = False
+    #   if os.environ.get('APPSAWAY_SENSORS') != None:
+    #     list_sensors = os.environ.get('APPSAWAY_SENSORS').split(' ')
+    #     if yml_file == "composeHead.yml":
+    #       for i in range(len(main_list)):
+    #         if main_list[i].find("devices:") != -1:
+    #           device_list=[]
+    #           #main_list[i] = main_list[i] + "\n"
+    #           for k in range(i+1,len(main_list),1):
+    #             if main_list[k].find("command:") != -1:
+    #               break
+    #             tmp_device_shared = main_list[k].split('"')[1]    # device:device
+    #             tmp_device = tmp_device_shared.split(":")[0]      # device
+    #             device_list = device_list + [tmp_device]          # we create a list with all devices for this service
+    #           for sensor in list_sensors:
+    #             if sensor not in device_list and sensor != "":
+    #               main_list[i] = main_list[i] + "\n      - \"" + sensor + ":" + sensor + "\"" #- "/dev/snd:/dev/snd"
+
+    #   if os.environ.get('APPSAWAY_IMAGES') != '':
+    #     list_images = os.environ.get('APPSAWAY_IMAGES').split(' ')
+    #     list_versions = os.environ.get('APPSAWAY_VERSIONS').split(' ')
+    #     list_tags = os.environ.get('APPSAWAY_TAGS').split(' ')
+    #     print("image list: ", list_images)            
+
+    #     for i in range(len(main_list)):
+    #       if main_list[i].find("x-yarp-") != -1:
+    #         if main_list[i+1].find("image") != -1:
+    #           image_line = main_list[i+1]
+    #           image_line = image_line.split(':')
+                
+    #           print("Flag:" ,os.environ.get('LOCAL_IMAGE_FLAG'))
+    #           if os.environ.get('LOCAL_IMAGE_FLAG').strip() == "true":
+    #             image_line[1] = "localhost:5000/" + os.environ.get('LOCAL_IMAGE_NAME').strip() # we update the version
+    #             main_list[i+1] = image_line[0] + ': ' + image_line[1] 
+    #             break
+
+    #           for f in range(len(list_images)):
+    #             print("image line:", image_line[1].strip())
+    #             print("list_images[f]:", list_images[f].strip())
+                                        
+    #             if image_line[1].strip() == list_images[f].strip() : # if the name is correct (the image name contains also the repository name - 'icubteamcode/superbuild')
+    #               image_line[2] = list_versions[f] + "_" + list_tags[f] # we update the version
+    #               break
+    #           main_list[i+1] = image_line[0] + ':' + image_line[1] + ':' + image_line[2]
+
+    #   else:
+    #     for i in range(len(main_list)):
+    #       if main_list[i].find("x-yarp-base") != -1 or main_list[i].find("x-yarp-head") != -1 or main_list[i].find("x-yarp-gui") != -1:
+    #         if main_list[i+1].find("image") != -1:
+    #           image_line = main_list[i+1]
+    #           image_line = image_line.split(':')
+    #           image_line[2] = os.environ.get('APPSAWAY_REPO_VERSION') + "_" + os.environ.get('APPSAWAY_REPO_TAG')
+    #           main_list[i+1] = image_line[0] + ':' + image_line[1] + ':' + image_line[2]
+
+    #     if main_list[i].find("services") != -1:
+    #         break
+    #   main_file.close()
+    #   main_file = open(yml_file, "w")
+    #   for i in range(len(main_list)-1):
+    #     main_file.write(main_list[i]+ '\n')
+    #   main_file.write(main_list[-1])
+    #   main_file.close()
+  
+}
+
 copy_yaml_files()
 {
   log "creating path ${APPSAWAY_APP_PATH} on master node (this)"
@@ -253,6 +409,8 @@ copy_yaml_files()
       cp ../demos/${APPSAWAY_APP_NAME}/${file} ${APPSAWAY_APP_PATH}/
     fi
   done
+  log "modifying yaml file $file on master node (this)"
+  
   for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
   do
     if [ -f "../demos/$APPSAWAY_APP_NAME/$file" ]; then

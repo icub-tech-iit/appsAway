@@ -636,7 +636,8 @@ class WidgetGallery(QDialog):
         elapsedTime.start()
 
         self.startApplication()
-
+        os.chdir(os.path.join(os.environ.get('HOME'),"teamcode","appsAway","scripts"))
+        rc = subprocess.call("./appsAway_setEnvironment.local.sh")
             
     def stopProgressBar(self):
         self.pushStopButton.setEnabled(True)
@@ -734,70 +735,81 @@ class WidgetGallery(QDialog):
         rc = subprocess.call("./appsAway_stopApp.sh")
 
     def setupEnvironment(self):
-        os.chdir(os.path.join(os.environ.get('HOME'), "teamcode","appsAway","demos", os.environ.get('APPSAWAY_APP_NAME')))
-        yml_files_default = ["main.yml", "composeGui.yml", "composeHead.yml"]
-        yml_files = []
+        # os.chdir(os.path.join(os.environ.get('HOME'), "teamcode","appsAway","demos", os.environ.get('APPSAWAY_APP_NAME')))
+        # yml_files_default = ["main.yml", "composeGui.yml", "composeHead.yml"]
+        # yml_files = []
 
-        for yml_file in yml_files_default:
-          if os.path.isfile(yml_file):
-            yml_files = yml_files + [yml_file]
+        # for yml_file in yml_files_default:
+        #   if os.path.isfile(yml_file):
+        #     yml_files = yml_files + [yml_file]
 
-        for yml_file in yml_files:
-          main_file = open(yml_file, "r")
-          main_list = main_file.read().split('\n')
+        # for yml_file in yml_files:
+        #   main_file = open(yml_file, "r")
+        #   main_list = main_file.read().split('\n')
 
-          custom_option_found = False
-          end_environ_set = False
-          if os.environ.get('APPSAWAY_SENSORS') != None:
-            list_sensors = os.environ.get('APPSAWAY_SENSORS').split(' ')
-            if yml_file == "composeHead.yml":
-              for i in range(len(main_list)):
-                if main_list[i].find("devices:") != -1:
-                  device_list=[]
-                  #main_list[i] = main_list[i] + "\n"
-                  for k in range(i+1,len(main_list),1):
-                    if main_list[k].find("command:") != -1:
-                      break
-                    tmp_device_shared = main_list[k].split('"')[1]    # device:device
-                    tmp_device = tmp_device_shared.split(":")[0]      # device
-                    device_list = device_list + [tmp_device]          # we create a list with all devices for this service
-                  for sensor in list_sensors:
-                    if sensor not in device_list and sensor != "":
-                      main_list[i] = main_list[i] + "\n      - \"" + sensor + ":" + sensor + "\"" #- "/dev/snd:/dev/snd"
+        #   custom_option_found = False
+        #   end_environ_set = False
+        #   if os.environ.get('APPSAWAY_SENSORS') != None:
+        #     list_sensors = os.environ.get('APPSAWAY_SENSORS').split(' ')
+        #     if yml_file == "composeHead.yml":
+        #       for i in range(len(main_list)):
+        #         if main_list[i].find("devices:") != -1:
+        #           device_list=[]
+        #           #main_list[i] = main_list[i] + "\n"
+        #           for k in range(i+1,len(main_list),1):
+        #             if main_list[k].find("command:") != -1:
+        #               break
+        #             tmp_device_shared = main_list[k].split('"')[1]    # device:device
+        #             tmp_device = tmp_device_shared.split(":")[0]      # device
+        #             device_list = device_list + [tmp_device]          # we create a list with all devices for this service
+        #           for sensor in list_sensors:
+        #             if sensor not in device_list and sensor != "":
+        #               main_list[i] = main_list[i] + "\n      - \"" + sensor + ":" + sensor + "\"" #- "/dev/snd:/dev/snd"
 
-          if os.environ.get('APPSAWAY_IMAGES') != '':
-            list_images = os.environ.get('APPSAWAY_IMAGES').split(' ')
-            list_versions = os.environ.get('APPSAWAY_VERSIONS').split(' ')
-            list_tags = os.environ.get('APPSAWAY_TAGS').split(' ')
+        #   if os.environ.get('APPSAWAY_IMAGES') != '':
+        #     list_images = os.environ.get('APPSAWAY_IMAGES').split(' ')
+        #     list_versions = os.environ.get('APPSAWAY_VERSIONS').split(' ')
+        #     list_tags = os.environ.get('APPSAWAY_TAGS').split(' ')
+        #     print("image list: ", list_images)            
 
-            for i in range(len(main_list)):
-              if main_list[i].find("x-yarp-") != -1:
-                if main_list[i+1].find("image") != -1:
-                  image_line = main_list[i+1]
-                  image_line = image_line.split(':')
-                  for f in range(len(list_images)):
-                    if image_line[1].strip() == list_images[f].strip(): # if the name is correct (the image name contains also the repository name - 'icubteamcode/superbuild')
-                      image_line[2] = list_versions[f] + "_" + list_tags[f] # we update the version
-                      break
-                  main_list[i+1] = image_line[0] + ':' + image_line[1] + ':' + image_line[2]
+        #     for i in range(len(main_list)):
+        #       if main_list[i].find("x-yarp-") != -1:
+        #         if main_list[i+1].find("image") != -1:
+        #           image_line = main_list[i+1]
+        #           image_line = image_line.split(':')
+                  
+        #           print("Flag:" ,os.environ.get('LOCAL_IMAGE_FLAG'))
+        #           if os.environ.get('LOCAL_IMAGE_FLAG').strip() == "true":
+        #             image_line[1] = "localhost:5000/" + os.environ.get('LOCAL_IMAGE_NAME').strip() # we update the version
+        #             main_list[i+1] = image_line[0] + ': ' + image_line[1] 
+        #             break
+  
+        #           for f in range(len(list_images)):
+        #             print("image line:", image_line[1].strip())
+        #             print("list_images[f]:", list_images[f].strip())
+                                          
+        #             if image_line[1].strip() == list_images[f].strip() : # if the name is correct (the image name contains also the repository name - 'icubteamcode/superbuild')
+        #               image_line[2] = list_versions[f] + "_" + list_tags[f] # we update the version
+        #               break
+        #           main_list[i+1] = image_line[0] + ':' + image_line[1] + ':' + image_line[2]
 
-          else:
-            for i in range(len(main_list)):
-              if main_list[i].find("x-yarp-base") != -1 or main_list[i].find("x-yarp-head") != -1 or main_list[i].find("x-yarp-gui") != -1:
-                if main_list[i+1].find("image") != -1:
-                  image_line = main_list[i+1]
-                  image_line = image_line.split(':')
-                  image_line[2] = os.environ.get('APPSAWAY_REPO_VERSION') + "_" + os.environ.get('APPSAWAY_REPO_TAG')
-                  main_list[i+1] = image_line[0] + ':' + image_line[1] + ':' + image_line[2]
+        #   else:
+        #     for i in range(len(main_list)):
+        #       if main_list[i].find("x-yarp-base") != -1 or main_list[i].find("x-yarp-head") != -1 or main_list[i].find("x-yarp-gui") != -1:
+        #         if main_list[i+1].find("image") != -1:
+        #           image_line = main_list[i+1]
+        #           image_line = image_line.split(':')
+        #           image_line[2] = os.environ.get('APPSAWAY_REPO_VERSION') + "_" + os.environ.get('APPSAWAY_REPO_TAG')
+        #           main_list[i+1] = image_line[0] + ':' + image_line[1] + ':' + image_line[2]
 
-            if main_list[i].find("services") != -1:
-                break
-          main_file.close()
-          main_file = open(yml_file, "w")
-          for i in range(len(main_list)-1):
-            main_file.write(main_list[i]+ '\n')
-          main_file.write(main_list[-1])
-          main_file.close()
+        #     if main_list[i].find("services") != -1:
+        #         break
+        #   main_file.close()
+        #   main_file = open(yml_file, "w")
+        #   for i in range(len(main_list)-1):
+        #     main_file.write(main_list[i]+ '\n')
+        #   main_file.write(main_list[-1])
+        #   main_file.close()
 
         # env file is located in iCubApps folder, so we need APPSAWAY_APP_PATH
         os.chdir(os.environ.get('APPSAWAY_APP_PATH'))
