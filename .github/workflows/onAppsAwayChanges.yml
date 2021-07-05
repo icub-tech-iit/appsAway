@@ -46,10 +46,20 @@ jobs:
           app_name_list=$(echo "${app_name_list[@]}" | tr ' ' '\n' | sort -u | tr '\n' ' ')
           app_name_list=$(echo ${app_name_list::-1})
           echo "::set-output name=apps::${app_name_list[@]}"
-      - name: Repository Dispatch
-        uses: peter-evans/repository-dispatch@v1
+      - name: Get Token
+        id: get_workflow_token
+        uses: tibdex/github-app-token@v1
         with:
-          token: ${{ secrets.CODE_REPO_ACCSS_TOKEN }}
+          private_key: ${{ secrets.ICUB_TECH_CODE_APP_KEY }}
+          app_id: ${{ secrets.ICUB_TECH_CODE_APP_ID }}
+          repository: icub-tech-iit/code
+            
+      - name: Repository dispatch to code
+        uses: peter-evans/repository-dispatch@v1
+        env:
+          GITHUB_APPS_TOKEN: ${{ steps.get_workflow_token.outputs.token }}
+        with:
+          token: ${{ env.GITHUB_APPS_TOKEN }}   
           repository: icub-tech-iit/code
           event-type: app_testing_from_appsaway
           client-payload: '{"type": "app_testing_from_appsaway",  "app_list": "${{ steps.set_app_list.outputs.apps}}"}'
