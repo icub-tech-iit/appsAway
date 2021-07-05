@@ -106,6 +106,10 @@ echo "tags: $APPSAWAY_TAGS"
 
 echo "about to setup the cluster..." 
 ./appsAway_setupCluster.sh
+
+echo "
+LOCAL_IMAGE_FLAG=false" >> $HOME/iCubApps/$APPSAWAY_APP_NAME/.env 
+
 ./appsAway_setupSwarm.sh
 setupEnvironment
 ./appsAway_copyFiles.sh
