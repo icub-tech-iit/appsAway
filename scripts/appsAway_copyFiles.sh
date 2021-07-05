@@ -127,7 +127,7 @@ init()
  os=`uname -s`
  if [ "$os" = "Darwin" ]
  then
-  #_ALL_LOCAL_IP_ADDRESSES=$(arp -a | awk -F'[()]' '{print $2}')
+  _ALL_LOCAL_IP_ADDRESSES=$(arp -a | awk -F'[()]' '{print $2}')
  else
   _ALL_LOCAL_IP_ADDRESSES=$(hostname --all-ip-address)
   _ALL_LOCAL_IP_ADDRESSES+=$(hostname --all-fqdns)
@@ -249,13 +249,13 @@ overwrite_yaml_files()
   yml_files=()
   
   for (( i=0; i<$yml_files_default_len; i++ ))
-  do    
-      if [ -f "${yml_files_default[$i]}" ]
+  do
+      echo "files are: ${APPSAWAY_APP_PATH}/${yml_files_default[$i]}"    
+      if [ -f "${APPSAWAY_APP_PATH}/${yml_files_default[$i]}" ]
       then
-          yml_files+=(${yml_files_default[$i]})
+          yml_files+=("${APPSAWAY_APP_PATH}/${yml_files_default[$i]}")
       fi
   done
-  echo "files: ${yml_files[@]}"
   for (( i=0; i<${#yml_files[@]}; i++ ))
   do
       if [[ $APPSAWAY_IMAGES != '' ]] 
@@ -266,10 +266,12 @@ overwrite_yaml_files()
       
           if [[ $LOCAL_IMAGE_FLAG == true ]]
           then
+              echo "overwriting localhost:5000/${LOCAL_IMAGE_NAME} in ${yml_files[$i]}" 
               sed -i 's,image: .*$,image: '"localhost:5000/${LOCAL_IMAGE_NAME}"',g' ${yml_files[$i]}
           else
               for (( j=0; j<${#list_images[@]}; j++ ))
               do
+                  echo "overwriting ${list_images[$j]} in ${yml_files[$i]}" 
                   sed -i 's,image: '"${list_images[$j]}"'.*$,image: '"${list_images[$j]}"':'"${list_versions[$j]}"'_'"${list_tags[$j]}"',g' ${yml_files[$i]}
               done
           fi    
@@ -323,7 +325,7 @@ overwrite_yaml_files()
                     echo "sensors to add: ${sensors_to_add[@]}"
                     for sens_to_add in "${sensors_to_add[@]}"
                     do
-                      sed -i 's,'"${line}"'.*$,'"    - \"${sens_to_add}"':'"${sens_to_add}\"\n  ${line}"',g' ${yml_files[$i]}      
+                      sed -i 's,'"${line}"'.*$,'"    - \"${sens_to_add}"':'"${sens_to_add}\"\n  ${line}"',g' ${yml_files[$i]}    
                     done   
                     append_sensors=false
                     sensors_to_add=""
@@ -337,86 +339,14 @@ overwrite_yaml_files()
             done < ${yml_files[$i]}
           fi
       fi
-  done
-
-    # for yml_file in yml_files_default:
-    #   if os.path.isfile(yml_file):
-    #     yml_files = yml_files + [yml_file]
-
-    # for yml_file in yml_files:
-    #   main_file = open(yml_file, "r")
-    #   main_list = main_file.read().split('\n')
-
-    #   custom_option_found = False
-    #   end_environ_set = False
-    #   if os.environ.get('APPSAWAY_SENSORS') != None:
-    #     list_sensors = os.environ.get('APPSAWAY_SENSORS').split(' ')
-    #     if yml_file == "composeHead.yml":
-    #       for i in range(len(main_list)):
-    #         if main_list[i].find("devices:") != -1:
-    #           device_list=[]
-    #           #main_list[i] = main_list[i] + "\n"
-    #           for k in range(i+1,len(main_list),1):
-    #             if main_list[k].find("command:") != -1:
-    #               break
-    #             tmp_device_shared = main_list[k].split('"')[1]    # device:device
-    #             tmp_device = tmp_device_shared.split(":")[0]      # device
-    #             device_list = device_list + [tmp_device]          # we create a list with all devices for this service
-    #           for sensor in list_sensors:
-    #             if sensor not in device_list and sensor != "":
-    #               main_list[i] = main_list[i] + "\n      - \"" + sensor + ":" + sensor + "\"" #- "/dev/snd:/dev/snd"
-
-    #   if os.environ.get('APPSAWAY_IMAGES') != '':
-    #     list_images = os.environ.get('APPSAWAY_IMAGES').split(' ')
-    #     list_versions = os.environ.get('APPSAWAY_VERSIONS').split(' ')
-    #     list_tags = os.environ.get('APPSAWAY_TAGS').split(' ')
-    #     print("image list: ", list_images)            
-
-    #     for i in range(len(main_list)):
-    #       if main_list[i].find("x-yarp-") != -1:
-    #         if main_list[i+1].find("image") != -1:
-    #           image_line = main_list[i+1]
-    #           image_line = image_line.split(':')
-                
-    #           print("Flag:" ,os.environ.get('LOCAL_IMAGE_FLAG'))
-    #           if os.environ.get('LOCAL_IMAGE_FLAG').strip() == "true":
-    #             image_line[1] = "localhost:5000/" + os.environ.get('LOCAL_IMAGE_NAME').strip() # we update the version
-    #             main_list[i+1] = image_line[0] + ': ' + image_line[1] 
-    #             break
-
-    #           for f in range(len(list_images)):
-    #             print("image line:", image_line[1].strip())
-    #             print("list_images[f]:", list_images[f].strip())
-                                        
-    #             if image_line[1].strip() == list_images[f].strip() : # if the name is correct (the image name contains also the repository name - 'icubteamcode/superbuild')
-    #               image_line[2] = list_versions[f] + "_" + list_tags[f] # we update the version
-    #               break
-    #           main_list[i+1] = image_line[0] + ':' + image_line[1] + ':' + image_line[2]
-
-    #   else:
-    #     for i in range(len(main_list)):
-    #       if main_list[i].find("x-yarp-base") != -1 or main_list[i].find("x-yarp-head") != -1 or main_list[i].find("x-yarp-gui") != -1:
-    #         if main_list[i+1].find("image") != -1:
-    #           image_line = main_list[i+1]
-    #           image_line = image_line.split(':')
-    #           image_line[2] = os.environ.get('APPSAWAY_REPO_VERSION') + "_" + os.environ.get('APPSAWAY_REPO_TAG')
-    #           main_list[i+1] = image_line[0] + ':' + image_line[1] + ':' + image_line[2]
-
-    #     if main_list[i].find("services") != -1:
-    #         break
-    #   main_file.close()
-    #   main_file = open(yml_file, "w")
-    #   for i in range(len(main_list)-1):
-    #     main_file.write(main_list[i]+ '\n')
-    #   main_file.write(main_list[-1])
-    #   main_file.close()
-  
+  done  
 }
 
 copy_yaml_files()
 {
   log "creating path ${APPSAWAY_APP_PATH} on master node (this)"
   mkdir -p ${APPSAWAY_APP_PATH}
+  echo "yml files: ${APPSAWAY_DEPLOY_YAML_FILE_LIST}"
   for file in ${APPSAWAY_DEPLOY_YAML_FILE_LIST}
   do
     if [ -f "../demos/$APPSAWAY_APP_NAME/$file" ]; then
@@ -425,7 +355,7 @@ copy_yaml_files()
     fi
   done
   log "modifying yaml file $file on master node (this)"
-  
+  echo "gui files: ${APPSAWAY_GUI_YAML_FILE_LIST}"
   for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
   do
     if [ -f "../demos/$APPSAWAY_APP_NAME/$file" ]; then
@@ -433,6 +363,17 @@ copy_yaml_files()
       cp ../demos/${APPSAWAY_APP_NAME}/${file} ${APPSAWAY_APP_PATH}/
     fi
   done
+  log "modifying yaml file $file on master node (this)"
+  echo "head files: ${APPSAWAY_HEAD_YAML_FILE_LIST}"
+  for file in ${APPSAWAY_HEAD_YAML_FILE_LIST}
+  do
+    if [ -f "../demos/$APPSAWAY_APP_NAME/$file" ]; then
+      log "copying yaml file $file to master node (this)"
+      cp ../demos/${APPSAWAY_APP_NAME}/${file} ${APPSAWAY_APP_PATH}/
+    fi
+  done
+  log "modifying yaml files"
+  overwrite_yaml_files
   APPSAWAY_DATA_FOLDERS=$( ls ../demos/$APPSAWAY_APP_NAME/ )
   echo "the folders are $APPSAWAY_DATA_FOLDERS"
   for folder in ${APPSAWAY_DATA_FOLDERS}
@@ -444,7 +385,7 @@ copy_yaml_files()
     if [ -d "../demos/$APPSAWAY_APP_NAME/$folder" ]
     then
       log "copying data folder $folder to master node (this)"
-      cp -R ../demos/${APPSAWAY_APP_NAME}/${folder} ${APPSAWAY_APP_PATH}/
+      cp -R ${APPSAWAY_APP_PATH}/${folder} ${APPSAWAY_APP_PATH}/
     fi
   done
   if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
@@ -454,7 +395,7 @@ copy_yaml_files()
     do
       if [ -f "../demos/$APPSAWAY_APP_NAME/$file" ]; then
         log "copying yaml file $file to node with IP $APPSAWAY_ICUBHEADNODE_ADDR"
-        ${_SCP_BIN} ${_SCP_PARAMS} ../demos/${APPSAWAY_APP_NAME}/${file} ${APPSAWAY_ICUBHEADNODE_USERNAME}@${APPSAWAY_ICUBHEADNODE_ADDR}:${APPSAWAY_APP_PATH}/
+        ${_SCP_BIN} ${_SCP_PARAMS} ${APPSAWAY_APP_PATH}/${file} ${APPSAWAY_ICUBHEADNODE_USERNAME}@${APPSAWAY_ICUBHEADNODE_ADDR}:${APPSAWAY_APP_PATH}/
       fi
     done
   fi
@@ -466,7 +407,7 @@ copy_yaml_files()
     do
       if [ -f "../demos/$APPSAWAY_APP_NAME/$file" ]; then
         log "copying yaml file $file to node with IP $APPSAWAY_GUINODE_ADDR"
-        ${_SCP_BIN} ${_SCP_PARAMS} ../demos/${APPSAWAY_APP_NAME}/${file} ${APPSAWAY_GUINODE_USERNAME}@${APPSAWAY_GUINODE_ADDR}:${APPSAWAY_APP_PATH}/
+        ${_SCP_BIN} ${_SCP_PARAMS} ${APPSAWAY_APP_PATH}/${file} ${APPSAWAY_GUINODE_USERNAME}@${APPSAWAY_GUINODE_ADDR}:${APPSAWAY_APP_PATH}/
       fi
     done
   elif [ "$APPSAWAY_GUINODE_ADDR" == "" ] && [ "$APPSAWAY_CONSOLENODE_ADDR" != "" ]; then
@@ -476,7 +417,7 @@ copy_yaml_files()
     do
       if [ -f "../demos/$APPSAWAY_APP_NAME/$file" ]; then
         log "copying yaml file $file to node with IP $APPSAWAY_CONSOLENODE_ADDR"
-        ${_SCP_BIN} ${_SCP_PARAMS} ../demos/${APPSAWAY_APP_NAME}/${file} ${APPSAWAY_CONSOLENODE_USERNAME}@${APPSAWAY_CONSOLENODE_ADDR}:${APPSAWAY_APP_PATH}/
+        ${_SCP_BIN} ${_SCP_PARAMS} ${APPSAWAY_APP_PATH}/${file} ${APPSAWAY_CONSOLENODE_USERNAME}@${APPSAWAY_CONSOLENODE_ADDR}:${APPSAWAY_APP_PATH}/
       fi
     done
   fi
