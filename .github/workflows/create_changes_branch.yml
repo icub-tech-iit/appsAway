@@ -11,15 +11,23 @@ on:
 jobs:
   update_code:
     runs-on: ubuntu-latest
-    steps: 
-      # we checkout appsAway code
-      - uses: actions/checkout@v2
+    steps:
+      - name: Get Token
+          id: get_workflow_token
+          uses: tibdex/github-app-token@v1
+          with:
+            private_key: ${{ secrets.ICUB_TECH_CODE_APP_KEY }}
+            app_id: ${{ secrets.ICUB_TECH_CODE_APP_ID }}
+            repository: icub-tech-iit/code
+      - name: Checkout Code repository
+        uses: actions/checkout@v2
+        env:
+          GITHUB_APPS_TOKEN: ${{ steps.get_workflow_token.outputs.token }}
         with:
+          token: ${{ env.GITHUB_APPS_TOKEN }}
           repository: icub-tech-iit/code
-          token: ${{ secrets.CODE_REPO_ACCSS_TOKEN }}
           path: code
-          ref: ${{ github.event.client_payload.branch_name }}
-            
+          ref: ${{ github.event.client_payload.branch_name }} 
       - name: check working directory
         run: |
             ls
