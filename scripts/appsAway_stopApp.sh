@@ -222,10 +222,15 @@ stop_deploy()
   log "executing docker stack deploy"
   export $(cat .env)
   #cd $APPSAWAY_APP_PATH
-  for _file2deploy in ${APPSAWAY_DEPLOY_YAML_FILE_LIST}
-  do
+  #for _file2deploy in ${APPSAWAY_DEPLOY_YAML_FILE_LIST}
+  #do
     ${_DOCKER_BIN} ${_DOCKER_PARAMS} stack rm ${APPSAWAY_STACK_NAME}
-  done
+  #done
+  echo "registry flag: ${REGISTRY_UP_FLAG}"
+  if [[ ${LOCAL_IMAGE_FLAG} == true && ${REGISTRY_UP_FLAG} == false ]]
+  then
+    ${_DOCKER_BIN} service rm registry
+  fi
 }
 
 

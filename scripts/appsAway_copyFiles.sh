@@ -242,10 +242,111 @@ fill_hostname_list()
   
 #}
 
+overwrite_yaml_files()
+{
+  yml_files_default=("main.yml" "composeGui.yml" "composeHead.yml")
+  yml_files_default_len=${#yml_files_default[@]}
+  yml_files=()
+  
+  for (( i=0; i<$yml_files_default_len; i++ ))
+  do
+      echo "files are: ${APPSAWAY_APP_PATH}/${yml_files_default[$i]}"    
+      if [ -f "${APPSAWAY_APP_PATH}/${yml_files_default[$i]}" ]
+      then
+          yml_files+=("${APPSAWAY_APP_PATH}/${yml_files_default[$i]}")
+      fi
+  done
+  for (( i=0; i<${#yml_files[@]}; i++ ))
+  do
+      if [[ $APPSAWAY_IMAGES != '' ]] 
+      then
+          list_images=($APPSAWAY_IMAGES)
+          list_versions=($APPSAWAY_VERSIONS)
+          list_tags=($APPSAWAY_TAGS)
+      
+          if [[ $LOCAL_IMAGE_FLAG == true ]]
+          then
+              echo "overwriting localhost:5000/${LOCAL_IMAGE_NAME} in ${yml_files[$i]}" 
+              sed -i 's,image: .*$,image: '"localhost:5000/${LOCAL_IMAGE_NAME}"',g' ${yml_files[$i]}
+          else
+              for (( j=0; j<${#list_images[@]}; j++ ))
+              do
+                  echo "overwriting ${list_images[$j]} in ${yml_files[$i]}" 
+                  sed -i 's,image: '"${list_images[$j]}"'.*$,image: '"${list_images[$j]}"':'"${list_versions[$j]}"'_'"${list_tags[$j]}"',g' ${yml_files[$i]}
+              done
+          fi    
+      fi
+
+      if [[ $APPSAWAY_SENSORS != '' ]] 
+      then
+          list_sensors=($APPSAWAY_SENSORS)
+          echo "${yml_files[$i]}"
+          if [ ${yml_files[$i]} == "composeHead.yml" ]
+          then
+            look_for_devices=false
+            append_sensors=false
+            list_devices=()
+            while read -r line || [ -n "$line" ]
+            do
+                device_result=$(echo $line | grep "devices")
+             
+                if [[ $look_for_devices == true ]]
+                then
+                    if [[ $line == -* || $line == \#* ]]
+                    then
+                        if [[ $line == -* ]]
+                        then
+                            device=$(echo $line | awk -F':' '{print $1}' | tr -d '"' | sed 's/-//' | tr -d ' ' )
+                            echo "Device: $device"
+                            devices_list="$devices_list $device"
+                            echo "Device list: $devices_list"
+                        fi
+                    else
+                        echo $line
+                        look_for_devices=false
+                        append_sensors=true
+                    fi
+                fi
+                if [[ $append_sensors == true ]]
+                then
+                    devices_list=${devices_list:1}
+                    devices_list=($devices_list)
+                    echo "Device list: ${devices_list[@]}"
+                    for sens in "${list_sensors[@]}"
+                    do
+                        if [[ ! "${devices_list[@]}" =~ "$sens" ]]
+                        then
+                            echo "The sensor is NOT in the device list"
+                            sensors_to_add="$sensors_to_add $sens"
+                        fi
+                    done  
+                    sensors_to_add=${sensors_to_add:1}
+                    sensors_to_add=($sensors_to_add)
+                    echo "sensors to add: ${sensors_to_add[@]}"
+                    for sens_to_add in "${sensors_to_add[@]}"
+                    do
+                      sed -i 's,'"${line}"'.*$,'"    - \"${sens_to_add}"':'"${sens_to_add}\"\n  ${line}"',g' ${yml_files[$i]}    
+                    done   
+                    append_sensors=false
+                    sensors_to_add=""
+                    devices_list=""
+                fi
+                if [[ "$device_result" != "" &&  "$line" != \#* ]]
+                then                   
+                    look_for_devices=true   
+                    echo "Device result: $device_result"                
+                fi            
+            done < ${yml_files[$i]}
+          fi
+      fi
+  done  
+}
+
 copy_yaml_files()
 {
   log "creating path ${APPSAWAY_APP_PATH} on master node (this)"
   mkdir -p ${APPSAWAY_APP_PATH}
+  echo "yml files: ${APPSAWAY_DEPLOY_YAML_FILE_LIST}"
   for file in ${APPSAWAY_DEPLOY_YAML_FILE_LIST}
   do
     if [ -f "../demos/$APPSAWAY_APP_NAME/$file" ]; then
@@ -253,6 +354,8 @@ copy_yaml_files()
       cp ../demos/${APPSAWAY_APP_NAME}/${file} ${APPSAWAY_APP_PATH}/
     fi
   done
+  log "modifying yaml file $file on master node (this)"
+  echo "gui files: ${APPSAWAY_GUI_YAML_FILE_LIST}"
   for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
   do
     if [ -f "../demos/$APPSAWAY_APP_NAME/$file" ]; then
@@ -260,6 +363,17 @@ copy_yaml_files()
       cp ../demos/${APPSAWAY_APP_NAME}/${file} ${APPSAWAY_APP_PATH}/
     fi
   done
+  log "modifying yaml file $file on master node (this)"
+  echo "head files: ${APPSAWAY_HEAD_YAML_FILE_LIST}"
+  for file in ${APPSAWAY_HEAD_YAML_FILE_LIST}
+  do
+    if [ -f "../demos/$APPSAWAY_APP_NAME/$file" ]; then
+      log "copying yaml file $file to master node (this)"
+      cp ../demos/${APPSAWAY_APP_NAME}/${file} ${APPSAWAY_APP_PATH}/
+    fi
+  done
+  log "modifying yaml files"
+  overwrite_yaml_files
   APPSAWAY_DATA_FOLDERS=$( ls ../demos/$APPSAWAY_APP_NAME/ )
   echo "the folders are $APPSAWAY_DATA_FOLDERS"
   for folder in ${APPSAWAY_DATA_FOLDERS}
@@ -271,7 +385,7 @@ copy_yaml_files()
     if [ -d "../demos/$APPSAWAY_APP_NAME/$folder" ]
     then
       log "copying data folder $folder to master node (this)"
-      cp -R ../demos/${APPSAWAY_APP_NAME}/${folder} ${APPSAWAY_APP_PATH}/
+      cp -R ${APPSAWAY_APP_PATH}/${folder} ${APPSAWAY_APP_PATH}/
     fi
   done
   if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
@@ -281,7 +395,7 @@ copy_yaml_files()
     do
       if [ -f "../demos/$APPSAWAY_APP_NAME/$file" ]; then
         log "copying yaml file $file to node with IP $APPSAWAY_ICUBHEADNODE_ADDR"
-        ${_SCP_BIN} ${_SCP_PARAMS} ../demos/${APPSAWAY_APP_NAME}/${file} ${APPSAWAY_ICUBHEADNODE_USERNAME}@${APPSAWAY_ICUBHEADNODE_ADDR}:${APPSAWAY_APP_PATH}/
+        ${_SCP_BIN} ${_SCP_PARAMS} ${APPSAWAY_APP_PATH}/${file} ${APPSAWAY_ICUBHEADNODE_USERNAME}@${APPSAWAY_ICUBHEADNODE_ADDR}:${APPSAWAY_APP_PATH}/
       fi
     done
   fi
@@ -293,7 +407,7 @@ copy_yaml_files()
     do
       if [ -f "../demos/$APPSAWAY_APP_NAME/$file" ]; then
         log "copying yaml file $file to node with IP $APPSAWAY_GUINODE_ADDR"
-        ${_SCP_BIN} ${_SCP_PARAMS} ../demos/${APPSAWAY_APP_NAME}/${file} ${APPSAWAY_GUINODE_USERNAME}@${APPSAWAY_GUINODE_ADDR}:${APPSAWAY_APP_PATH}/
+        ${_SCP_BIN} ${_SCP_PARAMS} ${APPSAWAY_APP_PATH}/${file} ${APPSAWAY_GUINODE_USERNAME}@${APPSAWAY_GUINODE_ADDR}:${APPSAWAY_APP_PATH}/
       fi
     done
   elif [ "$APPSAWAY_GUINODE_ADDR" == "" ] && [ "$APPSAWAY_CONSOLENODE_ADDR" != "" ]; then
@@ -303,7 +417,7 @@ copy_yaml_files()
     do
       if [ -f "../demos/$APPSAWAY_APP_NAME/$file" ]; then
         log "copying yaml file $file to node with IP $APPSAWAY_CONSOLENODE_ADDR"
-        ${_SCP_BIN} ${_SCP_PARAMS} ../demos/${APPSAWAY_APP_NAME}/${file} ${APPSAWAY_CONSOLENODE_USERNAME}@${APPSAWAY_CONSOLENODE_ADDR}:${APPSAWAY_APP_PATH}/
+        ${_SCP_BIN} ${_SCP_PARAMS} ${APPSAWAY_APP_PATH}/${file} ${APPSAWAY_CONSOLENODE_USERNAME}@${APPSAWAY_CONSOLENODE_ADDR}:${APPSAWAY_APP_PATH}/
       fi
     done
   fi
