@@ -202,8 +202,8 @@ run_deploy()
     echo "Registry_up_flag: $REGISTRY_UP_FLAG"
     echo "export REGISTRY_UP_FLAG=$REGISTRY_UP_FLAG" >> ${HOME}/teamcode/appsAway/scripts/${_APPSAWAY_ENVFILE}
     
-    ${_DOCKER_BIN} tag ${LOCAL_IMAGE_NAME} localhost:5000/${LOCAL_IMAGE_NAME}
-    ${_DOCKER_BIN} push localhost:5000/${LOCAL_IMAGE_NAME}
+    ${_DOCKER_BIN} tag ${LOCAL_IMAGE_NAME} ${APPSAWAY_CONSOLENODE_ADDR}:5000/${LOCAL_IMAGE_NAME}
+    ${_DOCKER_BIN} push ${APPSAWAY_CONSOLENODE_ADDR}:5000/${LOCAL_IMAGE_NAME}
     # echo "export APPSAWAY_IMAGES=\"localhost:5000/${LOCAL_IMAGE_NAME}\"" >> ${HOME}/teamcode/appsAway/scripts/appsAway_setEnvironment.local.sh
     # source ${HOME}/teamcode/appsAway/scripts/appsAway_setEnvironment.local.sh
     # for i in "${!APPSAWAY_IMAGES[@]}"; 

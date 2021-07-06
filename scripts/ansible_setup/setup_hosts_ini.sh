@@ -29,6 +29,7 @@ ${nodes_name_array[$i]}Laptop ansible_host=${nodes_addr_array[$i]}
 [${nodes_name_array[$i]}:vars]
 ansible_ssh_user=\"${nodes_usr_array[$i]}\"
 ansible_become_pass={{ ${nodes_name_array[$i]}_pass }}
+ansible_console_host=${APPSAWAY_CONSOLENODE_ADDR}
 " >> ./hosts.ini
 done
 
