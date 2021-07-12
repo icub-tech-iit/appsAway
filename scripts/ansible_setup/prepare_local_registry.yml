@@ -1,0 +1,22 @@
+- name: Prepare local registry
+  hosts: nodes
+  become: yes
+  tasks:      
+    - name: Adding local registry
+      shell: echo "{ \"insecure-registries\":[\""{{ ansible_console_host }}":5000\"] }" > /etc/docker/daemon.json
+
+    - name: Stop docker
+      shell: sudo systemctl stop docker
+      args:
+        warn: no
+      when: ansible_distribution != 'MacOSX'
+
+    - name: Start docker
+      shell: sudo systemctl start docker
+      retries: 3
+      delay: 30
+      register: result
+      until: result.rc == 0
+      args:
+        warn: no
+      when: ansible_distribution != 'MacOSX'

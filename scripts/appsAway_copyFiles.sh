@@ -266,8 +266,8 @@ overwrite_yaml_files()
       
           if [[ $LOCAL_IMAGE_FLAG == true ]]
           then
-              echo "overwriting localhost:5000/${LOCAL_IMAGE_NAME} in ${yml_files[$i]}" 
-              sed -i 's,image: .*$,image: '"localhost:5000/${LOCAL_IMAGE_NAME}"',g' ${yml_files[$i]}
+              echo "overwriting ${APPSAWAY_CONSOLENODE_ADDR}:5000/${LOCAL_IMAGE_NAME} in ${yml_files[$i]}" 
+              sed -i 's,image: .*$,image: '"${APPSAWAY_CONSOLENODE_ADDR}:5000/${LOCAL_IMAGE_NAME}"',g' ${yml_files[$i]}
           else
               for (( j=0; j<${#list_images[@]}; j++ ))
               do
