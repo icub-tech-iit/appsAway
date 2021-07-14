@@ -9,6 +9,7 @@ function check_failure { #TODO: we can't give a script as input to the function 
     fi
 }
 
+
 function setupEnvironment {
         cd $HOME/teamcode/appsAway/demos/$APPSAWAY_APP_NAME
         yml_files_default=("main.yml" "composeGui.yml")
