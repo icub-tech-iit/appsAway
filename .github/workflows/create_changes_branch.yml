@@ -120,6 +120,9 @@ jobs:
       
       - name: debugging
         run: git remote -v && git fetch origin
+        
+      - name: config
+        run: git config --global --add hub.host github.com
       
       - name: pull-request
         id: open-pr
