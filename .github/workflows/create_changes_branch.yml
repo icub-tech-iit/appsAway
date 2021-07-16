@@ -125,6 +125,7 @@ jobs:
           title: "Adding user changes into the website."
           body: ${{ steps.get_filedata.outputs.changes_list }}
           branch: ${{ github.event.client_payload.branch_name }}
+          base: master
           assignees: ${{ steps.get_filedata.outputs.user_list }}
           reviewers: "AlexAntn,vtikha,ilaria-carlini"
       
