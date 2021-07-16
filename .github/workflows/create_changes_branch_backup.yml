@@ -2,7 +2,7 @@ name: Creating changes branch
 
 on: 
     repository_dispatch:
-        types: [user_changes]
+        types: [user_changesdasfihsbadfug]
 
 
 #            mv -v ./appsAway/user_changes/* ./icub-tech-apps/dist/database/upgrade/
