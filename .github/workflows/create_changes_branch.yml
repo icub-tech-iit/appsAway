@@ -22,9 +22,9 @@ jobs:
       - name: Checkout Code repository
         uses: actions/checkout@v2
         env:
-          GITHUB_APPS_TOKEN: ${{ steps.get_workflow_token.outputs.token }}
+          GITHUB_TOKEN: ${{ steps.get_workflow_token.outputs.token }}
         with:
-          token: ${{ env.GITHUB_APPS_TOKEN }}
+          token: ${{ env.GITHUB_TOKEN }}
           repository: icub-tech-iit/code
           path: code
           ref: ${{ github.event.client_payload.branch_name }} 
