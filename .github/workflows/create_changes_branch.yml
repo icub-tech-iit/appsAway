@@ -12,19 +12,26 @@ jobs:
   update_code:
     runs-on: ubuntu-latest
     steps:
-      - name: Get Token
-        id: get_workflow_token
-        uses: tibdex/github-app-token@v1
-        with:
-          private_key: ${{ secrets.ICUB_TECH_CODE_APP_KEY }}
-          app_id: ${{ secrets.ICUB_TECH_CODE_APP_ID }}
-          repository: icub-tech-iit/code
+      #- name: Get Token
+      #  id: get_workflow_token
+      #  uses: tibdex/github-app-token@v1
+      #  with:
+      #    private_key: ${{ secrets.ICUB_TECH_CODE_APP_KEY }}
+      #    app_id: ${{ secrets.ICUB_TECH_CODE_APP_ID }}
+      #    repository: icub-tech-iit/code
+      #- name: Checkout Code repository
+      #  uses: actions/checkout@v2
+      #  env:
+      #    GITHUB_TOKEN: ${{ steps.get_workflow_token.outputs.token }}
+      #  with:
+      #    token: ${{ env.GITHUB_TOKEN }}
+      #    repository: icub-tech-iit/code
+      #    path: code
+      #    ref: ${{ github.event.client_payload.branch_name }} 
       - name: Checkout Code repository
         uses: actions/checkout@v2
-        env:
-          GITHUB_TOKEN: ${{ steps.get_workflow_token.outputs.token }}
         with:
-          token: ${{ env.GITHUB_TOKEN }}
+          token: ${{ secrets.CODE_REPO_ACCSS_TOKEN }}
           repository: icub-tech-iit/code
           path: code
           ref: ${{ github.event.client_payload.branch_name }} 
@@ -121,30 +128,31 @@ jobs:
       - name: debugging
         run: git branch -a
         
-      - name: config
-        run: git config --global hub.protocol https
+     # - name: config
+     #   run: git config --global hub.protocol https
       
-      - name: install hub
-        run: sudo snap install hub --classic
+     # - name: install hub
+     #   run: sudo snap install hub --classic
+      
+     # - name: pull-request
+     #   id: open-pr
+     #   run: hub pull-request   -b master   -h user_changes_16072021102501   --no-edit   -m "Adding user changes into the website." -m " <h3>Addition of a new app:<ins>vale</ins></h3> " -r "AlexAntn,vtikha,ilaria-carlini" -a "vvasco,vvasco,"   || true
+        
       
       - name: pull-request
         id: open-pr
-        run: hub pull-request   -b master   -h user_changes_16072021102501   --no-edit   -m "Adding user changes into the website." -m " <h3>Addition of a new app:<ins>vale</ins></h3> " -r "AlexAntn,vtikha,ilaria-carlini" -a "vvasco,vvasco,"   || true
-        
-      
-      #- name: pull-request
-      #  id: open-pr
-      #  uses: devops-infra/action-pull-request@v0.4
+        uses: devops-infra/action-pull-request@v0.4
       #  env:
       #    GITHUB_APPS_TOKEN: ${{ steps.get_workflow_token.outputs.token }}
-      #  with:
+        with:
       #    github_token: ${{ env.GITHUB_APPS_TOKEN }}
-      #    source_branch: ${{ github.event.client_payload.branch_name }}
-      #    target_branch: master
-      #    title: "Adding user changes into the website."
-      #    body: ${{ steps.get_filedata.outputs.changes_list }}
-      #    reviewer: "AlexAntn,vtikha,ilaria-carlini"
-      #    assignee: ${{ steps.get_filedata.outputs.user_list }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          source_branch: ${{ github.event.client_payload.branch_name }}
+          target_branch: master
+          title: "Adding user changes into the website."
+          body: ${{ steps.get_filedata.outputs.changes_list }}
+          reviewer: "AlexAntn,vtikha,ilaria-carlini"
+          assignee: ${{ steps.get_filedata.outputs.user_list }}
       
       #- name: pull-request
       #  id: open-pr
