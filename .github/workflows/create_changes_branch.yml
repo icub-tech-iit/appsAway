@@ -119,7 +119,7 @@ jobs:
               echo ::set-output name=exported_img_list::${exported_img_list[@]}
       
       - name: debugging
-        run: git fetch origin
+        run: git branch -a
         
       - name: config
         run: git config --global --add hub.host github.com
