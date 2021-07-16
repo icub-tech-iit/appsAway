@@ -119,15 +119,15 @@ jobs:
               
       - name: pull-request
         id: open-pr
-        uses: peter-evans/create-pull-request@v3
+        uses: devops-infra/action-pull-request@v0.4
         with:
-          commit-message: "Merged user changes in appsAway"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          source_branch: ${{ github.event.client_payload.branch_name }}
+          target_branch: master
           title: "Adding user changes into the website."
           body: ${{ steps.get_filedata.outputs.changes_list }}
-          branch: ${{ github.event.client_payload.branch_name }}
-          base: master
-          assignees: ${{ steps.get_filedata.outputs.user_list }}
-          reviewers: "AlexAntn,vtikha,ilaria-carlini"
+          reviewer: "AlexAntn,vtikha,ilaria-carlini"
+          assignee: ${{ steps.get_filedata.outputs.user_list }}
       
       #- name: pull-request
       #  id: open-pr
