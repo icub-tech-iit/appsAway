@@ -129,7 +129,7 @@ jobs:
         run: echo "${{ github.event.client_payload.branch_name }}"
         
       - name: config remote
-        run: git config --global --add hub.host github.com/icub-tech-iit/appsAway/
+        run: git config --global --add hub.host github.com
         
       - name: print remote
         run: git remote -v 
