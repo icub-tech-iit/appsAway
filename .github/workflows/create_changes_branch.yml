@@ -128,6 +128,8 @@ jobs:
       - name: print branchname
         run: echo "${{ github.event.client_payload.branch_name }}"
         
+      - name: config remote
+        run: git config --global --add hub.host github.com/icub-tech-iit/appsAway/
         
       - name: print remote
         run: git remote -v 
@@ -165,12 +167,12 @@ jobs:
         id: open-pr
         uses: repo-sync/pull-request@v2
         with:
-            destination_branch: "master"
+            destination_branch: "remotes/origin/master"
             pr_title: "Adding user changes into the website."
             pr_body: ${{ steps.get_filedata.outputs.changes_list }}
             pr_reviewer: "AlexAntn,vtikha,ilaria-carlini"
             pr_assignee: ${{ steps.get_filedata.outputs.user_list }}
-            source_branch: ${{ github.event.client_payload.branch_name }}
+            source_branch: "remotes/origin/${{ github.event.client_payload.branch_name }}"
             github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Cloud SDK
