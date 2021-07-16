@@ -146,7 +146,7 @@ jobs:
       #    GITHUB_APPS_TOKEN: ${{ steps.get_workflow_token.outputs.token }}
         with:
       #    github_token: ${{ env.GITHUB_APPS_TOKEN }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.CODE_REPO_ACCSS_TOKEN }}
           source_branch: ${{ github.event.client_payload.branch_name }}
           target_branch: master
           title: "Adding user changes into the website."
