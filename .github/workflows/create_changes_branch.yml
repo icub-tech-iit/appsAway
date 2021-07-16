@@ -130,7 +130,7 @@ jobs:
         
         
       - name: print remote
-        run: git remove -v 
+        run: git remote -v 
       
      # - name: debugging
      #   run: git branch -a
