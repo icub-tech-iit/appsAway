@@ -116,7 +116,10 @@ jobs:
               echo ::set-output name=user_list::$user_list
               echo ::set-output name=changes_list::$changes_list
               echo ::set-output name=exported_img_list::${exported_img_list[@]}
-              
+      
+      - name: debugging
+        run: git remote -v && git fetch origin
+      
       - name: pull-request
         id: open-pr
         uses: devops-infra/action-pull-request@v0.4
