@@ -125,8 +125,8 @@ jobs:
               echo ::set-output name=changes_list::$changes_list
               echo ::set-output name=exported_img_list::${exported_img_list[@]}
       
-      - name: debugging
-        run: git branch -a
+     # - name: debugging
+     #   run: git branch -a
         
      # - name: config
      #   run: git config --global hub.protocol https
@@ -139,32 +139,32 @@ jobs:
      #   run: hub pull-request   -b master   -h user_changes_16072021102501   --no-edit   -m "Adding user changes into the website." -m " <h3>Addition of a new app:<ins>vale</ins></h3> " -r "AlexAntn,vtikha,ilaria-carlini" -a "vvasco,vvasco,"   || true
         
       
-      - name: pull-request
-        id: open-pr
-        uses: devops-infra/action-pull-request@v0.4
+      # - name: pull-request
+      #  id: open-pr
+      #  uses: devops-infra/action-pull-request@v0.4
       #  env:
       #    GITHUB_APPS_TOKEN: ${{ steps.get_workflow_token.outputs.token }}
-        with:
-      #    github_token: ${{ env.GITHUB_APPS_TOKEN }}
-          github_token: ${{ secrets.CODE_REPO_ACCSS_TOKEN }}
-          source_branch: ${{ github.event.client_payload.branch_name }}
-          target_branch: master
-          title: "Adding user changes into the website."
-          body: ${{ steps.get_filedata.outputs.changes_list }}
-          reviewer: "AlexAntn,vtikha,ilaria-carlini"
-          assignee: ${{ steps.get_filedata.outputs.user_list }}
-      
-      #- name: pull-request
-      #  id: open-pr
-      #  uses: repo-sync/pull-request@v2
       #  with:
-      #      destination_branch: "master"
-      #      pr_title: "Adding user changes into the website."
-      #      pr_body: ${{ steps.get_filedata.outputs.changes_list }}
-      #      pr_reviewer: "AlexAntn,vtikha,ilaria-carlini"
-      #      pr_assignee: ${{ steps.get_filedata.outputs.user_list }}
-      #      source_branch: ${{ github.event.client_payload.branch_name }}
-      #      github_token: ${{ secrets.GITHUB_TOKEN }}
+      #    github_token: ${{ env.GITHUB_APPS_TOKEN }}
+      #    github_token: ${{ secrets.CODE_REPO_ACCSS_TOKEN }}
+      #    source_branch: ${{ github.event.client_payload.branch_name }}
+      #    target_branch: master
+      #    title: "Adding user changes into the website."
+      #    body: ${{ steps.get_filedata.outputs.changes_list }}
+      #    reviewer: "AlexAntn,vtikha,ilaria-carlini"
+      #    assignee: ${{ steps.get_filedata.outputs.user_list }}
+      
+      - name: pull-request
+        id: open-pr
+        uses: repo-sync/pull-request@v2
+        with:
+            destination_branch: "master"
+            pr_title: "Adding user changes into the website."
+            pr_body: ${{ steps.get_filedata.outputs.changes_list }}
+            pr_reviewer: "AlexAntn,vtikha,ilaria-carlini"
+            pr_assignee: ${{ steps.get_filedata.outputs.user_list }}
+            source_branch: ${{ github.event.client_payload.branch_name }}
+            github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@master
