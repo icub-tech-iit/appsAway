@@ -34,6 +34,11 @@ jobs:
         with:
           path: appsAway
 
+      - name: check ls and pwd
+        run: |
+          ls
+          pwd
+
       - name: pull-request
         id: open-pr
         uses: repo-sync/pull-request@v2
