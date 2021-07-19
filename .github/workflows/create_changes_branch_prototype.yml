@@ -31,6 +31,8 @@ jobs:
           pwd
 
       - uses: actions/checkout@v2
+        with:
+          path: appsAway
 
       - name: pull-request
         id: open-pr
