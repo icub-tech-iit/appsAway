@@ -13,6 +13,14 @@ jobs:
   update_code:
     runs-on: ubuntu-latest
     steps: 
+      # checkout code
+      - uses: actions/checkout@v2
+        with:
+          repository: icub-tech-iit/code
+          token: ${{ secrets.CODE_REPO_ACCSS_TOKEN }}
+          path: code
+          ref: "user_changes_19072021104501"
+            
       # we checkout appsAway
       - name: check ls and pwd
         run: |
@@ -26,10 +34,13 @@ jobs:
           ls
           pwd
           rm -rf appsAway
+          rm -rf code
           ls
           pwd
 
       - uses: actions/checkout@v2
+        with:
+          ref: "user_changes_19072021104501"
 
       - name: check ls and pwd
         run: |
