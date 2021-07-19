@@ -127,3 +127,10 @@ jobs:
             pr_assignee: ${{ steps.get_filedata.outputs.user_list }}
             source_branch: "user_changes_19072021104501_test1"
             github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@master
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
