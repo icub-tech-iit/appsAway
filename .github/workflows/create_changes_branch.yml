@@ -130,6 +130,7 @@ jobs:
         run: | 
             ls
             pwd
+            git config --get remote.origin.url
      #       cd ..  
      # this should put it in appsAway default folder
      
