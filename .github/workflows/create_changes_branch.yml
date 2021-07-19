@@ -74,6 +74,11 @@ jobs:
         run: |
             rm -rf appsAway
             rm -rf code
+            
+      - name: reinstalling git credentials (fixing the abort issue)
+        run: |
+            git credential-manager uninstall
+            git credential-manager install
 
       - uses: actions/checkout@v2
         with:
