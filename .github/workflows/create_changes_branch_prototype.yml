@@ -48,7 +48,14 @@ jobs:
             pwd
             mkdir -p ./appsAway/user_changes/
             mv -v ./test/* ./appsAway/user_changes/
-          
+
+      - name: push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: "user_changes_19072021104501_test"
+          directory: "./appsAway/"
+
       - name: check ls and pwd
         run: |
           ls
