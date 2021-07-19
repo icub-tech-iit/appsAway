@@ -21,6 +21,11 @@ jobs:
         run: |
           ls
           pwd
+          cd ..
+          rm -rf appsAway
+
+      - uses: actions/checkout@v2
+      
       - name: pull-request
         id: open-pr
         uses: repo-sync/pull-request@v2
