@@ -122,8 +122,8 @@ jobs:
         uses: repo-sync/pull-request@v2
         with:
             pr_title: "Adding user changes into the website."
-            pr_body: "THIS IS A TEST"
+            pr_body: ${{ steps.get_filedata.outputs.changes_list }}
             pr_reviewer: "AlexAntn,vtikha,ilaria-carlini"
-            pr_assignee: "AlexAntn"
+            pr_assignee: ${{ steps.get_filedata.outputs.user_list }}
             source_branch: "user_changes_19072021104501_test1"
             github_token: ${{ secrets.GITHUB_TOKEN }}
