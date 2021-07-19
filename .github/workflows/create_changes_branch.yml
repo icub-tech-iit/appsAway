@@ -75,10 +75,11 @@ jobs:
             rm -rf appsAway
             rm -rf code
             
-      - name: reinstalling git credentials (fixing the abort issue)
-        run: |
-            git credential-manager uninstall
-            git credential-manager install
+    # this didn't work :(
+     # - name: reinstalling git credentials (fixing the abort issue)
+     #   run: |
+     #       git credential-manager uninstall
+     #       git credential-manager install
 
       - uses: actions/checkout@v2
         with:
@@ -89,6 +90,8 @@ jobs:
       - name: get file data
         id: get_filedata
         run: |
+              pwd
+              ls
               cd user_changes
               file_list=$(ls -p | grep -v / )
               len_list=${#file_list[@]}
@@ -113,6 +116,12 @@ jobs:
               echo ::set-output name=user_list::$user_list
               echo ::set-output name=changes_list::$changes_list
               echo ::set-output name=exported_img_list::${exported_img_list[@]}
+              
+      - name: set the remote
+        run: | 
+            ls
+            pwd
+            git remote set-url origin https://github.com/icub-tech-iit/appsAway
               
       - name: pull-request
         id: open-pr
