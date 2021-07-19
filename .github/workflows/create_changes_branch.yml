@@ -81,11 +81,15 @@ jobs:
      #       git credential-manager uninstall
      #       git credential-manager install
 
+    #  - uses: actions/checkout@v2
+    #    with:
+    #      repository: icub-tech-iit/appsAway
+    #      token: ${{ secrets.GITHUB_TOKEN }}
+    #      ref: ${{ github.event.client_payload.branch_name }}
+    
+    # lets try to checkout directly appsAway and use that?
       - uses: actions/checkout@v2
-        with:
-          repository: icub-tech-iit/appsAway
-          token: ${{ secrets.GITHUB_TOKEN }}
-          ref: ${{ github.event.client_payload.branch_name }}
+    
 
       - name: get file data
         id: get_filedata
@@ -121,7 +125,7 @@ jobs:
         run: | 
             ls
             pwd
-            git remote set-url origin https://github.com/icub-tech-iit/appsAway
+     #       git remote set-url origin https://github.com/icub-tech-iit/appsAway
               
       - name: pull-request
         id: open-pr
