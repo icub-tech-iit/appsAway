@@ -19,20 +19,17 @@ jobs:
           ls
           pwd
       - uses: actions/checkout@v2
-      #  with:
-      #    path: appsAway
+        with:
+          path: appsAway
       - name: check ls and pwd
         run: |
           ls
           pwd
-          cd ..
           rm -rf appsAway
           ls
           pwd
 
       - uses: actions/checkout@v2
-        with:
-          path: appsAway
 
       - name: check ls and pwd
         run: |
