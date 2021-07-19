@@ -134,3 +134,11 @@ jobs:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
           service_account_key: ${{ secrets.GCP_SA_KEY }}
           export_default_credentials: true
+
+
+      - name: add metadata to bucket
+        run: |
+          for img in ${{ steps.get_filedata.outputs.exported_img_list }}
+          do
+            gsutil setmeta -h "x-goog-meta-pr-number: ${{steps.open-pr.outputs.pr_number}}" gs://$img
+          done
