@@ -72,8 +72,11 @@ jobs:
           directory: "./appsAway/"
       - name: clean working directory
         run: |
+            pwd
+            ls
             rm -rf appsAway
             rm -rf code
+            ls
             
     # this didn't work :(
      # - name: reinstalling git credentials (fixing the abort issue)
@@ -87,56 +90,72 @@ jobs:
     #      token: ${{ secrets.GITHUB_TOKEN }}
     #      ref: ${{ github.event.client_payload.branch_name }}
     
-    # lets try to checkout directly appsAway and use that?
-      - uses: actions/checkout@v2
-    
+    # lets try to not even checkout anything now and just do an empty PR
+    #  - uses: actions/checkout@v2
+     #   with:
+     #     ref: ${{ github.event.client_payload.branch_name }}
+   # 
 
-      - name: get file data
-        id: get_filedata
-        run: |
-              pwd
-              ls
-              cd user_changes
-              file_list=$(ls -p | grep -v / )
-              len_list=${#file_list[@]}
-              iter=0
-              for file in $file_list
-              do
-                if [ $iter != 0 ];
-                then
-                  user_list="$user_list,"
-                  exported_img_list="$exported_img_list "
-                  changes_list="$changes_list<br/>"
-                fi
-                user_list="$user_list$(head -1 $file | awk -F'//' '{print $2}')"
-                exported_img_list="$exported_img_list$(head -2 $file | tail -1 | awk -F'//' '{print $2}')"
-                changes_list="$changes_list$(tail -n +1 $file | awk -F'//&' '{print $2}')"
-                iter=$((iter+1))
-              done
-              echo $user_list
-              exported_img_list=($exported_img_list)
-              echo ${exported_img_list[@]}
-              echo $changes_list
-              echo ::set-output name=user_list::$user_list
-              echo ::set-output name=changes_list::$changes_list
-              echo ::set-output name=exported_img_list::${exported_img_list[@]}
+     # - name: get file data
+     #   id: get_filedata
+     #   run: |
+     #         pwd
+     #         ls
+     #         cd user_changes
+     #         file_list=$(ls -p | grep -v / )
+     #         len_list=${#file_list[@]}
+     #         iter=0
+     #         for file in $file_list
+     #         do
+     #           if [ $iter != 0 ];
+     #           then
+     #             user_list="$user_list,"
+     #             exported_img_list="$exported_img_list "
+     #             changes_list="$changes_list<br/>"
+     #           fi
+     #           user_list="$user_list$(head -1 $file | awk -F'//' '{print $2}')"
+     #           exported_img_list="$exported_img_list$(head -2 $file | tail -1 | awk -F'//' '{print $2}')"
+     #           changes_list="$changes_list$(tail -n +1 $file | awk -F'//&' '{print $2}')"
+     #         iter=$((iter+1))
+     #         done
+     #         echo $user_list
+     #         exported_img_list=($exported_img_list)
+     #         echo ${exported_img_list[@]}
+     #         echo $changes_list
+     #         echo ::set-output name=user_list::$user_list
+     #         echo ::set-output name=changes_list::$changes_list
+     #         echo ::set-output name=exported_img_list::${exported_img_list[@]}
               
       - name: set the remote
         run: | 
             ls
             pwd
+     #       cd ..  
+     # this should put it in appsAway default folder
+     
      #       git remote set-url origin https://github.com/icub-tech-iit/appsAway
-              
+     
       - name: pull-request
         id: open-pr
         uses: repo-sync/pull-request@v2
         with:
             pr_title: "Adding user changes into the website."
-            pr_body: ${{ steps.get_filedata.outputs.changes_list }}
+            pr_body: "THIS IS A TEST"
             pr_reviewer: "AlexAntn,vtikha,ilaria-carlini"
-            pr_assignee: ${{ steps.get_filedata.outputs.user_list }}
+            pr_assignee: "AlexAntn"
             source_branch: ${{ github.event.client_payload.branch_name }}
             github_token: ${{ secrets.GITHUB_TOKEN }}
+              
+     # - name: pull-request
+     #   id: open-pr
+     #   uses: repo-sync/pull-request@v2
+     #   with:
+     #       pr_title: "Adding user changes into the website."
+     #       pr_body: ${{ steps.get_filedata.outputs.changes_list }}
+     #       pr_reviewer: "AlexAntn,vtikha,ilaria-carlini"
+     #       pr_assignee: ${{ steps.get_filedata.outputs.user_list }}
+     #       source_branch: ${{ github.event.client_payload.branch_name }}
+     #       github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@master
