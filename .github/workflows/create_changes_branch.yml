@@ -91,9 +91,9 @@ jobs:
     #      ref: ${{ github.event.client_payload.branch_name }}
     
     # lets try to not even checkout anything now and just do an empty PR
-    #  - uses: actions/checkout@v2
-     #   with:
-     #     ref: ${{ github.event.client_payload.branch_name }}
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.client_payload.branch_name }}
    # 
 
      # - name: get file data
