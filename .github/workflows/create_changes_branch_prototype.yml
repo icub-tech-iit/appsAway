@@ -29,6 +29,18 @@ jobs:
       - uses: actions/checkout@v2
         with:
           path: appsAway
+
+      - name: copies user_changes to temporary folder
+        run: |
+            cd code
+            mkdir -p ../test/
+            mv -v ./icub-tech-apps/dist/express/evaluate/*.* ../test/ 2>/dev/null || :
+
+      #- name: Create branch
+      #  run: |
+      #      cd appsAway
+      #      git branch ${{ github.event.client_payload.branch_name }}
+          
       - name: check ls and pwd
         run: |
           ls
