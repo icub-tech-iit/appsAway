@@ -36,10 +36,18 @@ jobs:
             mkdir -p ../test/
             mv -v ./icub-tech-apps/dist/express/evaluate/*.* ../test/ 2>/dev/null || :
 
-      #- name: Create branch
-      #  run: |
-      #      cd appsAway
-      #      git branch ${{ github.event.client_payload.branch_name }}
+      - name: Create branch
+        run: |
+            cd appsAway
+            pwd
+            git branch "user_changes_19072021104501_test"
+            git checkout "user_changes_19072021104501_test"
+
+      - name: copies user_changes folder
+        run: |
+            pwd
+            mkdir -p ./appsAway/user_changes/
+            mv -v ./test/* ./appsAway/user_changes/
           
       - name: check ls and pwd
         run: |
@@ -52,7 +60,7 @@ jobs:
 
       - uses: actions/checkout@v2
         with:
-          ref: "user_changes_19072021104501"
+          ref: "user_changes_19072021104501_test"
 
       - name: check ls and pwd
         run: |
@@ -67,5 +75,5 @@ jobs:
             pr_body: "THIS IS A TEST"
             pr_reviewer: "AlexAntn,vtikha,ilaria-carlini"
             pr_assignee: "AlexAntn"
-            source_branch: "user_changes_19072021104501"
+            source_branch: "user_changes_19072021104501_test"
             github_token: ${{ secrets.GITHUB_TOKEN }}
