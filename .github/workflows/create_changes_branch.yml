@@ -37,6 +37,10 @@ jobs:
             pwd
 
       #      git checkout ${{ github.event.client-payload.branch_name }}
+      
+      # /home/runner/work/appsAway/appsaway/appsAway
+      # /home/runner/work/appsAway/appsAway/code
+      # /home/runner/work/appsAway/appsAway/test
       - name: copies user_changes to temporary folder
         run: |
             cd code
@@ -46,10 +50,10 @@ jobs:
       - uses: actions/checkout@v2
         with:
           path: appsAway
-      - name: Create branch
-        run: |
-            cd appsAway
-            git branch ${{ github.event.client_payload.branch_name }}
+   #  - name: Create branch
+   #     run: |
+   #         cd appsAway
+   #         git branch ${{ github.event.client_payload.branch_name }}
           
       - name: check working directory
         run: |
@@ -87,9 +91,10 @@ jobs:
         run: |
             pwd
             ls
-            rm -rf appsAway
             rm -rf code
             ls
+    #       rm -rf appsAway
+    #        ls
             
     # this didn't work :(
      # - name: reinstalling git credentials (fixing the abort issue)
@@ -113,7 +118,7 @@ jobs:
         run: |
               pwd
               ls
-              cd user_changes
+              cd appsAway/user_changes
               file_list=$(ls -p | grep -v / )
               len_list=${#file_list[@]}
               iter=0
@@ -142,6 +147,7 @@ jobs:
         id: open-pr
         uses: peter-evans/create-pull-request@v3
         with:
+            path: appsAway
             branch: ${{ github.event.client_payload.branch_name }}
             title: "Adding user changes into the website."
             body: ${{ steps.get_filedata.outputs.changes_list }}
