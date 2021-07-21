@@ -4,10 +4,6 @@ on:
     repository_dispatch:
         types: [user_changes]
 
-
-#            mv -v ./appsAway/user_changes/* ./icub-tech-apps/dist/database/upgrade/
-#            mv -v ./appsAway/user_changes/images/* ./icub-tech-apps/dist/express/images/
-
 jobs:
   update_code:
     runs-on: ubuntu-latest
@@ -35,12 +31,7 @@ jobs:
         run: |
             ls
             pwd
-
-      #      git checkout ${{ github.event.client-payload.branch_name }}
-      
-      # /home/runner/work/appsAway/appsaway/appsAway
-      # /home/runner/work/appsAway/appsAway/code
-      # /home/runner/work/appsAway/appsAway/test
+            
       - name: copies user_changes to temporary folder
         run: |
             cd code
@@ -50,20 +41,11 @@ jobs:
       - uses: actions/checkout@v2
         with:
           path: appsAway
-   #  - name: Create branch
-   #     run: |
-   #         cd appsAway
-   #         git branch ${{ github.event.client_payload.branch_name }}
           
       - name: check working directory
         run: |
             ls -la
             pwd
-     # we removed the creation of the branch which is performed directly into the pull-request action
-     # - name: checkout created branch
-     #   run: |
-     #       cd appsAway
-     #       git checkout ${{ github.event.client_payload.branch_name }}
 
       - name: copies user_changes folder
         run: |
@@ -71,48 +53,13 @@ jobs:
             mv -v ./test/* ./appsAway/user_changes/
             ls -la ../
 
-    #  - name: Commit changes
-    #    run: |
-    #        cd appsAway
-    #        pwd
-    #        git status
-    #        git config --local user.email "actions@github.com"
-    #        git config --local user.name "GitHub Action"
-    #        git add -A
-    #        git commit -m "Merged user changes in appsAway" -a
-        
-    #  - name: push changes
-    #    uses: ad-m/github-push-action@master
-    #    with:
-    #      github_token: ${{ secrets.GITHUB_TOKEN }}
-    #      branch: ${{ github.event.client_payload.branch_name }}
-    #      directory: "./appsAway/"
       - name: clean working directory
         run: |
             pwd
             ls
             rm -rf code
             ls
-    #       rm -rf appsAway
-    #        ls
-            
-    # this didn't work :(
-     # - name: reinstalling git credentials (fixing the abort issue)
-     #   run: |
-     #       git credential-manager uninstall
-     #       git credential-manager install
-
-    #  - uses: actions/checkout@v2
-    #    with:
-    #      repository: icub-tech-iit/appsAway
-    #      token: ${{ secrets.GITHUB_TOKEN }}
-    #      ref: ${{ github.event.client_payload.branch_name }}
     
-    
-    #  - uses: actions/checkout@v2
-    #    with:
-    #      ref: ${{ github.event.client_payload.branch_name }}
-
       - name: get file data
         id: get_filedata
         run: |
@@ -159,32 +106,12 @@ jobs:
           echo "Pull Request Number - ${{ steps.open-pr.outputs.pull-request-number }}"
           echo "Pull Request URL - ${{ steps.open-pr.outputs.pull-request-url }}"
               
-     # - name: pull-request
-     #   id: open-pr
-     #   uses: repo-sync/pull-request@v2
-     #   with:
-     #       pr_title: "Adding user changes into the website."
-     #       pr_body: ${{ steps.get_filedata.outputs.changes_list }}
-     #       pr_reviewer: "AlexAntn,vtikha,ilaria-carlini"
-     #       pr_assignee: ${{ steps.get_filedata.outputs.user_list }}
-     #       source_branch: ${{ github.event.client_payload.branch_name }}
-     #       github_token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@master
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
           service_account_key: ${{ secrets.GCP_SA_KEY }}
           export_default_credentials: true
-
-
-      #- name: install and configure gsutil
-      #  run: |
-      #    echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list 
-      #    apt-get install apt-transport-https ca-certificates gnupg 
-      #    curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add - 
-      #    apt-get update && apt-get install google-cloud-sdk
-      #    gcloud auth activate-service-account --key-file=code/icub-tech-apps/server/team-code.json
 
       - name: add metadata to bucket
         run: |
