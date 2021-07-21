@@ -12,11 +12,22 @@ jobs:
   update_code:
     runs-on: ubuntu-latest
     steps: 
+    
+      - name: Get Token
+        id: get_workflow_token
+        uses: tibdex/github-app-token@v1
+        with:
+            private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
+            app_id: ${{ secrets.APPLICATION_ID }}
+            repository: icub-tech-iit/code
+        
       # we checkout appsAway code
       - uses: actions/checkout@v2
+        env:
+            GITHUB_APPS_TOKEN: ${{ steps.get_workflow_token.outputs.token }}
         with:
           repository: icub-tech-iit/code
-          token: ${{ secrets.CODE_REPO_ACCSS_TOKEN }}
+          token: ${{ env.GITHUB_APPS_TOKEN }}
           path: code
           ref: ${{ github.event.client_payload.branch_name }}
             
@@ -42,34 +53,36 @@ jobs:
           
       - name: check working directory
         run: |
-            ls
+            ls -la
             pwd
-      - name: checkout created branch
-        run: |
-            cd appsAway
-            git checkout ${{ github.event.client_payload.branch_name }}
+     # we removed the creation of the branch which is performed directly into the pull-request action
+     # - name: checkout created branch
+     #   run: |
+     #       cd appsAway
+     #       git checkout ${{ github.event.client_payload.branch_name }}
 
       - name: copies user_changes folder
         run: |
             mkdir -p ./appsAway/user_changes/
             mv -v ./test/* ./appsAway/user_changes/
+            ls -la ../
 
-      - name: Commit changes
-        run: |
-            cd appsAway
-            pwd
-            git status
-            git config --local user.email "actions@github.com"
-            git config --local user.name "GitHub Action"
-            git add -A
-            git commit -m "Merged user changes in appsAway" -a
+    #  - name: Commit changes
+    #    run: |
+    #        cd appsAway
+    #        pwd
+    #        git status
+    #        git config --local user.email "actions@github.com"
+    #        git config --local user.name "GitHub Action"
+    #        git add -A
+    #        git commit -m "Merged user changes in appsAway" -a
         
-      - name: push changes
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.event.client_payload.branch_name }}
-          directory: "./appsAway/"
+    #  - name: push changes
+    #    uses: ad-m/github-push-action@master
+    #    with:
+    #      github_token: ${{ secrets.GITHUB_TOKEN }}
+    #      branch: ${{ github.event.client_payload.branch_name }}
+    #      directory: "./appsAway/"
       - name: clean working directory
         run: |
             pwd
@@ -90,11 +103,10 @@ jobs:
     #      token: ${{ secrets.GITHUB_TOKEN }}
     #      ref: ${{ github.event.client_payload.branch_name }}
     
-    # lets try to not even checkout anything now and just do an empty PR
-      - uses: actions/checkout@v2
-        with:
-          ref: ${{ github.event.client_payload.branch_name }}
-   # 
+    
+    #  - uses: actions/checkout@v2
+    #    with:
+    #      ref: ${{ github.event.client_payload.branch_name }}
 
       - name: get file data
         id: get_filedata
@@ -124,18 +136,22 @@ jobs:
               echo $changes_list
               echo ::set-output name=user_list::$user_list
               echo ::set-output name=changes_list::$changes_list
-              echo ::set-output name=exported_img_list::${exported_img_list[@]}
-     
+              echo ::set-output name=exported_img_list::${exported_img_list[@]}            
+            
       - name: pull-request
         id: open-pr
-        uses: repo-sync/pull-request@v2
+        uses: peter-evans/create-pull-request@v3
         with:
-            pr_title: "Adding user changes into the website."
-            pr_body: ${{ steps.get_filedata.outputs.changes_list }}
-            pr_reviewer: "AlexAntn,vtikha,ilaria-carlini"
-            pr_assignee: ${{ steps.get_filedata.outputs.user_list }}
-            source_branch: ${{ github.event.client_payload.branch_name }}
-            github_token: ${{ secrets.GITHUB_TOKEN }}
+            branch: ${{ github.event.client_payload.branch_name }}
+            title: "Adding user changes into the website."
+            body: ${{ steps.get_filedata.outputs.changes_list }}
+            assignees: ${{ steps.get_filedata.outputs.user_list }}
+            reviewers: "AlexAntn,vtikha,ilaria-carlini"
+        
+      - name: Check outputs
+        run: |
+          echo "Pull Request Number - ${{ steps.open-pr.outputs.pull-request-number }}"
+          echo "Pull Request URL - ${{ steps.open-pr.outputs.pull-request-url }}"
               
      # - name: pull-request
      #   id: open-pr
