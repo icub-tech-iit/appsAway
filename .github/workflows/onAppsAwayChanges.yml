@@ -28,7 +28,6 @@ jobs:
       - name: find demo name
         id: set_app_list
         run: |
-          pwd
           parsed_list=($(echo '${{ steps.file_changes.outputs.files}}' | tr ',' '\n'))
           app_name_list=""
           iter_app_list=0
@@ -54,7 +53,6 @@ jobs:
           done
           app_name_list=$(echo "${app_name_list[@]}" | tr ' ' '\n' | sort -u | tr '\n' ' ')
           app_name_list=$(echo ${app_name_list::-1})
-          echo " app name list:${app_name_list[@]}"
           echo "::set-output name=apps::${app_name_list[@]}"
 
       - name: Get Token
