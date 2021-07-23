@@ -1,7 +1,7 @@
 version: "3.7"
 
 x-yarp-base: &yarp-base
-  image: icubteamcode/superbuild:master-unstable_binaries
+  image: icubteamcode/superbuild:master_master-unstable_binaries
   environment:
     - DISPLAY=${DISPLAY}
     - QT_X11_NO_MITSHM=1
