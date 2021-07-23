@@ -1,4 +1,4 @@
-function check_failure { #TODO: we can't give a script as input to the function (unless the script is returning something...)
+function check_failure { 
     "$@"
     local status=$?
     if (( status != 0 ))
