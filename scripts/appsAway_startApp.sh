@@ -256,6 +256,53 @@ getdisplay()
   
 }
 
+get_shared_volumes()
+{
+  file=$1
+  look_for_volumes=false
+  VOLUMES_LIST=()
+  while read -r line || [ -n "$line" ]
+  do
+      volumes_result=$(echo $line | grep "volumes") # Look for yml line that says "volumes"
+
+      if [[ $look_for_volumes == true ]]
+      then
+          if [[ $line == -* || $line == \#* ]] # If line is a volume or comment
+          then
+              if [[ $line == -* ]] # If line is a volume (ignore comments)
+              then
+                  volume=$(echo $line | sed 's/[^:]*://' | tr -d '"' | sed 's/-//' | tr -d ' ' ) # Get volume
+                  if [[ $volume != *:ro && $volume != *:ro\" ]] # If volume is not read-only
+                  then
+                      volume_to_append=$(echo $line | sed 's/:.*//' | tr -d '"' | sed 's/-//' | tr -d ' ')
+                      VOLUMES_LIST="$VOLUMES_LIST $volume_to_append"
+                  fi
+              fi
+          else # If line is not volume nor comment, it's a continuation of the yml and we are done
+              look_for_volumes=false
+          fi
+      fi
+
+      if [[ "$volumes_result" != "" &&  "$line" != \#* ]] # If line says "volumes" and it's not a comment, we can look for volumes
+      then                   
+          look_for_volumes=true             
+      fi     
+  done < $file
+
+  echo $VOLUMES_LIST
+  read -a VOLUMES_LIST <<< $VOLUMES_LIST
+}
+
+get_files_list()
+{
+  filename=$1
+  for volume in "${VOLUMES_LIST[@]}"
+  do
+    cd $volume
+    find >> $filename
+  done
+}
+
 run_hardware_steps_via_ssh()
 {
   log "running hardware-dependant steps to nodes"
@@ -277,8 +324,11 @@ run_hardware_steps_via_ssh()
     for file in ${APPSAWAY_HEAD_YAML_FILE_LIST}
     do
       log "running ${_DOCKER_COMPOSE_BIN_HEAD} with file ${_OS_HOME_DIR}/${APPSAWAY_ICUBHEADNODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}/${file} on host $APPSAWAY_ICUBHEADNODE_ADDR"
-      #run_via_ssh_nowait $APPSAWAY_ICUBHEADNODE_ADDR "${_DOCKER_COMPOSE_BIN_HEAD} -f ${file} up" "log.txt"
-      run_via_ssh $APPSAWAY_ICUBHEADNODE_USERNAME $APPSAWAY_ICUBHEADNODE_ADDR "export APPSAWAY_OPTIONS=${APPSAWAY_OPTIONS} ; ${_DOCKER_COMPOSE_BIN_HEAD} -f ${file} up --detach"
+      #run_via_ssh_nowait $APPSAWAY_ICUBHEADNODE_ADDR "${_DOCKER_COMPOSE_BIN} -f ${file} up" "log.txt"
+      get_shared_volumes ${APPSAWAY_APP_PATH}/${file}
+      echo ${VOLUMES_LIST[@]}
+      ${_SCP_BIN} ${_SCP_PARAMS} ${HOME}/teamcode/appsAway/scripts/appsAway_getVolumeFiles.sh ${APPSAWAY_ICUBHEADNODE_USERNAME}@${APPSAWAY_ICUBHEADNODE_ADDR}:${HOME}/teamcode/appsAway/scripts/appsAway_getVolumeFiles.sh
+      run_via_ssh $APPSAWAY_ICUBHEADNODE_USERNAME $APPSAWAY_ICUBHEADNODE_ADDR "export VOLUMES_LIST=$VOLUMES_LIST;  export APPSAWAY_OPTIONS=${APPSAWAY_OPTIONS} ; ${HOME}/teamcode/appsAway/scripts/appsAway_getVolumeFiles.sh ~/volumes_before_changes.txt ; ${_DOCKER_COMPOSE_BIN_HEAD} -f ${file} up --detach"
     done
     val1=$(( $val1 + 5 ))
     echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE
@@ -288,8 +338,11 @@ run_hardware_steps_via_ssh()
     for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
     do
       log "running ${_DOCKER_COMPOSE_BIN_GUI} with file ${_OS_HOME_DIR}/${APPSAWAY_GUINODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}/${file} on host $APPSAWAY_GUINODE_ADDR"
-      #run_via_ssh_nowait $APPSAWAY_GUINODE_ADDR "${_DOCKER_COMPOSE_BIN_GUI} -f ${file} up" "log.txt"
-      run_via_ssh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR "export APPSAWAY_OPTIONS=${APPSAWAY_OPTIONS} ; export ${GUI_DISPLAY} ; export XAUTHORITY=${myXauth}; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_GUI} -f ${file} up --detach; fi"
+      #run_via_ssh_nowait $APPSAWAY_GUINODE_ADDR "${_DOCKER_COMPOSE_BIN} -f ${file} up" "log.txt"
+      get_shared_volumes ${APPSAWAY_APP_PATH}/${file}
+      echo ${VOLUMES_LIST[@]}
+      ${_SCP_BIN} ${_SCP_PARAMS} ${HOME}/teamcode/appsAway/scripts/appsAway_getVolumeFiles.sh ${APPSAWAY_GUINODE_USERNAME}@${APPSAWAY_GUINODE_ADDR}:${HOME}/teamcode/appsAway/scripts/appsAway_getVolumeFiles.sh
+      run_via_ssh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR "export VOLUMES_LIST=$VOLUMES_LIST; export APPSAWAY_OPTIONS=${APPSAWAY_OPTIONS} ; export ${GUI_DISPLAY} ; export XAUTHORITY=${myXauth}; ${HOME}/teamcode/appsAway/scripts/appsAway_getVolumeFiles.sh ~/volumes_before_changes.txt ; export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_GUI} -f ${file} up --detach; fi"
     done
     val1=$(( $val1 + 5 ))
     echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE
@@ -297,8 +350,11 @@ run_hardware_steps_via_ssh()
     for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
     do
       log "running ${_DOCKER_COMPOSE_BIN_CONSOLE} with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_CONSOLENODE_ADDR"
-      #run_via_ssh_nowait $APPSAWAY_GUINODE_ADDR "${_DOCKER_COMPOSE_BIN_CONSOLE} -f ${file} up" "log.txt"
-      run_via_ssh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR "export APPSAWAY_OPTIONS=${APPSAWAY_OPTIONS} ; export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_CONSOLE} -f ${file} up --detach; fi"
+      #run_via_ssh_nowait $APPSAWAY_GUINODE_ADDR "${_DOCKER_COMPOSE_BIN} -f ${file} up" "log.txt"
+      get_shared_volumes ${APPSAWAY_APP_PATH}/${file}
+      echo ${VOLUMES_LIST[@]}
+      ${_SCP_BIN} ${_SCP_PARAMS} ${HOME}/teamcode/appsAway/scripts/appsAway_getVolumeFiles.sh ${APPSAWAY_CONSOLENODE_USERNAME}@${APPSAWAY_CONSOLENODE_ADDR}:${HOME}/teamcode/appsAway/scripts/appsAway_getVolumeFiles.sh
+      run_via_ssh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR "export VOLUMES_LIST=$VOLUMES_LIST; export APPSAWAY_OPTIONS=${APPSAWAY_OPTIONS} ; ${HOME}/teamcode/appsAway/scripts/appsAway_getVolumeFiles.sh ~/volumes_before_changes.txt ; export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_CONSOLE} -f ${file} up --detach; fi"
     done
     val1=$(( $val1 + 5 ))
     echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE
