@@ -201,6 +201,7 @@ fill_hostname_list()
 		  exit_err "unable to get hostname from IP $_ip_addr"
 	  fi
       _HOSTNAME_LIST="$_hostname $_HOSTNAME_LIST"
+    iter=$((iter+1))
   done
 }
 
