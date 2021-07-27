@@ -37,6 +37,14 @@ services:
     <<: *yarp-base
     command: yarpview --name /display --x 0 --y 0 --w 550 --h 550
 
+<<<<<<< HEAD
+=======
+  #Opening we open the viewer to see the output of calibSupervisor
+  #yview_calib_output:
+  #  <<: *yarp-base
+  #  command: yarpview --name /sendtocalib
+
+>>>>>>> Fixed variable definition so as to not change the website
   #Opening we open the viewer to see the left output of camCalib after calibration
   yview_camcalib_left:
     <<: *yarp-base

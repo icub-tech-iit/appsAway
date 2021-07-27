@@ -298,6 +298,7 @@ scp_to_node()
   ip_to_receive=$3
   path_to_receive=$4
   full_path_to_receive=${_OS_HOME_DIR}/${username_to_receive}/${path_to_receive}
+  log "Using SCP to send files to IP ${ip_to_receive} at path ${full_path_to_receive}"
   ${_SCP_BIN} ${_SCP_PARAMS_DIR} ${file_to_send} ${username_to_receive}@${ip_to_receive}:${full_path_to_receive}/
 }
 
