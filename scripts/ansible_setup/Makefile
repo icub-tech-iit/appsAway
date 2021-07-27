@@ -1,10 +1,13 @@
 .PHONY: prepare_all
 prepare_all:
-	ansible-playbook -i hosts.ini -e @passwords.enc --vault-password-file vault_password_file.txt prepare_all.yml 
+	ansible-playbook -i hosts.ini -e @passwords.enc --vault-password-file vault_password_file.txt prepare_docker.yml
+	ansible-playbook -i hosts.ini -e @passwords.enc --vault-password-file vault_password_file.txt prepare_compose.yml 
+	ansible-playbook -i hosts.ini -e @passwords.enc --vault-password-file vault_password_file.txt prepare_cuda.yml  
 
 .PHONY: prepare_docker
 prepare_docker:
 	ansible-playbook -i hosts_docker.ini -e @passwords.enc --vault-password-file vault_password_file.txt prepare_docker.yml 
+	ansible-playbook -i hosts_docker.ini -e @passwords.enc --vault-password-file vault_password_file.txt prepare_compose.yml 
 
 .PHONY: prepare_compose
 prepare_compose:

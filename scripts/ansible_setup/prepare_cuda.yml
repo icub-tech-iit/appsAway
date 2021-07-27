@@ -1,0 +1,34 @@
+#################################################################
+# this follows this installation: https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker
+
+- name: Setting up GPUs for Cuda nodes
+  hosts: cuda
+  become: yes
+  tasks:
+    - name: get stable repository for nvidia-docker
+      shell: |
+          distribution=$(. /etc/os-release;echo $ID$VERSION_ID) 
+          curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add - 
+          curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
+      when: ansible_distribution != 'MacOSX'
+      
+    - name: Install nvidia-docker2
+      apt:
+        name:
+          - nvidia-docker2
+        state: latest
+        autoclean: yes
+        update_cache: true
+      when: ansible_distribution != 'MacOSX'
+
+#    - name: Setting up GPUs for Cuda nodes docker configuration
+#      shell: "GPU_ID=`nvidia-smi -a | grep UUID | awk '{print substr($4,0,12)}'` && set -- $GPU_ID && GPU_actual=$1 && echo '{' > /etc/docker/daemon.json && echo '  \"runtimes\": {' >> /etc/docker/daemon.json && echo '    \"nvidia\": {' >> /etc/docker/daemon.json && echo '      \"path\": \"/usr/bin/nvidia-container-runtime\",' >> /etc/docker/daemon.json && echo '      \"runtimeArgs\": []' >> /etc/docker/daemon.json && echo '    }' >> /etc/docker/daemon.json && echo '  },' >> /etc/docker/daemon.json && echo '  \"default-runtime\": \"nvidia\",' >> /etc/docker/daemon.json && echo '  \"node-generic-resources\": [' >> /etc/docker/daemon.json && echo '    \"gpu=$GPU_actual\"' >> /etc/docker/daemon.json && echo '    ]' >> /etc/docker/daemon.json && echo '}' >> /etc/docker/daemon.json"
+#      args:
+#        warn: no
+#      when: ansible_distribution != 'MacOSX'
+
+    - name: Restart docker daemon after cuda configuration
+      shell: sudo systemctl restart docker
+      args:
+        warn: no
+      when: ansible_distribution != 'MacOSX'
