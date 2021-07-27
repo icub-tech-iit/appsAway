@@ -2,7 +2,7 @@
 
 
 
-_APPSAWAY_ENVFILE="appsAway_setEnvironment.local.sh"
+_APPSAWAY_ENV_FILE="appsAway_setEnvironment.local.sh"
 ######################################################
 
 #_SSH_CHECK_UPD="/usr/lib/update-notifier/apt-check -p"
@@ -31,6 +31,19 @@ log() {
   echo -e "${_BLUE}$(date +%d-%m-%Y) - $(date +%H:%M:%S) : $1${_NC}"
 }
 
+warn() {
+  echo -e "${_YELLOW}$(date +%d-%m-%Y) - $(date +%H:%M:%S) WARNING : $1${_NC}"
+}
+
+error() {
+  echo -e "${_RED}$(date +%d-%m-%Y) - $(date +%H:%M:%S) ERROR : $1${_NC}"
+}
+
+exit_err () {
+	error "$1"
+	exit 1
+}
+
 init()
 {
  if [ "${_SSH_BIN}" == "" ]; then
@@ -52,35 +65,33 @@ check_docker_version() {
   nodes_addr_array=($APPSAWAY_NODES_ADDR_LIST)
   nodes_usr_array=($APPSAWAY_NODES_USERNAME_LIST)
   nodes_name_array=($APPSAWAY_NODES_NAME_LIST)
-  iter=1
-  List=$APPSAWAY_NODES_USERNAME_LIST
-  set -- $List
+  iter=0
+  List=($APPSAWAY_NODES_USERNAME_LIST)
   for node in ${APPSAWAY_NODES_ADDR_LIST}
   do
     if [[ -n "$node" ]] ; then
-
-      username=$( eval echo "\$$iter")
-      _OUTPUT=$(ssh -T $username@$node "docker --version" | grep 'command not found')
-      if [[ $_OUTPUT == "" ]] ; then
-        _OUTPUT_COMPOSE=$(ssh -T $username@$node "docker-compose --version" | grep 'command not found')
-        if [[ ! $_OUTPUT_COMPOSE == "" ]] ; then
+      username=${List[$iter]}
+      _OUTPUT=$(${_SSH_BIN} ${_SSH_PARAMS} $username@$node "docker --version 2>&1" | grep 'Docker version' || true)
+      if [[ $_OUTPUT != "" ]] ; then
+        _OUTPUT_COMPOSE=$(${_SSH_BIN} ${_SSH_PARAMS} $username@$node "docker-compose --version 2>&1" | grep 'docker-compose version'  || true)
+        if [[ $_OUTPUT_COMPOSE == "" ]] ; then
           # ADD THIS NODE TO THE HOSTS_COMPOSE.INI
-          _DOCKER_COMPOSE_ADDR_LIST="$_DOCKER_COMPOSE_NODES_LIST $node"
+          _DOCKER_COMPOSE_ADDR_LIST="$_DOCKER_COMPOSE_ADDR_LIST $node"
           _DOCKER_COMPOSE_USERNAMES_LIST="$_DOCKER_COMPOSE_USERNAMES_LIST $username"
           _DOCKER_COMPOSE_NAMES_LIST="$_DOCKER_COMPOSE_NAMES_LIST ${nodes_name_array[$iter]}"
         fi
       else
         # ADD THIS NODE TO THE HOSTS_DOCKER.INI
-        _DOCKER_ADDR_LIST="$_DOCKER_NODES_LIST $node"
+        _DOCKER_ADDR_LIST="$_DOCKER_ADDR_LIST $node"
         _DOCKER_USERNAMES_LIST="$_DOCKER_USERNAMES_LIST $username"
         _DOCKER_NAMES_LIST="$_DOCKER_NAMES_LIST ${nodes_name_array[$iter]}"
       fi
-      _IS_CUDA=$( echo ${nodes_name_array[$iter]} | grep 'icubcuda')
-      if [[ _IS_CUDA != "" ]] ; then
-        _OUTPUT=$(ssh -T $username@$node "nvidia-container-runtime --version" | grep 'command not found')
+      _IS_CUDA=$( echo ${nodes_name_array[$iter]} | grep 'icubcuda' || true)
+      if [[ $_IS_CUDA != "" ]] ; then
+        _OUTPUT=$(${_SSH_BIN} ${_SSH_PARAMS} $username@$node "nvidia-container-runtime --version 2>&1" | grep 'runc version' || true)
         if [[ $_OUTPUT == "" ]] ; then
           # ADD THIS NODE TO THE HOSTS_CUDA.INI
-          _CUDA_ADDR_LIST="$_CUDA_NODES_LIST $node"
+          _CUDA_ADDR_LIST="$_CUDA_ADDR_LIST $node"
           _CUDA_USERNAMES_LIST="$_CUDA_USERNAMES_LIST $username"
           _CUDA_NAMES_LIST="$_DOCKER_NAMES_LIST ${nodes_name_array[$iter]}"
         fi
@@ -96,12 +107,12 @@ populate_hosts() {
     addr_array=($_DOCKER_ADDR_LIST)
     usr_array=($_DOCKER_USERNAMES_LIST)
     name_array=($_DOCKER_NAMES_LIST)
-  elif [[ $1 == "docker-compose" ]]
+  elif [[ $1 == "docker-compose" ]]; then
     file_name="hosts_compose.ini"
     addr_array=($_DOCKER_COMPOSE_ADDR_LIST)
     usr_array=($_DOCKER_COMPOSE_USERNAMES_LIST)
     name_array=($_DOCKER_COMPOSE_NAMES_LIST)
-  elif [[ $1 == "cuda" ]] ; then
+  elif [[ $1 == "cuda" ]]; then
     file_name="hosts_cuda.ini"
     addr_array=($_CUDA_ADDR_LIST)
     usr_array=($_CUDA_USERNAMES_LIST)
@@ -109,7 +120,7 @@ populate_hosts() {
   fi
   array_len=${#addr_array[@]}
 
-  cd ansible_setup/
+  cd ~/teamcode/appsAway/scripts/ansible_setup/
 
   if [ -f $file_name ]
   then
@@ -125,12 +136,23 @@ populate_hosts() {
         echo "${name_array[$i]}" >> ./$file_name
     done 
     echo "" >> ./$file_name
+    if [[ $1 == "cuda" ]] ; then
+      echo "[cuda:children]" >> ./$file_name
+      for (( i=0; i<$array_len; i++ )) 
+      do  
+        _IS_CUDA=$( echo "${name_array[$i]}" | grep "icubcuda" )
+        if [[ $_IS_CUDA != "" ]] ; then
+            echo "${name_array[$i]}" >> ./$file_name
+        fi
+      done 
+      echo "" >> ./$file_name
+    fi
 
     # now we populate each node
     for (( i=0; i<$array_len; i++ ))
     do  
       echo "[${name_array[$i]}]
-      ${name_array[$i]}Laptop ansible_host=${addr_array[$i]}
+      ${name_array[$i]}_host ansible_host=${addr_array[$i]}
 
       [${name_array[$i]}:vars]
       ansible_ssh_user=\"${usr_array[$i]}\"
