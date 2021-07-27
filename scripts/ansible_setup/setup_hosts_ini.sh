@@ -34,7 +34,7 @@ fi
 # now we populate each node
 for (( i=0; i<$nodes_len; i++ ))
 do  
-     echo "[${nodes_name_array[$i]}]
+    echo "[${nodes_name_array[$i]}]
 ${nodes_name_array[$i]}_host ansible_host=${nodes_addr_array[$i]}
 
 [${nodes_name_array[$i]}:vars]

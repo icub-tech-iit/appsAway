@@ -128,6 +128,15 @@ services:
         condition: on-failure
     command: sh -c "yarp wait /calibSupervisor/display:o ; yarp wait /display; yarp connect  /calibSupervisor/display:o /display fast_tcp;"
 
+  #yConnectToViewerCalib:
+  #  <<: *yarp-base
+  #  deploy:
+  #    placement:
+  #      constraints: [node.labels.type != head]
+  #    restart_policy:
+  #      condition: on-failure
+  #  command: sh -c "yarp wait /calibSupervisor/imageLeft:o ; yarp wait /sendtocalib; yarp connect /calibSupervisor/imageLeft:o /sendtocalib fast_tcp ;"
+
   yConnectToLeftInCamCalib:
     <<: *yarp-base
     deploy:
