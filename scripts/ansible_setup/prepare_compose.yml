@@ -1,0 +1,45 @@
+- name: Uninstall old versions
+  hosts: nodes
+  become: yes
+  tasks:      
+    - name: Purge docker
+      shell: sudo apt-get -y purge docker-compose
+      args:
+        warn: no
+      ignore_errors: yes
+      when: ansible_distribution != 'MacOSX'
+
+    - name: Install packages to use a repository over HTTPS
+      apt: 
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+          - gnupg
+          - lsb-release
+        state: latest
+        autoclean: yes
+        update_cache: yes
+      when: ansible_distribution != 'MacOSX'
+        
+    - name: Install docker-compose
+      apt: 
+        name:
+          - docker-compose
+        state: latest
+        autoclean: yes
+        update_cache: false
+      when: ansible_distribution != 'MacOSX'
+
+    - name: Finishing up with needed packages 
+      apt: 
+        name:
+          - openssh-client
+          - openssh-server
+          - curl
+          - gnupg-agent
+          - software-properties-common
+        state: latest
+        autoclean: yes
+      when: ansible_distribution != 'MacOSX'
