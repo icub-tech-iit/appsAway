@@ -39,7 +39,7 @@ _DOCKER_COMPOSE_BIN=$(which docker-compose || true)
 _DOCKER_PARAMS=""
 _SSH_CMD_PREFIX=""
 _OS_HOME_DIR="/home"
-_APPSAWAY_APP_PATH_NOT_CONSOLE=iCubApps/\${APPSAWAY_APP_NAME}
+_APPSAWAY_APP_PATH_NOT_CONSOLE="iCubApps/${APPSAWAY_APP_NAME}"
 
 print_defs ()
 {
