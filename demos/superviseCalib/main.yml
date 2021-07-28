@@ -128,8 +128,6 @@ services:
         condition: on-failure
     command: sh -c "yarp wait /calibSupervisor/display:o ; yarp wait /display; yarp connect  /calibSupervisor/display:o /display fast_tcp;"
 
-<<<<<<< HEAD
-=======
   #yConnectToViewerCalib:
   #  <<: *yarp-base
   #  deploy:
@@ -139,7 +137,6 @@ services:
   #      condition: on-failure
   #  command: sh -c "yarp wait /calibSupervisor/imageLeft:o ; yarp wait /sendtocalib; yarp connect /calibSupervisor/imageLeft:o /sendtocalib fast_tcp ;"
 
->>>>>>> Fixed variable definition so as to not change the website
   yConnectToLeftInCamCalib:
     <<: *yarp-base
     deploy:

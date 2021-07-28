@@ -323,11 +323,7 @@ run_hardware_steps_via_ssh()
  if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_HEAD_YAML_FILE_LIST}
     do
-<<<<<<< HEAD
       log "running ${_DOCKER_COMPOSE_BIN_HEAD} with file ${_OS_HOME_DIR}/${APPSAWAY_ICUBHEADNODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}/${file} on host $APPSAWAY_ICUBHEADNODE_ADDR"
-=======
-      log "running ${_DOCKER_COMPOSE_BIN} with file ${_OS_HOME_DIR}/${APPSAWAY_ICUBHEADNODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}/${file} on host $APPSAWAY_ICUBHEADNODE_ADDR"
->>>>>>> Expanded modifications to the whole pipeline.
       #run_via_ssh_nowait $APPSAWAY_ICUBHEADNODE_ADDR "${_DOCKER_COMPOSE_BIN} -f ${file} up" "log.txt"
       get_shared_volumes ${APPSAWAY_APP_PATH}/${file}
       echo ${VOLUMES_LIST[@]}
@@ -341,16 +337,13 @@ run_hardware_steps_via_ssh()
   if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
     do
-<<<<<<< HEAD
       log "running ${_DOCKER_COMPOSE_BIN_GUI} with file ${_OS_HOME_DIR}/${APPSAWAY_GUINODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}/${file} on host $APPSAWAY_GUINODE_ADDR"
-=======
-      log "running ${_DOCKER_COMPOSE_BIN} with file ${_OS_HOME_DIR}/${APPSAWAY_GUINODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}/${file} on host $APPSAWAY_GUINODE_ADDR"
->>>>>>> Expanded modifications to the whole pipeline.
       #run_via_ssh_nowait $APPSAWAY_GUINODE_ADDR "${_DOCKER_COMPOSE_BIN} -f ${file} up" "log.txt"
       get_shared_volumes ${APPSAWAY_APP_PATH}/${file}
+      gui_home=/home/${APPSAWAY_GUINODE_USERNAME}
       echo ${VOLUMES_LIST[@]}
-      ${_SCP_BIN} ${_SCP_PARAMS} ${HOME}/teamcode/appsAway/scripts/appsAway_getVolumeFiles.sh ${APPSAWAY_GUINODE_USERNAME}@${APPSAWAY_GUINODE_ADDR}:${HOME}/teamcode/appsAway/scripts/appsAway_getVolumeFiles.sh
-      run_via_ssh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR "export VOLUMES_LIST=$VOLUMES_LIST; export APPSAWAY_OPTIONS=${APPSAWAY_OPTIONS} ; export ${GUI_DISPLAY} ; export XAUTHORITY=${myXauth}; ${HOME}/teamcode/appsAway/scripts/appsAway_getVolumeFiles.sh ~/volumes_before_changes.txt ; export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_GUI} -f ${file} up --detach; fi"
+      ${_SCP_BIN} ${_SCP_PARAMS} ${HOME}/teamcode/appsAway/scripts/appsAway_getVolumeFiles.sh ${APPSAWAY_GUINODE_USERNAME}@${APPSAWAY_GUINODE_ADDR}:${gui_home}/teamcode/appsAway/scripts/appsAway_getVolumeFiles.sh
+      run_via_ssh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR "export VOLUMES_LIST=$VOLUMES_LIST; export APPSAWAY_OPTIONS=${APPSAWAY_OPTIONS} ; export ${GUI_DISPLAY} ; export XAUTHORITY=${myXauth}; ./${gui_home}/teamcode/appsAway/scripts/appsAway_getVolumeFiles.sh ~/volumes_before_changes.txt ; export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_GUI} -f ${file} up --detach; fi"
     done
     val1=$(( $val1 + 5 ))
     echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE
@@ -362,7 +355,7 @@ run_hardware_steps_via_ssh()
       get_shared_volumes ${APPSAWAY_APP_PATH}/${file}
       echo ${VOLUMES_LIST[@]}
       ${_SCP_BIN} ${_SCP_PARAMS} ${HOME}/teamcode/appsAway/scripts/appsAway_getVolumeFiles.sh ${APPSAWAY_CONSOLENODE_USERNAME}@${APPSAWAY_CONSOLENODE_ADDR}:${HOME}/teamcode/appsAway/scripts/appsAway_getVolumeFiles.sh
-      run_via_ssh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR "export VOLUMES_LIST=$VOLUMES_LIST; export APPSAWAY_OPTIONS=${APPSAWAY_OPTIONS} ; ${HOME}/teamcode/appsAway/scripts/appsAway_getVolumeFiles.sh ~/volumes_before_changes.txt ; export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_CONSOLE} -f ${file} up --detach; fi"
+      run_via_ssh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR "export VOLUMES_LIST=$VOLUMES_LIST; export APPSAWAY_OPTIONS=${APPSAWAY_OPTIONS} ; ./${HOME}/teamcode/appsAway/scripts/appsAway_getVolumeFiles.sh ~/volumes_before_changes.txt ; export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_CONSOLE} -f ${file} up --detach; fi"
     done
     val1=$(( $val1 + 5 ))
     echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE

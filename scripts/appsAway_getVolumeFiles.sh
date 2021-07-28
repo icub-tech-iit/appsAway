@@ -47,6 +47,7 @@ get_files_list()
   do
     cd $volume
     find >> $filename
+    cat $filename
   done
 }
 
