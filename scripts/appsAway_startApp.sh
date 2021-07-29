@@ -54,6 +54,7 @@ _DOCKER_PARAMS=""
 _SSH_CMD_PREFIX=""
 _OS_HOME_DIR="/home"
 _APPSAWAY_APP_PATH_NOT_CONSOLE="iCubApps/${APPSAWAY_APP_NAME}"
+VOLUMES_LIST=()
 
 val1=$((0))
 
@@ -260,7 +261,6 @@ get_shared_volumes()
 {
   file=$1
   look_for_volumes=false
-  VOLUMES_LIST=()
   while read -r line || [ -n "$line" ]
   do
       volumes_result=$(echo $line | grep "volumes") # Look for yml line that says "volumes"
@@ -271,12 +271,17 @@ get_shared_volumes()
           then
               if [[ $line == -* ]] # If line is a volume (ignore comments)
               then
-                  volume=$(echo $line | sed 's/[^:]*://' | tr -d '"' | sed 's/-//' | tr -d ' ' ) # Get volume
-                  if [[ $volume != *:ro && $volume != *:ro\" ]] # If volume is not read-only
-                  then
-                      volume_to_append=$(echo $line | sed 's/:.*//' | tr -d '"' | sed 's/-//' | tr -d ' ')
-                      VOLUMES_LIST="$VOLUMES_LIST $volume_to_append"
-                  fi
+                volume=$(echo $line | sed 's/[^:]*://' | tr -d '"' | sed 's/-//' | tr -d ' ' ) # Get volume
+                if [[ $volume != *:ro && $volume != *:ro\" ]] # If volume is not read-only
+                then
+                    if [[ $volume == *:rw || $volume == *:rw\" ]] # If the :rw ending was explicitely written, remove it
+                    then
+                        volume_to_append=$(echo $volume | sed 's/:.*//')
+                    else
+                        volume_to_append=$volume
+                    fi
+                    VOLUMES_LIST="$VOLUMES_LIST $volume_to_append"
+                fi
               fi
           else # If line is not volume nor comment, it's a continuation of the yml and we are done
               look_for_volumes=false
@@ -339,7 +344,7 @@ run_hardware_steps_via_ssh()
     do
       log "running ${_DOCKER_COMPOSE_BIN_GUI} with file ${_OS_HOME_DIR}/${APPSAWAY_GUINODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}/${file} on host $APPSAWAY_GUINODE_ADDR"
       #run_via_ssh_nowait $APPSAWAY_GUINODE_ADDR "${_DOCKER_COMPOSE_BIN} -f ${file} up" "log.txt"
-      get_shared_volumes ${APPSAWAY_APP_PATH}/${file}
+      # get_shared_volumes ${APPSAWAY_APP_PATH}/${file}
       gui_home=/home/${APPSAWAY_GUINODE_USERNAME}
       echo ${VOLUMES_LIST[@]}
       ${_SCP_BIN} ${_SCP_PARAMS} ${HOME}/teamcode/appsAway/scripts/appsAway_getVolumeFiles.sh ${APPSAWAY_GUINODE_USERNAME}@${APPSAWAY_GUINODE_ADDR}:${gui_home}/teamcode/appsAway/scripts/appsAway_getVolumeFiles.sh
