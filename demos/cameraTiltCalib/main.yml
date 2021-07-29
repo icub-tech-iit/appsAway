@@ -7,7 +7,7 @@ x-yarp-base: &yarp-base
     - LEFT_CUSTOM_PORT
     - RIGHT_CUSTOM_PORT
   volumes:
-    - "${YARP_CONF_PATH}:/root/.config/yarp"
+    - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
   networks:
     - hostnet
 

@@ -11,7 +11,7 @@ x-yarp-base: &yarp-gui
   volumes:
     - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
     - "${XAUTHORITY}:/root/.Xauthority:rw"  
-    - "${YARP_CONF_PATH}:/root/.config/yarp"
+    - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
   ports:
     - "10000:10000"
   network_mode: "host"

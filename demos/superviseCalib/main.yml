@@ -11,7 +11,7 @@ x-yarp-base: &yarp-base
     - MONO_CALIB
     - VOLUME_TARGET=/usr/local/share/iCub/contexts/cameraCalibration/customEyes.ini
   volumes:
-    - "${YARP_CONF_PATH}:/root/.config/yarp"
+    - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
     - "${APPSAWAY_CALIB_CONTEXT}:/usr/local/share/iCub/contexts/cameraCalibration/"
     - "${CUSTOM_FILE:-/dev/null}:${VOLUME_TARGET:-/dev/null}"
   networks:
