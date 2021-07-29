@@ -35,7 +35,21 @@ _SCP_PARAMS="-q -B"
 _SSH_BIN=$(which ssh || true)
 _SSH_PARAMS="-T"
 _DOCKER_BIN=$(which docker || true)
-_DOCKER_COMPOSE_BIN=$(which docker-compose || true)
+_DOCKER_COMPOSE_BIN_CONSOLE=$(which docker-compose || true)
+if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
+  _DOCKER_COMPOSE_BIN_HEAD=$(ssh $APPSAWAY_ICUBHEADNODE_USERNAME@$APPSAWAY_ICUBHEADNODE_ADDR 'which docker-compose;')
+  echo "Docker compose head path: $_DOCKER_COMPOSE_BIN_HEAD"
+  if [ "${_DOCKER_COMPOSE_BIN_HEAD}" == "" ]; then
+   exit_err "docker-compose binary not found in the head node"
+  fi
+fi
+if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
+  _DOCKER_COMPOSE_BIN_GUI=$(ssh $APPSAWAY_GUINODE_USERNAME@$APPSAWAY_GUINODE_ADDR 'which docker-compose;')
+  echo "Docker compose gui path: $_DOCKER_COMPOSE_BIN_GUI" 
+  if [ "${_DOCKER_COMPOSE_BIN_GUI}" == "" ]; then
+   exit_err "docker-compose binary not found in the gui node" 
+  fi
+fi
 _DOCKER_PARAMS=""
 _SSH_CMD_PREFIX=""
 _OS_HOME_DIR="/home"
@@ -52,7 +66,9 @@ print_defs ()
   echo " _SSH_BIN is $_SSH_BIN"
   echo " _SSH_PARAMS is $_SSH_PARAMS"
   echo " _DOCKER_BIN is $_DOCKER_BIN"
-  echo "_DOCKER_COMPOSE_BIN is $_DOCKER_COMPOSE_BIN"
+  echo "_DOCKER_COMPOSE_BIN_CONSOLE is $_DOCKER_COMPOSE_BIN_CONSOLE"
+  echo "_DOCKER_COMPOSE_BIN_HEAD is $_DOCKER_COMPOSE_BIN_HEAD"
+  echo "_DOCKER_COMPOSE_BIN_GUI is $_DOCKER_COMPOSE_BIN_GUI"
   echo " _DOCKER_PARAMS is $_DOCKER_PARAMS"
 }
 
@@ -201,20 +217,20 @@ stop_hardware_steps_via_ssh()
     for file in ${APPSAWAY_HEAD_YAML_FILE_LIST}
     do
       log "stopping docker-compose with file ${file} on host $APPSAWAY_ICUBHEADNODE_ADDR with command ${stop_cmd}"
-      run_via_ssh $APPSAWAY_ICUBHEADNODE_USERNAME $APPSAWAY_ICUBHEADNODE_ADDR " if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN} -f ${file} ${stop_cmd}; fi"
+      run_via_ssh $APPSAWAY_ICUBHEADNODE_USERNAME $APPSAWAY_ICUBHEADNODE_ADDR " if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_HEAD} -f ${file} ${stop_cmd}; fi"
     done
   fi
   if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
     do
       log "stopping docker-compose with file ${file} on host $APPSAWAY_GUINODE_ADDR with command ${stop_cmd}"
-      run_via_ssh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN} -f ${file} ${stop_cmd}; fi"
+      run_via_ssh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_GUI} -f ${file} ${stop_cmd}; fi"
     done
   elif [ "$APPSAWAY_GUINODE_ADDR" == "" ] && [ "$APPSAWAY_CONSOLENODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
     do
       log "stopping docker-compose with file ${file} on host $APPSAWAY_CONSOLENODE_ADDR with command ${stop_cmd}"
-      run_via_ssh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN} -f ${file} ${stop_cmd}; fi"
+      run_via_ssh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_CONSOLE} -f ${file} ${stop_cmd}; fi"
     done
  fi
 }
