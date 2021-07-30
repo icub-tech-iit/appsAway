@@ -49,6 +49,7 @@ jobs:
               else 
                 echo "Test script not found!"
               fi
+              cd ../..
             fi
           done
           app_name_list=$(echo "${app_name_list[@]}" | tr ' ' '\n' | sort -u | tr '\n' ' ')
