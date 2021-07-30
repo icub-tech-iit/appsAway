@@ -180,13 +180,23 @@ create_yarp_config_files()
       _YARP_NAMESPACE_CONF=$_YARP_NAMESPACE_FOUND
     else
       log "server not found, using default settings for yarp server"
-      _YARP_IP_CONF=$APPSAWAY_CONSOLENODE_ADDR
+      if [ "${APPSAWAY_CONSOLENODE_ADDR}" == "localhost" ]
+      then 
+        _YARP_IP_CONF=$(hostname -I | awk '{print $1}')
+      else
+        _YARP_IP_CONF=$APPSAWAY_CONSOLENODE_ADDR
+      fi
       _YARP_PORT_CONF=10000
       _YARP_NAMESPACE_CONF=/root
     fi
   else
     log "yarp binary not found, using default settings for yarp server"
-    _YARP_IP_CONF=$APPSAWAY_CONSOLENODE_ADDR
+    if [ "${APPSAWAY_CONSOLENODE_ADDR}" == "localhost" ]
+      then 
+        _YARP_IP_CONF=$(hostname -I | awk '{print $1}')
+      else
+        _YARP_IP_CONF=$APPSAWAY_CONSOLENODE_ADDR
+    fi
     _YARP_PORT_CONF=10000
     _YARP_NAMESPACE_CONF=/root
   fi
