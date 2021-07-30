@@ -54,6 +54,7 @@ _DOCKER_PARAMS=""
 _SSH_CMD_PREFIX=""
 _OS_HOME_DIR="/home"
 _APPSAWAY_APP_PATH_NOT_CONSOLE="iCubApps/${APPSAWAY_APP_NAME}"
+_CWD=$(pwd)
 VOLUMES_LIST=()
 
 val1=$((0))
@@ -298,6 +299,16 @@ get_shared_volumes()
   read -a VOLUMES_LIST <<< $VOLUMES_LIST
 }
 
+scp_to_node()
+{
+  file_to_send=$1
+  username_to_receive=$2
+  ip_to_receive=$3
+  path_to_receive=$4
+  full_path_to_receive=${_OS_HOME_DIR}/${username_to_receive}/${path_to_receive}
+  ${_SCP_BIN} ${_SCP_PARAMS_DIR} ${file_to_send} ${username_to_receive}@${ip_to_receive}:${full_path_to_receive}/
+}
+
 get_files_list()
 {
   filename=$1
@@ -311,6 +322,8 @@ get_files_list()
 run_hardware_steps_via_ssh()
 {
   log "running hardware-dependant steps to nodes"
+
+  log "current working dir: $_CWD"
 
   mydisplay=$(getdisplay)
   if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
@@ -330,10 +343,9 @@ run_hardware_steps_via_ssh()
     do
       log "running ${_DOCKER_COMPOSE_BIN_HEAD} with file ${_OS_HOME_DIR}/${APPSAWAY_ICUBHEADNODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}/${file} on host $APPSAWAY_ICUBHEADNODE_ADDR"
       #run_via_ssh_nowait $APPSAWAY_ICUBHEADNODE_ADDR "${_DOCKER_COMPOSE_BIN} -f ${file} up" "log.txt"
-      get_shared_volumes ${APPSAWAY_APP_PATH}/${file}
-      echo ${VOLUMES_LIST[@]}
-      ${_SCP_BIN} ${_SCP_PARAMS} ${HOME}/teamcode/appsAway/scripts/appsAway_getVolumeFiles.sh ${APPSAWAY_ICUBHEADNODE_USERNAME}@${APPSAWAY_ICUBHEADNODE_ADDR}:${HOME}/teamcode/appsAway/scripts/appsAway_getVolumeFiles.sh
-      run_via_ssh $APPSAWAY_ICUBHEADNODE_USERNAME $APPSAWAY_ICUBHEADNODE_ADDR "export VOLUMES_LIST=$VOLUMES_LIST;  export APPSAWAY_OPTIONS=${APPSAWAY_OPTIONS} ; ${HOME}/teamcode/appsAway/scripts/appsAway_getVolumeFiles.sh ~/volumes_before_changes.txt ; ${_DOCKER_COMPOSE_BIN_HEAD} -f ${file} up --detach"
+      scp_to_node ${_CWD}/appsAway_containerPermissions.sh $APPSAWAY_ICUBHEADNODE_USERNAME $APPSAWAY_ICUBHEADNODE_ADDR $_APPSAWAY_APP_PATH_NOT_CONSOLE
+      scp_to_node ${_CWD}/appsAway_changeNewFilesPermissions.sh $APPSAWAY_ICUBHEADNODE_USERNAME $APPSAWAY_ICUBHEADNODE_ADDR $_APPSAWAY_APP_PATH_NOT_CONSOLE      
+      run_via_ssh $APPSAWAY_ICUBHEADNODE_USERNAME $APPSAWAY_ICUBHEADNODE_ADDR "export APPSAWAY_OPTIONS=${APPSAWAY_OPTIONS} ; ${_DOCKER_COMPOSE_BIN_HEAD} -f ${file} up --detach"
     done
     val1=$(( $val1 + 5 ))
     echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE
@@ -344,11 +356,9 @@ run_hardware_steps_via_ssh()
     do
       log "running ${_DOCKER_COMPOSE_BIN_GUI} with file ${_OS_HOME_DIR}/${APPSAWAY_GUINODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}/${file} on host $APPSAWAY_GUINODE_ADDR"
       #run_via_ssh_nowait $APPSAWAY_GUINODE_ADDR "${_DOCKER_COMPOSE_BIN} -f ${file} up" "log.txt"
-      # get_shared_volumes ${APPSAWAY_APP_PATH}/${file}
-      gui_home=/home/${APPSAWAY_GUINODE_USERNAME}
-      echo ${VOLUMES_LIST[@]}
-      ${_SCP_BIN} ${_SCP_PARAMS} ${HOME}/teamcode/appsAway/scripts/appsAway_getVolumeFiles.sh ${APPSAWAY_GUINODE_USERNAME}@${APPSAWAY_GUINODE_ADDR}:${gui_home}/teamcode/appsAway/scripts/appsAway_getVolumeFiles.sh
-      run_via_ssh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR "export VOLUMES_LIST=$VOLUMES_LIST; export APPSAWAY_OPTIONS=${APPSAWAY_OPTIONS} ; export ${GUI_DISPLAY} ; export XAUTHORITY=${myXauth}; ./${gui_home}/teamcode/appsAway/scripts/appsAway_getVolumeFiles.sh ~/volumes_before_changes.txt ; export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_GUI} -f ${file} up --detach; fi"
+      scp_to_node ${_CWD}/appsAway_containerPermissions.sh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR $_APPSAWAY_APP_PATH_NOT_CONSOLE
+      scp_to_node ${_CWD}/appsAway_changeNewFilesPermissions.sh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR $_APPSAWAY_APP_PATH_NOT_CONSOLE
+      run_via_ssh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR "export APPSAWAY_OPTIONS=${APPSAWAY_OPTIONS} ; export ${GUI_DISPLAY} ; export XAUTHORITY=${myXauth}; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_GUI} -f ${file} up --detach; fi"
     done
     val1=$(( $val1 + 5 ))
     echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE
@@ -357,10 +367,12 @@ run_hardware_steps_via_ssh()
     do
       log "running ${_DOCKER_COMPOSE_BIN_CONSOLE} with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_CONSOLENODE_ADDR"
       #run_via_ssh_nowait $APPSAWAY_GUINODE_ADDR "${_DOCKER_COMPOSE_BIN} -f ${file} up" "log.txt"
-      get_shared_volumes ${APPSAWAY_APP_PATH}/${file}
-      echo ${VOLUMES_LIST[@]}
-      ${_SCP_BIN} ${_SCP_PARAMS} ${HOME}/teamcode/appsAway/scripts/appsAway_getVolumeFiles.sh ${APPSAWAY_CONSOLENODE_USERNAME}@${APPSAWAY_CONSOLENODE_ADDR}:${HOME}/teamcode/appsAway/scripts/appsAway_getVolumeFiles.sh
-      run_via_ssh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR "export VOLUMES_LIST=$VOLUMES_LIST; export APPSAWAY_OPTIONS=${APPSAWAY_OPTIONS} ; ./${HOME}/teamcode/appsAway/scripts/appsAway_getVolumeFiles.sh ~/volumes_before_changes.txt ; export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_CONSOLE} -f ${file} up --detach; fi"
+      # get_shared_volumes ${APPSAWAY_APP_PATH}/${file}
+      # echo ${VOLUMES_LIST[@]}
+      # ${_SCP_BIN} ${_SCP_PARAMS} ${HOME}/teamcode/appsAway/scripts/appsAway_getVolumeFiles.sh ${APPSAWAY_CONSOLENODE_USERNAME}@${APPSAWAY_CONSOLENODE_ADDR}:${HOME}/teamcode/appsAway/scripts/appsAway_getVolumeFiles.sh
+      scp_to_node ${_CWD}/appsAway_containerPermissions.sh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR $_APPSAWAY_APP_PATH_NOT_CONSOLE
+      scp_to_node ${_CWD}/appsAway_changeNewFilesPermissions.sh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR $_APPSAWAY_APP_PATH_NOT_CONSOLE
+      run_via_ssh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR "export APPSAWAY_OPTIONS=${APPSAWAY_OPTIONS} ; export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_CONSOLE} -f ${file} up --detach; fi"
     done
     val1=$(( $val1 + 5 ))
     echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE

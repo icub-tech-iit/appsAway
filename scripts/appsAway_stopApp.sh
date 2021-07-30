@@ -77,11 +77,9 @@ get_shared_volumes()
 {
   file=$1
   look_for_volumes=false
-  COUNTER=1
   while read -r line || [ -n "$line" ]
   do
-      log "reading line $COUNTER with content $line"
-      volumes_result=$( echo "$line" | grep "volumes" || :) # Look for yml line that says "volumes"
+      volumes_result=$( echo "$line" | grep "volumes" || true) # Look for yml line that says "volumes"
       if [[ $look_for_volumes == true ]]
       then
           if [[ $line == -* || $line == \#* ]] # If line is a volume or comment
@@ -94,8 +92,6 @@ get_shared_volumes()
                     if [[ $volume == *:rw || $volume == *:rw\" ]] # If the :rw ending was explicitely written, remove it
                     then
                         volume_to_append=$(echo $volume | sed 's/:.*//')
-                    else
-                        volume_to_append=$volume
                     fi
                     log "appending to volumes list variable"
                     VOLUMES_LIST="$VOLUMES_LIST $volume_to_append"
@@ -110,11 +106,8 @@ get_shared_volumes()
       then                   
           look_for_volumes=true             
       fi
-      # log "bai"
       COUNTER=$(($COUNTER+1))     
   done < $file
-
-  echo $VOLUMES_LIST
   read -a VOLUMES_LIST <<< $VOLUMES_LIST
 }
 
@@ -260,30 +253,53 @@ stop_hardware_steps_via_ssh()
   fi
 
   if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
-    for file in ${APPSAWAY_HEAD_YAML_FILE_LIST}
+  for file in ${APPSAWAY_HEAD_YAML_FILE_LIST}
     do
+<<<<<<< HEAD
       log "stopping docker-compose with file ${file} on host $APPSAWAY_ICUBHEADNODE_ADDR with command ${stop_cmd}"
       run_via_ssh $APPSAWAY_ICUBHEADNODE_USERNAME $APPSAWAY_ICUBHEADNODE_ADDR " if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_HEAD} -f ${file} ${stop_cmd}; fi"
+=======
+>>>>>>> Continued working in fixing permission issue
       get_shared_volumes ${APPSAWAY_APP_PATH}/${file}
     done
   fi
   if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
     do
-      log "stopping docker-compose with file ${file} on host $APPSAWAY_GUINODE_ADDR with command ${stop_cmd}"
-      run_via_ssh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_GUI} -f ${file} ${stop_cmd}; fi"
       get_shared_volumes ${APPSAWAY_APP_PATH}/${file}
     done
   elif [ "$APPSAWAY_GUINODE_ADDR" == "" ] && [ "$APPSAWAY_CONSOLENODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
     do
-      log "stopping docker-compose with file ${file} on host $APPSAWAY_CONSOLENODE_ADDR with command ${stop_cmd}"
-      run_via_ssh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_CONSOLE} -f ${file} ${stop_cmd}; fi"
       get_shared_volumes ${APPSAWAY_APP_PATH}/${file}
     done
- fi
+  fi
 
- echo ${VOLUMES_LIST[@]}
+  echo ${VOLUMES_LIST[@]}
+
+  if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
+    for file in ${APPSAWAY_HEAD_YAML_FILE_LIST}
+    do
+      log "stopping docker-compose with file ${file} on host $APPSAWAY_ICUBHEADNODE_ADDR with command ${stop_cmd}"
+      warn "here you should see a list of files for head"
+      run_via_ssh $APPSAWAY_ICUBHEADNODE_USERNAME $APPSAWAY_ICUBHEADNODE_ADDR " export VOLUMES_LIST=${VOLUMES_LIST} ; export APPSAWAY_APP_PATH=${_OS_HOME_DIR}/${APPSAWAY_ICUBHEADNODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE} ; ${_OS_HOME_DIR}/${APPSAWAY_ICUBHEADNODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_changeNewFilesPermissions.sh ; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN} -f ${file} ${stop_cmd}; fi"
+    done
+  fi
+  if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
+    for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
+    do
+      log "stopping docker-compose with file ${file} on host $APPSAWAY_GUINODE_ADDR with command ${stop_cmd}"
+      warn "here you should see a list of files for gui"
+      run_via_ssh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR " export VOLUMES_LIST=${VOLUMES_LIST}; export APPSAWAY_APP_PATH=${_OS_HOME_DIR}/${APPSAWAY_GUINODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE} ; ${_OS_HOME_DIR}/${APPSAWAY_GUINODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_changeNewFilesPermissions.sh ; export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN} -f ${file} ${stop_cmd}; fi"
+    done
+  elif [ "$APPSAWAY_GUINODE_ADDR" == "" ] && [ "$APPSAWAY_CONSOLENODE_ADDR" != "" ]; then
+    for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
+    do
+      log "stopping docker-compose with file ${file} on host $APPSAWAY_CONSOLENODE_ADDR with command ${stop_cmd}"
+      warn "here you should see a list of files for console"
+      run_via_ssh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR " export VOLUMES_LIST=${VOLUMES_LIST} ; export APPSAWAY_APP_PATH=${_OS_HOME_DIR}/${APPSAWAY_CONSOLENODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE} ; ${_OS_HOME_DIR}/${APPSAWAY_CONSOLENODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_changeNewFilesPermissions.sh ; export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN} -f ${file} ${stop_cmd}; fi"
+    done
+  fi
 }
 
 stop_deploy()
