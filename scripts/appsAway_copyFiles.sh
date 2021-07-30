@@ -171,7 +171,7 @@ scp_to_node()
   ip_to_receive=$3
   path_to_receive=$4
   full_path_to_receive=${_OS_HOME_DIR}/${username_to_receive}/${path_to_receive}
-  ${_SCP_BIN} ${_SCP_PARAMS_DIR} ${file_to_send} ${username_to_receive}@${ip_to_receive}:${full_path_to_receive}/
+  ${_SCP_BIN} ${_SCP_PARAMS_DIR} ${file_to_send} ${username_to_receive}@${ip_to_receive}:${full_path_to_receive}/ || true
 }
 
 #swarm_start()
@@ -363,7 +363,7 @@ copy_yaml_files()
   do
     if [ -f "../demos/$APPSAWAY_APP_NAME/$file" ]; then
       log "copying yaml file $file to master node (this)"
-      cp ../demos/${APPSAWAY_APP_NAME}/${file} ${APPSAWAY_APP_PATH}/
+      cp ../demos/${APPSAWAY_APP_NAME}/${file} ${APPSAWAY_APP_PATH}/ || true
     fi
   done
   log "modifying yaml file $file on master node (this)"
@@ -372,7 +372,7 @@ copy_yaml_files()
   do
     if [ -f "../demos/$APPSAWAY_APP_NAME/$file" ]; then
       log "copying yaml file $file to master node (this)"
-      cp ../demos/${APPSAWAY_APP_NAME}/${file} ${APPSAWAY_APP_PATH}/
+      cp ../demos/${APPSAWAY_APP_NAME}/${file} ${APPSAWAY_APP_PATH}/ || true
     fi
   done
   log "modifying yaml file $file on master node (this)"
@@ -381,7 +381,7 @@ copy_yaml_files()
   do
     if [ -f "../demos/$APPSAWAY_APP_NAME/$file" ]; then
       log "copying yaml file $file to master node (this)"
-      cp ../demos/${APPSAWAY_APP_NAME}/${file} ${APPSAWAY_APP_PATH}/
+      cp ../demos/${APPSAWAY_APP_NAME}/${file} ${APPSAWAY_APP_PATH}/ || true
     fi
   done
   log "modifying yaml files"
@@ -397,7 +397,7 @@ copy_yaml_files()
     if [ -d "../demos/$APPSAWAY_APP_NAME/$folder" ]
     then
       log "copying data folder $folder to master node (this)"
-      cp -R ${APPSAWAY_APP_PATH}/${folder} ${APPSAWAY_APP_PATH}/
+      cp -R ${APPSAWAY_APP_PATH}/${folder} ${APPSAWAY_APP_PATH}/ || true
     fi
   done
   if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
