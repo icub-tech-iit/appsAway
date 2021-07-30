@@ -11,14 +11,18 @@
           curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add - 
           curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
       when: ansible_distribution != 'MacOSX'
-      
+    
+    - name: Update packages
+      shell: apt-get update
+      ignore_errors: yes
+      when: ansible_distribution != 'MacOSX'
+
     - name: Install nvidia-docker2
       apt:
         name:
           - nvidia-docker2
         state: latest
         autoclean: yes
-        update_cache: true
       when: ansible_distribution != 'MacOSX'
 
 #    - name: Setting up GPUs for Cuda nodes docker configuration

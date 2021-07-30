@@ -12,6 +12,11 @@
       ignore_errors: yes
       when: ansible_distribution != 'MacOSX'
 
+    - name: Update packages
+      shell: apt-get update
+      ignore_errors: yes
+      when: ansible_distribution != 'MacOSX'
+
     - name: Install packages to use a repository over HTTPS
       apt: 
         name:
@@ -23,7 +28,6 @@
           - lsb-release
         state: latest
         autoclean: yes
-        update_cache: yes
       when: ansible_distribution != 'MacOSX'
         
     - name: Install docker-compose
