@@ -22,6 +22,11 @@
         warn: no
       ignore_errors: yes
       when: ansible_distribution != 'MacOSX'
+    
+    - name: Update packages
+      shell: apt-get update
+      ignore_errors: yes
+      when: ansible_distribution != 'MacOSX'
 
     - name: Install packages to use a repository over HTTPS
       apt: 
@@ -34,7 +39,6 @@
           - lsb-release
         state: latest
         autoclean: yes
-        update_cache: yes
       when: ansible_distribution != 'MacOSX'
 
     - name: Add Docker’s official GPG key
@@ -47,7 +51,12 @@
       shell: echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
       ignore_errors: yes
       when: ansible_distribution != 'MacOSX'
-      
+    
+    - name: Update packages
+      shell: apt-get update
+      ignore_errors: yes
+      when: ansible_distribution != 'MacOSX'
+
     - name: Install the latest version of Docker Engine - Community
       apt: 
         name:
@@ -56,7 +65,6 @@
           - containerd.io
         state: latest
         autoclean: yes
-        update_cache: yes
       ignore_errors: yes
       when: ansible_distribution != 'MacOSX'
 #      no_log: true
