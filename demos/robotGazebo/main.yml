@@ -17,11 +17,6 @@ x-yarp-base: &yarp-base
     - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
   networks:
     - hostnet
-#    - type: volume
-#      source: yarp-config
-#      target: /root/.config/yarp
-#      volume:
-#        nocopy: true
 
 services:
 #following service are configured in icub-main/app/iCubStartup/scripts/iCubStartup.xml.template
@@ -49,11 +44,3 @@ networks:
   hostnet:
     external: true
     name: host
-
-#volumes:
-#  yarp-config:
-#    driver: vieux/sshfs
-#    driver_opts:
-#      sshcmd: ${USER_NAME}@${MASTER_ADDR}:${YARP_CONF_PATH}
-#      password: ${USER_PASSWORD}
-#      allow_other: ""
