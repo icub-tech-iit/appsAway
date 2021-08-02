@@ -39,6 +39,8 @@ _DOCKER_BIN=$(which docker || true)
 _DOCKER_PARAMS=""
 _HOSTNAME_LIST=""
 _CWD=$(pwd)
+_OS_HOME_DIR="/home"
+_APPSAWAY_APP_PATH_NOT_CONSOLE="iCubApps/${APPSAWAY_APP_NAME}"
 
 print_defs ()
 {
@@ -162,6 +164,16 @@ run_via_ssh()
   fi
 }
 
+scp_to_node()
+{
+  file_to_send=$1
+  username_to_receive=$2
+  ip_to_receive=$3
+  path_to_receive=$4
+  full_path_to_receive=${_OS_HOME_DIR}/${username_to_receive}/${path_to_receive}
+  ${_SCP_BIN} ${_SCP_PARAMS_DIR} ${file_to_send} ${username_to_receive}@${ip_to_receive}:${full_path_to_receive}/ || true
+}
+
 #swarm_start()
 #{
 #  _SWARM_INIT_COMMAND=$( ${_DOCKER_BIN} ${_DOCKER_PARAMS} swarm init --advertise-addr ${APPSAWAY_CONSOLENODE_ADDR} | egrep -i '^\s{4}')
@@ -201,6 +213,7 @@ fill_hostname_list()
 		  exit_err "unable to get hostname from IP $_ip_addr"
 	  fi
       _HOSTNAME_LIST="$_hostname $_HOSTNAME_LIST"
+    iter=$((iter+1))
   done
 }
 
@@ -238,8 +251,7 @@ fill_hostname_list()
 #  echo "USER_NAME=$APPSAWAY_USER_NAME" >> ${APPSAWAY_APP_PATH}/${_DOCKER_ENV_FILE}
 #  echo "USER_PASSWORD=$APPSAWAY_USER_PASSWORD" >> ${APPSAWAY_APP_PATH}/${_DOCKER_ENV_FILE}
 #  echo "MASTER_ADDR=$APPSAWAY_CONSOLENODE_ADDR" >> ${APPSAWAY_APP_PATH}/${_DOCKER_ENV_FILE}
-#  echo "YARP_CONF_PATH=${APPSAWAY_APP_PATH}/${_YARP_CONFIG_FILES_PATH}" >> ${APPSAWAY_APP_PATH}/${_DOCKER_ENV_FILE}
-  
+#  echo "YARP_CONF_PATH=${_APPSAWAY_APP_PATH_NOT_CONSOLE}/${_YARP_CONFIG_FILES_PATH}" >> ${APPSAWAY_APP_PATH}/${_DOCKER_ENV_FILE}
 #}
 
 overwrite_yaml_files()
@@ -351,7 +363,7 @@ copy_yaml_files()
   do
     if [ -f "../demos/$APPSAWAY_APP_NAME/$file" ]; then
       log "copying yaml file $file to master node (this)"
-      cp ../demos/${APPSAWAY_APP_NAME}/${file} ${APPSAWAY_APP_PATH}/
+      cp ../demos/${APPSAWAY_APP_NAME}/${file} ${APPSAWAY_APP_PATH}/ || true
     fi
   done
   log "modifying yaml file $file on master node (this)"
@@ -360,7 +372,7 @@ copy_yaml_files()
   do
     if [ -f "../demos/$APPSAWAY_APP_NAME/$file" ]; then
       log "copying yaml file $file to master node (this)"
-      cp ../demos/${APPSAWAY_APP_NAME}/${file} ${APPSAWAY_APP_PATH}/
+      cp ../demos/${APPSAWAY_APP_NAME}/${file} ${APPSAWAY_APP_PATH}/ || true
     fi
   done
   log "modifying yaml file $file on master node (this)"
@@ -369,7 +381,7 @@ copy_yaml_files()
   do
     if [ -f "../demos/$APPSAWAY_APP_NAME/$file" ]; then
       log "copying yaml file $file to master node (this)"
-      cp ../demos/${APPSAWAY_APP_NAME}/${file} ${APPSAWAY_APP_PATH}/
+      cp ../demos/${APPSAWAY_APP_NAME}/${file} ${APPSAWAY_APP_PATH}/ || true
     fi
   done
   log "modifying yaml files"
@@ -385,39 +397,101 @@ copy_yaml_files()
     if [ -d "../demos/$APPSAWAY_APP_NAME/$folder" ]
     then
       log "copying data folder $folder to master node (this)"
-      cp -R ${APPSAWAY_APP_PATH}/${folder} ${APPSAWAY_APP_PATH}/
+      cp -R ${APPSAWAY_APP_PATH}/${folder} ${APPSAWAY_APP_PATH}/ || true
     fi
   done
   if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
-    log "creating path ${APPSAWAY_APP_PATH} on node with IP $APPSAWAY_ICUBHEADNODE_ADDR"
-    ${_SSH_BIN} ${_SSH_PARAMS} ${APPSAWAY_ICUBHEADNODE_USERNAME}@${APPSAWAY_ICUBHEADNODE_ADDR} "mkdir -p ${APPSAWAY_APP_PATH}"
+    head_path=${_OS_HOME_DIR}/${APPSAWAY_ICUBHEADNODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}
+    log "creating path ${head_path} on node with IP ${APPSAWAY_ICUBHEADNODE_ADDR}"
+    ${_SSH_BIN} ${_SSH_PARAMS} ${APPSAWAY_ICUBHEADNODE_USERNAME}@${APPSAWAY_ICUBHEADNODE_ADDR} "mkdir -p ${head_path}"
     for file in ${APPSAWAY_HEAD_YAML_FILE_LIST}
     do
       if [ -f "../demos/$APPSAWAY_APP_NAME/$file" ]; then
-        log "copying yaml file $file to node with IP $APPSAWAY_ICUBHEADNODE_ADDR"
-        ${_SCP_BIN} ${_SCP_PARAMS} ${APPSAWAY_APP_PATH}/${file} ${APPSAWAY_ICUBHEADNODE_USERNAME}@${APPSAWAY_ICUBHEADNODE_ADDR}:${APPSAWAY_APP_PATH}/
+        log "copying yaml file $file to node with IP ${APPSAWAY_ICUBHEADNODE_ADDR}"
+        scp_to_node ${APPSAWAY_APP_PATH}/${file} ${APPSAWAY_ICUBHEADNODE_USERNAME} ${APPSAWAY_ICUBHEADNODE_ADDR} ${_APPSAWAY_APP_PATH_NOT_CONSOLE}
       fi
     done
   fi
 
   if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
-    log "creating path ${APPSAWAY_APP_PATH} on node with IP $APPSAWAY_GUINODE_ADDR"
-    ${_SSH_BIN} ${_SSH_PARAMS} ${APPSAWAY_GUINODE_USERNAME}@${APPSAWAY_GUINODE_ADDR} "mkdir -p ${APPSAWAY_APP_PATH}"
+    gui_path=${_OS_HOME_DIR}/${APPSAWAY_GUINODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}
+    log "creating path ${gui_path} on node with IP ${APPSAWAY_GUINODE_ADDR}"
+    ${_SSH_BIN} ${_SSH_PARAMS} ${APPSAWAY_GUINODE_USERNAME}@${APPSAWAY_GUINODE_ADDR} "mkdir -p ${gui_path}"
     for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
     do
       if [ -f "../demos/$APPSAWAY_APP_NAME/$file" ]; then
-        log "copying yaml file $file to node with IP $APPSAWAY_GUINODE_ADDR"
-        ${_SCP_BIN} ${_SCP_PARAMS} ${APPSAWAY_APP_PATH}/${file} ${APPSAWAY_GUINODE_USERNAME}@${APPSAWAY_GUINODE_ADDR}:${APPSAWAY_APP_PATH}/
+        log "copying yaml file $file to node with IP ${APPSAWAY_GUINODE_ADDR}"
+        scp_to_node ${APPSAWAY_APP_PATH}/${file} ${APPSAWAY_GUINODE_USERNAME} ${APPSAWAY_GUINODE_ADDR} ${_APPSAWAY_APP_PATH_NOT_CONSOLE}
       fi
     done
   elif [ "$APPSAWAY_GUINODE_ADDR" == "" ] && [ "$APPSAWAY_CONSOLENODE_ADDR" != "" ]; then
-    log "creating path ${APPSAWAY_APP_PATH} on node with IP $APPSAWAY_CONSOLENODE_ADDR"
+    log "creating path ${APPSAWAY_APP_PATH} on node with IP ${APPSAWAY_CONSOLENODE_ADDR}"
+    ${_SSH_BIN} ${_SSH_PARAMS} ${APPSAWAY_CONSOLENODE_USERNAME}@${APPSAWAY_CONSOLENODE_ADDR} "mkdir -p ${APPSAWAY_APP_PATH}"
+    for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
+    do
+      if [ -f "../demos/$APPSAWAY_APP_NAME/$file" ]; then
+        log "copying yaml file $file to node with IP ${APPSAWAY_CONSOLENODE_ADDR}"
+        scp_to_node ${APPSAWAY_APP_PATH}/${file} ${APPSAWAY_CONSOLENODE_USERNAME} ${APPSAWAY_CONSOLENODE_ADDR} ${_APPSAWAY_APP_PATH_NOT_CONSOLE}
+      fi
+    done
+  fi
+
+  if [ "$APPSAWAY_WORKERNODE_ADDR" != "" ]; then
+    iter=1
+    List=$APPSAWAY_WORKERNODE_USERNAME
+    set -- $List
+    for worker_ip in ${APPSAWAY_WORKERNODE_ADDR}
+    do
+      worker_username=$( eval echo "\$$iter")
+      worker_path=${_OS_HOME_DIR}/${worker_username}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}
+      log "creating path ${worker_path} on node with IP $worker_ip"
+      ${_SSH_BIN} ${_SSH_PARAMS} ${worker_username}@${worker_ip} "mkdir -p ${worker_path}"
+      for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
+      do
+        if [ -f "../demos/$APPSAWAY_APP_NAME/$file" ]; then
+          log "copying yaml file $file to node with IP $worker_ip"
+          scp_to_node ${APPSAWAY_APP_PATH}/${file} ${worker_username} ${worker_ip} ${_APPSAWAY_APP_PATH_NOT_CONSOLE}
+        fi
+      done
+    done
+  elif [ "$APPSAWAY_WORKERNODE_ADDR" == "" ] && [ "$APPSAWAY_CONSOLENODE_ADDR" != "" ]; then
+    log "creating path ${APPSAWAY_APP_PATH} on node with IP ${APPSAWAY_CONSOLENODE_ADDR}"
+    ${_SSH_BIN} ${_SSH_PARAMS} ${APPSAWAY_CONSOLENODE_USERNAME}@${APPSAWAY_CONSOLENODE_ADDR} "mkdir -p ${APPSAWAY_APP_PATH}"
+    for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
+    do
+      if [ -f "../demos/$APPSAWAY_APP_NAME/$file" ]; then
+        log "copying yaml file $file to node with IP ${APPSAWAY_CONSOLENODE_ADDR}"
+        scp_to_node ${APPSAWAY_APP_PATH}/${file} ${APPSAWAY_CONSOLENODE_USERNAME} ${APPSAWAY_CONSOLENODE_ADDR} ${_APPSAWAY_APP_PATH_NOT_CONSOLE}
+      fi
+    done
+  fi
+
+  if [ "$APPSAWAY_CUDANODE_ADDR" != "" ]; then
+    iter=1
+    List=$APPSAWAY_CUDANODE_USERNAME
+    set -- $List
+    for cuda_ip in ${APPSAWAY_CUDANODE_ADDR}
+    do
+      cuda_username=$( eval echo "\$$iter")
+      cuda_path=${_OS_HOME_DIR}/${cuda_username}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}
+      log "creating path ${cuda_path} on node with IP ${cuda_ip}"
+      ${_SSH_BIN} ${_SSH_PARAMS} ${cuda_username}@${cuda_ip} "mkdir -p ${cuda_path}"
+      for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
+      do
+        if [ -f "../demos/$APPSAWAY_APP_NAME/$file" ]; then
+          log "copying yaml file $file to node with IP ${cuda_ip}"
+          scp_to_node ${APPSAWAY_APP_PATH}/${file} ${cuda_username} ${cuda_ip} ${_APPSAWAY_APP_PATH_NOT_CONSOLE}
+        fi
+      done
+    done
+  elif [ "$APPSAWAY_CUDANODE_ADDR" == "" ] && [ "$APPSAWAY_CONSOLENODE_ADDR" != "" ]; then
+    log "creating path ${APPSAWAY_APP_PATH} on node with IP ${APPSAWAY_CONSOLENODE_ADDR}"
     ${_SSH_BIN} ${_SSH_PARAMS} ${APPSAWAY_CONSOLENODE_USERNAME}@${APPSAWAY_CONSOLENODE_ADDR} "mkdir -p ${APPSAWAY_APP_PATH}"
     for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
     do
       if [ -f "../demos/$APPSAWAY_APP_NAME/$file" ]; then
         log "copying yaml file $file to node with IP $APPSAWAY_CONSOLENODE_ADDR"
-        ${_SCP_BIN} ${_SCP_PARAMS} ${APPSAWAY_APP_PATH}/${file} ${APPSAWAY_CONSOLENODE_USERNAME}@${APPSAWAY_CONSOLENODE_ADDR}:${APPSAWAY_APP_PATH}/
+        scp_to_node ${APPSAWAY_APP_PATH}/${file} ${APPSAWAY_CONSOLENODE_USERNAME} ${APPSAWAY_CONSOLENODE_ADDR} ${_APPSAWAY_APP_PATH_NOT_CONSOLE}
       fi
     done
   fi
@@ -437,11 +511,11 @@ copy_yarp_files()
     if [ "$node_ip" != "$APPSAWAY_CONSOLENODE_ADDR" ]; then
       username=$( eval echo "\$$iter")
       log "copying folder on node $node_ip.."
-      ${_SCP_BIN} ${_SCP_PARAMS} ${_DOCKER_ENV_FILE} ${username}@${node_ip}:${APPSAWAY_APP_PATH}/
-      ${_SCP_BIN} ${_SCP_PARAMS_DIR} ${_YARP_CONFIG_FILES_PATH} ${username}@${node_ip}:${APPSAWAY_APP_PATH}/
+      scp_to_node ${_DOCKER_ENV_FILE} ${username} ${node_ip} ${_APPSAWAY_APP_PATH_NOT_CONSOLE}
+      scp_to_node ${_YARP_CONFIG_FILES_PATH} ${username} ${node_ip} ${_APPSAWAY_APP_PATH_NOT_CONSOLE}
       for folder in ${APPSAWAY_DATA_FOLDERS}
       do
-        ${_SCP_BIN} ${_SCP_PARAMS_DIR} ${APPSAWAY_APP_PATH}/${folder} ${username}@${node_ip}:${APPSAWAY_APP_PATH}/
+        scp_to_node ${APPSAWAY_APP_PATH}/${folder} ${username} ${node_ip} ${_APPSAWAY_APP_PATH_NOT_CONSOLE}
       done
     fi
     iter=$((iter+1))

@@ -196,11 +196,13 @@ fill_hostname_list()
   for _ip_addr in ${APPSAWAY_NODES_ADDR_LIST}
   do
     username=$( eval echo "\$$iter")
+    log "Checking username ${username} with IP ${_ip_addr}"
 	  _hostname=$(ip2hostname $username $_ip_addr)
 	  if [ "$_hostname" == "" ]; then
 		  exit_err "unable to get hostname from IP $_ip_addr"
 	  fi
       _HOSTNAME_LIST="$_hostname $_HOSTNAME_LIST"
+    iter=$((iter+1))
   done
 }
 
