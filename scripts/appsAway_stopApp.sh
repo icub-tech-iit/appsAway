@@ -54,7 +54,7 @@ _DOCKER_PARAMS=""
 _SSH_CMD_PREFIX=""
 _OS_HOME_DIR="/home"
 _APPSAWAY_APP_PATH_NOT_CONSOLE="iCubApps/${APPSAWAY_APP_NAME}"
-VOLUMES_LIST=()
+_YAML_VOLUMES_LIST=""
 
 print_defs ()
 {
@@ -86,15 +86,11 @@ get_shared_volumes()
           then
               if [[ $line == -* ]] # If line is a volume (ignore comments)
               then
-                volume=$(echo $line | sed 's/[^:]*://' | tr -d '"' | sed 's/-//' | tr -d ' ' ) # Get volume
-                if [[ $volume != *:ro && $volume != *:ro\" ]] # If volume is not read-only
+                volume=$(echo $line | sed 's/[^:]*://' | tr -d '"' | tr -d ' ' ) # Get volume 
+                if [[ $volume == *:rw || $volume == *:rw\" ]] # If the :rw ending was explicitely written, remove it
                 then
-                    if [[ $volume == *:rw || $volume == *:rw\" ]] # If the :rw ending was explicitely written, remove it
-                    then
-                        volume_to_append=$(echo $volume | sed 's/:.*//')
-                    fi
-                    log "appending to volumes list variable"
-                    VOLUMES_LIST="$VOLUMES_LIST $volume_to_append"
+                    volume_to_append=$(echo $volume | sed 's/:.*//')
+                    _YAML_VOLUMES_LIST="$_YAML_VOLUMES_LIST $volume_to_append"
                 fi
               fi
           else # If line is not volume nor comment, it's a continuation of the yml and we are done
@@ -106,10 +102,8 @@ get_shared_volumes()
       then                   
           look_for_volumes=true             
       fi
-      COUNTER=$(($COUNTER+1))     
   done < $file
-  read -a VOLUMES_LIST <<< $VOLUMES_LIST
-}
+} 
 
 usage ()
 {
@@ -251,7 +245,11 @@ stop_hardware_steps_via_ssh()
   else
     stop_cmd="down"
   fi
-
+  
+  for file in ${APPSAWAY_DEPLOY_YAML_FILE_LIST}
+  do
+    get_shared_volumes ${APPSAWAY_APP_PATH}/${file}
+  done
   if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
   for file in ${APPSAWAY_HEAD_YAML_FILE_LIST}
     do
@@ -274,30 +272,30 @@ stop_hardware_steps_via_ssh()
       get_shared_volumes ${APPSAWAY_APP_PATH}/${file}
     done
   fi
-
-  echo ${VOLUMES_LIST[@]}
-
+  
+  for file in ${APPSAWAY_DEPLOY_YAML_FILE_LIST}
+  do
+    log "stopping docker-compose with file ${file} on host $APPSAWAY_CONSOLENODE_ADDR with command ${stop_cmd}"
+    run_via_ssh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR " export _YAML_VOLUMES_LIST=\"${_YAML_VOLUMES_LIST}\" ; export APPSAWAY_APP_PATH=${_OS_HOME_DIR}/${APPSAWAY_CONSOLENODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE} ; ${_OS_HOME_DIR}/${APPSAWAY_CONSOLENODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_changeNewFilesPermissions.sh ; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN} -f ${file} ${stop_cmd}; fi"
+  done
   if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_HEAD_YAML_FILE_LIST}
     do
       log "stopping docker-compose with file ${file} on host $APPSAWAY_ICUBHEADNODE_ADDR with command ${stop_cmd}"
-      warn "here you should see a list of files for head"
-      run_via_ssh $APPSAWAY_ICUBHEADNODE_USERNAME $APPSAWAY_ICUBHEADNODE_ADDR " export VOLUMES_LIST=${VOLUMES_LIST} ; export APPSAWAY_APP_PATH=${_OS_HOME_DIR}/${APPSAWAY_ICUBHEADNODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE} ; ${_OS_HOME_DIR}/${APPSAWAY_ICUBHEADNODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_changeNewFilesPermissions.sh ; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN} -f ${file} ${stop_cmd}; fi"
+      run_via_ssh $APPSAWAY_ICUBHEADNODE_USERNAME $APPSAWAY_ICUBHEADNODE_ADDR " export _YAML_VOLUMES_LIST=\"${_YAML_VOLUMES_LIST}\" ; export APPSAWAY_APP_PATH=${_OS_HOME_DIR}/${APPSAWAY_ICUBHEADNODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE} ; ${_OS_HOME_DIR}/${APPSAWAY_ICUBHEADNODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_changeNewFilesPermissions.sh ; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN} -f ${file} ${stop_cmd}; fi"
     done
   fi
   if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
     do
       log "stopping docker-compose with file ${file} on host $APPSAWAY_GUINODE_ADDR with command ${stop_cmd}"
-      warn "here you should see a list of files for gui"
-      run_via_ssh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR " export VOLUMES_LIST=${VOLUMES_LIST}; export APPSAWAY_APP_PATH=${_OS_HOME_DIR}/${APPSAWAY_GUINODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE} ; ${_OS_HOME_DIR}/${APPSAWAY_GUINODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_changeNewFilesPermissions.sh ; export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN} -f ${file} ${stop_cmd}; fi"
+      run_via_ssh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR " export _YAML_VOLUMES_LIST=\"${_YAML_VOLUMES_LIST}\"; export APPSAWAY_APP_PATH=${_OS_HOME_DIR}/${APPSAWAY_GUINODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE} ; ${_OS_HOME_DIR}/${APPSAWAY_GUINODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_changeNewFilesPermissions.sh ; export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN} -f ${file} ${stop_cmd}; fi"
     done
   elif [ "$APPSAWAY_GUINODE_ADDR" == "" ] && [ "$APPSAWAY_CONSOLENODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
     do
       log "stopping docker-compose with file ${file} on host $APPSAWAY_CONSOLENODE_ADDR with command ${stop_cmd}"
-      warn "here you should see a list of files for console"
-      run_via_ssh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR " export VOLUMES_LIST=${VOLUMES_LIST} ; export APPSAWAY_APP_PATH=${_OS_HOME_DIR}/${APPSAWAY_CONSOLENODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE} ; ${_OS_HOME_DIR}/${APPSAWAY_CONSOLENODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_changeNewFilesPermissions.sh ; export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN} -f ${file} ${stop_cmd}; fi"
+      run_via_ssh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR " export _YAML_VOLUMES_LIST=\"${_YAML_VOLUMES_LIST}\"; export APPSAWAY_APP_PATH=${_OS_HOME_DIR}/${APPSAWAY_CONSOLENODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE} ; ${_OS_HOME_DIR}/${APPSAWAY_CONSOLENODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_changeNewFilesPermissions.sh ; export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN} -f ${file} ${stop_cmd}; fi"
     done
   fi
 }

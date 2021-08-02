@@ -46,11 +46,11 @@ warn()
 }
 
 get_files_list()
-{
+{ 
   FILES_TO_CHANGE=$()
   cd /
-  for volume in "${VOLUMES_LIST[@]}"
-  do
+  for volume in "${_YAML_VOLUMES_LIST[@]}"
+  do 
     if [ -d $volume ]
     then
       FILES_IN_VOLUME=$(find $volume)
@@ -65,7 +65,7 @@ get_files_list()
 
 change_permissions()
 {
-  for file in $FILES_TO_CHANGE
+  for file in ${FILES_TO_CHANGE[@]}
   do
     chown ${CURR_UID}:${CURR_GID} $file
   done
@@ -73,19 +73,20 @@ change_permissions()
 
 main()
 {
-  if [ "$VOLUMES_LIST" == "" ]
+  if [ -z "$_YAML_VOLUMES_LIST" ]
   then
     warn "No Volumes List variable found in environment"
     return
   fi
-  if [ "$CURR_UID" == "" || "$CURR_GID" == ""]
+  if [ -z "$CURR_UID" ] || [ -z "$CURR_GID" ]
   then
     warn "No user ID variable found in environment"
     return
   fi
+  _YAML_VOLUMES_LIST=($(echo "${_YAML_VOLUMES_LIST}")) 
   get_files_list
-  echo "${FILES_TO_CHANGE[@]}"
-  # change_permissions
+  echo "The following files will have the permissions changed: ${FILES_TO_CHANGE[@]}"
+  change_permissions
 }
 
 main

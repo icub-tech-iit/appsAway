@@ -55,7 +55,6 @@ _SSH_CMD_PREFIX=""
 _OS_HOME_DIR="/home"
 _APPSAWAY_APP_PATH_NOT_CONSOLE="iCubApps/${APPSAWAY_APP_NAME}"
 _CWD=$(pwd)
-VOLUMES_LIST=()
 
 val1=$((0))
 
@@ -258,47 +257,6 @@ getdisplay()
   
 }
 
-get_shared_volumes()
-{
-  file=$1
-  look_for_volumes=false
-  while read -r line || [ -n "$line" ]
-  do
-      volumes_result=$(echo $line | grep "volumes") # Look for yml line that says "volumes"
-
-      if [[ $look_for_volumes == true ]]
-      then
-          if [[ $line == -* || $line == \#* ]] # If line is a volume or comment
-          then
-              if [[ $line == -* ]] # If line is a volume (ignore comments)
-              then
-                volume=$(echo $line | sed 's/[^:]*://' | tr -d '"' | sed 's/-//' | tr -d ' ' ) # Get volume
-                if [[ $volume != *:ro && $volume != *:ro\" ]] # If volume is not read-only
-                then
-                    if [[ $volume == *:rw || $volume == *:rw\" ]] # If the :rw ending was explicitely written, remove it
-                    then
-                        volume_to_append=$(echo $volume | sed 's/:.*//')
-                    else
-                        volume_to_append=$volume
-                    fi
-                    VOLUMES_LIST="$VOLUMES_LIST $volume_to_append"
-                fi
-              fi
-          else # If line is not volume nor comment, it's a continuation of the yml and we are done
-              look_for_volumes=false
-          fi
-      fi
-
-      if [[ "$volumes_result" != "" &&  "$line" != \#* ]] # If line says "volumes" and it's not a comment, we can look for volumes
-      then                   
-          look_for_volumes=true             
-      fi     
-  done < $file
-
-  echo $VOLUMES_LIST
-  read -a VOLUMES_LIST <<< $VOLUMES_LIST
-}
-
 scp_to_node()
 {
   file_to_send=$1
@@ -307,16 +265,6 @@ scp_to_node()
   path_to_receive=$4
   full_path_to_receive=${_OS_HOME_DIR}/${username_to_receive}/${path_to_receive}
   ${_SCP_BIN} ${_SCP_PARAMS_DIR} ${file_to_send} ${username_to_receive}@${ip_to_receive}:${full_path_to_receive}/
-}
-
-get_files_list()
-{
-  filename=$1
-  for volume in "${VOLUMES_LIST[@]}"
-  do
-    cd $volume
-    find >> $filename
-  done
 }
 
 run_hardware_steps_via_ssh()
@@ -367,9 +315,6 @@ run_hardware_steps_via_ssh()
     do
       log "running ${_DOCKER_COMPOSE_BIN_CONSOLE} with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_CONSOLENODE_ADDR"
       #run_via_ssh_nowait $APPSAWAY_GUINODE_ADDR "${_DOCKER_COMPOSE_BIN} -f ${file} up" "log.txt"
-      # get_shared_volumes ${APPSAWAY_APP_PATH}/${file}
-      # echo ${VOLUMES_LIST[@]}
-      # ${_SCP_BIN} ${_SCP_PARAMS} ${HOME}/teamcode/appsAway/scripts/appsAway_getVolumeFiles.sh ${APPSAWAY_CONSOLENODE_USERNAME}@${APPSAWAY_CONSOLENODE_ADDR}:${HOME}/teamcode/appsAway/scripts/appsAway_getVolumeFiles.sh
       scp_to_node ${_CWD}/appsAway_containerPermissions.sh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR $_APPSAWAY_APP_PATH_NOT_CONSOLE
       scp_to_node ${_CWD}/appsAway_changeNewFilesPermissions.sh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR $_APPSAWAY_APP_PATH_NOT_CONSOLE
       run_via_ssh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR "export APPSAWAY_OPTIONS=${APPSAWAY_OPTIONS} ; export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_CONSOLE} -f ${file} up --detach; fi"

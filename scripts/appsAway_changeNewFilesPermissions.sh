@@ -50,28 +50,25 @@ get_container_id_list()
   CONTAINER_LS_OUTPUT=$(docker ps --format "table {{.ID}}")
 
   IFS=$'\n' 
-  CONTAINER_LIST=($CONTAINER_LS_OUTPUT)
+  CONTAINER_ID_LIST_all=($CONTAINER_LS_OUTPUT)
   IFS=$SAVEIFS
-
-  CONTAINER_ID_LIST=()
-
-  for (( i=1; i<${#CONTAINER_LIST[@]}; i++ ))
-  do
-      ID=${CONTAINER_LIST[$i]}
-      CONTAINER_ID_LIST="$CONTAINER_ID_LIST $ID"
-  done
-
-  read -a CONTAINER_ID_LIST <<< $CONTAINER_ID_LIST
+  CONTAINER_ID_LIST=("${CONTAINER_ID_LIST_all[@]:1}")   
 }
 
 copy_script_into_containers()
 {
     source_path=$1
-    container_file=$2
-    for container in ${CONTAINER_ID_LIST}
+    for container in ${CONTAINER_ID_LIST[@]}
     do
-        path_to_paste=$(docker exec $container pwd)
-        docker cp ${source_path} $container:${path_to_paste}${container_file} 
+        container_work_dir=$(docker exec $container pwd)
+        if [[ $container_work_dir != "/" ]]
+        then
+            container_file=\/$2
+        else
+            container_file=$2
+        fi
+        path_to_paste=${container_work_dir}${container_file}
+        docker cp ${source_path} $container:${path_to_paste} 
     done
 }
 
@@ -79,16 +76,16 @@ execute_script_inside_containers()
 {
     CURR_UID=$(id -u)
     CURR_GID=$(id -g)
-    for container in ${CONTAINER_ID_LIST}
-    do
-        docker exec -e VOLUMES_LIST=${VOLUMES_LIST} -e CURR_UID=${CURR_UID} -e CURR_GID=${CURR_GID} .$container $1
+    for container in ${CONTAINER_ID_LIST[@]}
+    do   
+        docker exec -e _YAML_VOLUMES_LIST=${_YAML_VOLUMES_LIST} -e CURR_UID=${CURR_UID} -e CURR_GID=${CURR_GID} $container ./$1
     done
 }
 
 main()
 {
-  permission_file_path="/permissions.sh"
-  if [ "$VOLUMES_LIST" == "" ]
+  permission_file_path="permissions.sh"
+  if [ -z "$_YAML_VOLUMES_LIST" ]
   then
     warn "No Volumes List variable found in environment"
     return
@@ -99,7 +96,6 @@ main()
     return
   fi
   get_container_id_list
-  echo "${CONTAINER_ID_LIST[@]}"
   copy_script_into_containers $APPSAWAY_APP_PATH/appsAway_containerPermissions.sh $permission_file_path
   execute_script_inside_containers $permission_file_path
 }
