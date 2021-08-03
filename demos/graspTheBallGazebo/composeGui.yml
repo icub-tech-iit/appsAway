@@ -10,8 +10,8 @@ x-yarp-gazebo: &yarp-gazebo
     - YARP_ROBOT_NAME
     - APPSAWAY_ROBOT_MODEL
   volumes:
-    - "/tmp/.X11-unix:/tmp/.X11-unix:ro"
-    - "${XAUTHORITY}:/root/.Xauthority:ro"
+    - "/tmp/.X11-unix:/tmp/.X11-unix"
+    - "${XAUTHORITY}:/root/.Xauthority"
     - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
     - "${HOME}/teamcode/appsAway/demos/graspTheBallGazebo/gazebo/models/red-ball:/projects/iCubContrib/share/gazebo/models/red-ball"
     - "${HOME}/teamcode/appsAway/demos/graspTheBallGazebo/gazebo/worlds/grasp-ball-gazebo.sdf:/projects/iCubContrib/share/gazebo/worlds/grasp-ball-gazebo.sdf"

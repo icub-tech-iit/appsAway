@@ -8,9 +8,9 @@ x-yarp-base: &yarp-base
     - YARP_FORWARD_LOG_ENABLE=1
     - YARP_ROBOT_NAME
   volumes:
-    - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
-    - "${XAUTHORITY}:/root/.Xauthority:rw"
-    - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
+    - "/tmp/.X11-unix:/tmp/.X11-unix"
+    - "${XAUTHORITY}:/root/.Xauthority"
+    - "${YARP_CONF_PATH}:/root/.config/yarp"
     - "/dev:/dev"
   ports:
     - "10000:10000"

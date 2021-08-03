@@ -10,8 +10,8 @@ x-yarp-base: &yarp-base
     - YARP_ROBOT_NAME
     - CUSTOM_PORT
   volumes:
-    - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
-    - "${XAUTHORITY}:/root/.Xauthority:rw"
+    - "/tmp/.X11-unix:/tmp/.X11-unix"
+    - "${XAUTHORITY}:/root/.Xauthority"
     - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
   networks:
     - hostnet

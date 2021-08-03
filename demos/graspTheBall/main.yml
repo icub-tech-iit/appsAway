@@ -13,8 +13,8 @@ x-yarp-base: &yarp-base
     - ARM
     - YARP_ROBOT_NAME
   volumes:
-    - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
-    - "${XAUTHORITY}:/root/.Xauthority:rw"
+    - "/tmp/.X11-unix:/tmp/.X11-unix"
+    - "${XAUTHORITY}:/root/.Xauthority"
     - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
     - "${APPSAWAY_DEMOREDBALL_CONTEXT}:/usr/local/share/ICUBcontrib/contexts/demoRedBall/"
   networks:
@@ -26,11 +26,7 @@ x-yarp-base: &yarp-base
 #    - YARP_FORWARD_LOG_ENABLE=1
 #    - YARP_ROBOT_NAME
 #  volumes:
-<<<<<<< HEAD
 #    - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
-=======
-#    - "${YARP_CONF_PATH}:/root/.config/yarp"
->>>>>>> Fixed variable definition so as to not change the website
 #  network_mode: "host"
 
 #note: following services that need yarpRobotinterface is running, I write yarp wait /yarpRobotInterface;

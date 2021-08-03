@@ -12,7 +12,7 @@ x-yarp-base: &yarp-base
     - VOLUME_TARGET=/usr/local/share/iCub/contexts/cameraCalibration/customEyes.ini
   volumes:
     - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
-    - "${APPSAWAY_CALIB_CONTEXT}:/usr/local/share/iCub/contexts/cameraCalibration/"
+    - "${APPSAWAY_CALIB_CONTEXT}:/usr/local/share/iCub/contexts/cameraCalibration/:rw"
     - "${CUSTOM_FILE:-/dev/null}:${VOLUME_TARGET:-/dev/null}"
   networks:
     - hostnet

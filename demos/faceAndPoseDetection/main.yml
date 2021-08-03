@@ -11,8 +11,8 @@ x-yarp-demo: &yarp-demo
     - YOP_INPUT
     - FL_INPUT
   volumes:
-    - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
-    - "${XAUTHORITY}:/root/.Xauthority:rw"
+    - "/tmp/.X11-unix:/tmp/.X11-unix"
+    - "${XAUTHORITY}:/root/.Xauthority"
     - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
   networks:
     - hostnet
