@@ -218,7 +218,21 @@ set_hardware_labels()
   fi
 
   if [ "$APPSAWAY_CUDANODE_ADDR" != "" ]; then
-    ${_DOCKER_BIN} ${_DOCKER_PARAMS} node update --label-add type=cuda $(ip2hostname $APPSAWAY_CUDANODE_USERNAME $APPSAWAY_CUDANODE_ADDR)
+    APPSAWAY_CUDANODE_ADDR_LIST=($APPSAWAY_CUDANODE_ADDR)
+    APPSAWAY_CUDANODE_USERNAME_LIST=($APPSAWAY_CUDANODE_USERNAME)
+    for index in "${!APPSAWAY_CUDANODE_ADDR_LIST[@]}"
+    do
+      ${_DOCKER_BIN} ${_DOCKER_PARAMS} node update --label-add type=cuda $(ip2hostname ${APPSAWAY_CUDANODE_USERNAME[$index]} ${APPSAWAY_CUDANODE_ADDR_LIST[$index]})
+    done
+  fi
+
+  if [ "$APPSAWAY_WORKERNODE_ADDR" != "" ]; then
+    APPSAWAY_WORKERNODE_ADDR_LIST=($APPSAWAY_WORKERNODE_ADDR)
+    APPSAWAY_WORKERNODE_USERNAME_LIST=($APPSAWAY_WORKERNODE_USERNAME)
+    for index in "${!APPSAWAY_WORKERNODE_ADDR_LIST[@]}"
+    do
+      ${_DOCKER_BIN} ${_DOCKER_PARAMS} node update --label-add type=worker $(ip2hostname ${APPSAWAY_WORKERNODE_USERNAME[$index]} ${APPSAWAY_WORKERNODE_ADDR_LIST[$index]})
+    done
   fi
 }
 
