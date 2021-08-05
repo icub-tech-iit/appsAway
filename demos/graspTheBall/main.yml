@@ -13,10 +13,10 @@ x-yarp-base: &yarp-base
     - ARM
     - YARP_ROBOT_NAME
   volumes:
-    - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
-    - "${XAUTHORITY}:/root/.Xauthority:rw"
+    - "/tmp/.X11-unix:/tmp/.X11-unix"
+    - "${XAUTHORITY}:/root/.Xauthority"
     - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
-    - "${APPSAWAY_DEMOREDBALL_CONTEXT}:/usr/local/share/ICUBcontrib/contexts/demoRedBall/"
+    - "${APPSAWAY_DEMOREDBALL_CONTEXT}:/usr/local/share/ICUBcontrib/contexts/demoRedBall/:rw"
   networks:
     - hostnet
 

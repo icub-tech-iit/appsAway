@@ -12,7 +12,7 @@ x-yarp-base: &yarp-base
     - VOLUME_TARGET=/usr/local/share/iCub/contexts/cameraCalibration/customEyes.ini
   volumes:
     - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
-    - "${APPSAWAY_CALIB_CONTEXT}:/usr/local/share/iCub/contexts/cameraCalibration/"
+    - "${APPSAWAY_CALIB_CONTEXT}:/usr/local/share/iCub/contexts/cameraCalibration/:rw"
     - "${CUSTOM_FILE:-/dev/null}:${VOLUME_TARGET:-/dev/null}"
   networks:
     - hostnet
@@ -127,6 +127,15 @@ services:
       restart_policy:
         condition: on-failure
     command: sh -c "yarp wait /calibSupervisor/display:o ; yarp wait /display; yarp connect  /calibSupervisor/display:o /display fast_tcp;"
+
+  #yConnectToViewerCalib:
+  #  <<: *yarp-base
+  #  deploy:
+  #    placement:
+  #      constraints: [node.labels.type != head]
+  #    restart_policy:
+  #      condition: on-failure
+  #  command: sh -c "yarp wait /calibSupervisor/imageLeft:o ; yarp wait /sendtocalib; yarp connect /calibSupervisor/imageLeft:o /sendtocalib fast_tcp ;"
 
   yConnectToLeftInCamCalib:
     <<: *yarp-base

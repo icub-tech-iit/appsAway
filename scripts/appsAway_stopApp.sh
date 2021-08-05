@@ -54,6 +54,7 @@ _DOCKER_PARAMS=""
 _SSH_CMD_PREFIX=""
 _OS_HOME_DIR="/home"
 _APPSAWAY_APP_PATH_NOT_CONSOLE="iCubApps/${APPSAWAY_APP_NAME}"
+_YAML_VOLUMES_LIST=""
 
 print_defs ()
 {
@@ -71,6 +72,38 @@ print_defs ()
   echo "_DOCKER_COMPOSE_BIN_GUI is $_DOCKER_COMPOSE_BIN_GUI"
   echo " _DOCKER_PARAMS is $_DOCKER_PARAMS"
 }
+
+get_shared_volumes()
+{
+  file=$1
+  look_for_volumes=false
+  while read -r line || [ -n "$line" ]
+  do
+      volumes_result=$( echo "$line" | grep "volumes" || true) # Look for yml line that says "volumes"
+      if [[ $look_for_volumes == true ]]
+      then
+          if [[ $line == -* || $line == \#* ]] # If line is a volume or comment
+          then
+              if [[ $line == -* ]] # If line is a volume (ignore comments)
+              then
+                volume=$(echo $line | sed 's/[^:]*://' | tr -d '"' | tr -d ' ' ) # Get volume 
+                if [[ $volume == *:rw || $volume == *:rw\" ]] # If the :rw ending was explicitely written, remove it
+                then
+                    volume_to_append=$(echo $volume | sed 's/:.*//')
+                    _YAML_VOLUMES_LIST="$_YAML_VOLUMES_LIST $volume_to_append"
+                fi
+              fi
+          else # If line is not volume nor comment, it's a continuation of the yml and we are done
+              look_for_volumes=false
+          fi
+      fi
+
+      if [[ "$volumes_result" != "" &&  "$line" != \#* ]] # If line says "volumes" and it's not a comment, we can look for volumes
+      then                   
+          look_for_volumes=true             
+      fi
+  done < $file
+} 
 
 usage ()
 {
@@ -193,7 +226,7 @@ getdisplay()
 stop_hardware_steps_via_ssh()
 {
   #read -n 1 -s -r -p "Press any key to stop the App"
-
+  log "Stopping hardware steps via ssh"
   mydisplay=$(getdisplay)
 
   myXauth=""
@@ -212,27 +245,54 @@ stop_hardware_steps_via_ssh()
   else
     stop_cmd="down"
   fi
-
+  
+  for file in ${APPSAWAY_DEPLOY_YAML_FILE_LIST}
+  do
+    get_shared_volumes ${APPSAWAY_APP_PATH}/${file}
+  done
+  if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
+  for file in ${APPSAWAY_HEAD_YAML_FILE_LIST}
+    do
+      get_shared_volumes ${APPSAWAY_APP_PATH}/${file}
+    done
+  fi
+  if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
+    for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
+    do
+      get_shared_volumes ${APPSAWAY_APP_PATH}/${file}
+    done
+  elif [ "$APPSAWAY_GUINODE_ADDR" == "" ] && [ "$APPSAWAY_CONSOLENODE_ADDR" != "" ]; then
+    for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
+    do
+      get_shared_volumes ${APPSAWAY_APP_PATH}/${file}
+    done
+  fi
+  
+  for file in ${APPSAWAY_DEPLOY_YAML_FILE_LIST}
+  do
+    log "stopping docker-compose with file ${file} on host $APPSAWAY_CONSOLENODE_ADDR with command ${stop_cmd}"
+    run_via_ssh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR "export APPSAWAY_STACK_NAME=${APPSAWAY_STACK_NAME}; export _YAML_VOLUMES_LIST=\"${_YAML_VOLUMES_LIST}\" ; export APPSAWAY_APP_PATH=${_OS_HOME_DIR}/${APPSAWAY_CONSOLENODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE} ; ${_OS_HOME_DIR}/${APPSAWAY_CONSOLENODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_changeNewFilesPermissions.sh ; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_CONSOLE} -f ${file} ${stop_cmd}; fi"
+  done
   if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_HEAD_YAML_FILE_LIST}
     do
       log "stopping docker-compose with file ${file} on host $APPSAWAY_ICUBHEADNODE_ADDR with command ${stop_cmd}"
-      run_via_ssh $APPSAWAY_ICUBHEADNODE_USERNAME $APPSAWAY_ICUBHEADNODE_ADDR " if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_HEAD} -f ${file} ${stop_cmd}; fi"
+      run_via_ssh $APPSAWAY_ICUBHEADNODE_USERNAME $APPSAWAY_ICUBHEADNODE_ADDR "export APPSAWAY_STACK_NAME=${APPSAWAY_STACK_NAME}; export _YAML_VOLUMES_LIST=\"${_YAML_VOLUMES_LIST}\" ; export APPSAWAY_APP_PATH=${_OS_HOME_DIR}/${APPSAWAY_ICUBHEADNODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE} ; ${_OS_HOME_DIR}/${APPSAWAY_ICUBHEADNODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_changeNewFilesPermissions.sh ; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_HEAD} -f ${file} ${stop_cmd}; fi"
     done
   fi
   if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
     do
       log "stopping docker-compose with file ${file} on host $APPSAWAY_GUINODE_ADDR with command ${stop_cmd}"
-      run_via_ssh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_GUI} -f ${file} ${stop_cmd}; fi"
+      run_via_ssh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR "export APPSAWAY_STACK_NAME=${APPSAWAY_STACK_NAME}; export _YAML_VOLUMES_LIST=\"${_YAML_VOLUMES_LIST}\"; export APPSAWAY_APP_PATH=${_OS_HOME_DIR}/${APPSAWAY_GUINODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE} ; ${_OS_HOME_DIR}/${APPSAWAY_GUINODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_changeNewFilesPermissions.sh ; export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_GUI} -f ${file} ${stop_cmd}; fi"
     done
   elif [ "$APPSAWAY_GUINODE_ADDR" == "" ] && [ "$APPSAWAY_CONSOLENODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
     do
       log "stopping docker-compose with file ${file} on host $APPSAWAY_CONSOLENODE_ADDR with command ${stop_cmd}"
-      run_via_ssh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_CONSOLE} -f ${file} ${stop_cmd}; fi"
+      run_via_ssh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR "export APPSAWAY_STACK_NAME=${APPSAWAY_STACK_NAME}; export _YAML_VOLUMES_LIST=\"${_YAML_VOLUMES_LIST}\"; export APPSAWAY_APP_PATH=${_OS_HOME_DIR}/${APPSAWAY_CONSOLENODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE} ; ${_OS_HOME_DIR}/${APPSAWAY_CONSOLENODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_changeNewFilesPermissions.sh ; export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_CONSOLE} -f ${file} ${stop_cmd}; fi"
     done
- fi
+  fi
 }
 
 stop_deploy()
