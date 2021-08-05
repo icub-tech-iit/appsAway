@@ -271,8 +271,6 @@ run_hardware_steps_via_ssh()
 {
   log "running hardware-dependant steps to nodes"
 
-  log "current working dir: $_CWD"
-
   mydisplay=$(getdisplay)
   if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
     GUI_DISPLAY=$(ssh $APPSAWAY_GUINODE_USERNAME@$APPSAWAY_GUINODE_ADDR "ps -u $(id -u) -o pid= | xargs -I PID -r cat /proc/PID/environ 2> /dev/null | tr '\0' '\n' | grep ^DISPLAY=: | sort -u")
@@ -285,7 +283,11 @@ run_hardware_steps_via_ssh()
   else
     myXauth="/run/user/$UID/gdm/Xauthority"
   fi
-
+ 
+ if [ "$APPSAWAY_CONSOLENODE_ADDR" != "" ]; then
+    scp_to_node ${_CWD}/appsAway_containerPermissions.sh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR $_APPSAWAY_APP_PATH_NOT_CONSOLE
+    scp_to_node ${_CWD}/appsAway_changeNewFilesPermissions.sh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR $_APPSAWAY_APP_PATH_NOT_CONSOLE      
+ fi
  if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_HEAD_YAML_FILE_LIST}
     do

@@ -51,8 +51,10 @@ get_container_id_list()
 
   IFS=$'\n' 
   CONTAINER_ID_LIST_all=($CONTAINER_LS_OUTPUT)
+  CONTAINER_TO_EXCLUDE=($(docker ps --filter "name=${APPSAWAY_STACK_NAME}_visualizer" --format "table {{.ID}}"))
   IFS=$SAVEIFS
-  CONTAINER_ID_LIST=("${CONTAINER_ID_LIST_all[@]:1}")   
+  CONTAINER_ID_LIST=("${CONTAINER_ID_LIST_all[@]:1}")
+  CONTAINER_TO_EXCLUDE=${CONTAINER_TO_EXCLUDE[1]} 
 }
 
 copy_script_into_containers()
@@ -60,15 +62,18 @@ copy_script_into_containers()
     source_path=$1
     for container in ${CONTAINER_ID_LIST[@]}
     do
-        container_work_dir=$(docker exec $container pwd)
-        if [[ $container_work_dir != "/" ]]
+        if [[ ${container} != ${CONTAINER_TO_EXCLUDE} ]]
         then
-            container_file=\/$2
-        else
-            container_file=$2
+          container_work_dir=$(docker exec $container pwd)
+          if [[ $container_work_dir != "/" ]]
+          then
+              container_file=\/$2
+          else
+              container_file=$2
+          fi
+          path_to_paste=${container_work_dir}${container_file}
+          docker cp ${source_path} $container:${path_to_paste}
         fi
-        path_to_paste=${container_work_dir}${container_file}
-        docker cp ${source_path} $container:${path_to_paste} 
     done
 }
 
@@ -77,8 +82,11 @@ execute_script_inside_containers()
     CURR_UID=$(id -u)
     CURR_GID=$(id -g)
     for container in ${CONTAINER_ID_LIST[@]}
-    do   
-        docker exec -e _YAML_VOLUMES_LIST=${_YAML_VOLUMES_LIST} -e CURR_UID=${CURR_UID} -e CURR_GID=${CURR_GID} $container ./$1
+    do  
+        if [[ ${container} != ${CONTAINER_TO_EXCLUDE} ]]
+        then
+          docker exec -e _YAML_VOLUMES_LIST=${_YAML_VOLUMES_LIST} -e CURR_UID=${CURR_UID} -e CURR_GID=${CURR_GID} $container ./$1
+        fi
     done
 }
 
@@ -93,6 +101,11 @@ main()
   if [ "$APPSAWAY_APP_PATH" == "" ]
   then
     warn "No app path variable found in environment"
+    return
+  fi
+  if [ "$APPSAWAY_STACK_NAME" == "" ]
+  then
+    warn "No stack name variable found in environment"
     return
   fi
   get_container_id_list
