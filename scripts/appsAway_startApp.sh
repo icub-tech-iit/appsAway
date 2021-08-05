@@ -261,7 +261,9 @@ run_hardware_steps_via_ssh()
   log "running hardware-dependant steps to nodes"
 
   mydisplay=$(getdisplay)
-
+  if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
+    GUI_DISPLAY=$(ssh $APPSAWAY_GUINODE_USERNAME@$APPSAWAY_GUINODE_ADDR "ps -u $(id -u) -o pid= | xargs -I PID -r cat /proc/PID/environ 2> /dev/null | tr '\0' '\n' | grep ^DISPLAY=: | sort -u")
+  fi
   myXauth="" 
   os=`uname -s`
   if [ "$os" = "Darwin" ]
@@ -287,7 +289,7 @@ run_hardware_steps_via_ssh()
     do
       log "running ${_DOCKER_COMPOSE_BIN_GUI} with file ${_OS_HOME_DIR}/${APPSAWAY_GUINODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}/${file} on host $APPSAWAY_GUINODE_ADDR"
       #run_via_ssh_nowait $APPSAWAY_GUINODE_ADDR "${_DOCKER_COMPOSE_BIN_GUI} -f ${file} up" "log.txt"
-      run_via_ssh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR "export APPSAWAY_OPTIONS=${APPSAWAY_OPTIONS} ; export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_GUI} -f ${file} up --detach; fi"
+      run_via_ssh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR "export APPSAWAY_OPTIONS=${APPSAWAY_OPTIONS} ; export ${GUI_DISPLAY} ; export XAUTHORITY=${myXauth}; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_GUI} -f ${file} up --detach; fi"
     done
     val1=$(( $val1 + 5 ))
     echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE
@@ -329,7 +331,8 @@ stop_hardware_steps_via_ssh()
     for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
     do
       log "stopping ${_DOCKER_COMPOSE_BIN_GUI} with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_GUINODE_ADDR"
-      run_via_ssh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; ${_DOCKER_COMPOSE_BIN_GUI} -f ${file} down"
+      #run_via_ssh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; ${_DOCKER_COMPOSE_BIN_GUI} -f ${file} down"
+      run_via_ssh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR "${_DOCKER_COMPOSE_BIN_GUI} -f ${file} down"
     done
   elif [ "$APPSAWAY_GUINODE_ADDR" == "" ] && [ "$APPSAWAY_CONSOLENODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
