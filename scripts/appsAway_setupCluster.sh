@@ -336,8 +336,19 @@ find_docker_images()
   then     
     REGISTRY_UP_FLAG=false
     echo "Creating the local registry"
-    ${_DOCKER_BIN} service create --name registry --publish published=5000,target=5000 registry:2 
+    ${_DOCKER_BIN} service create --name registry \
+    --publish published=5000,target=5000 --replicas 1 registry:2 
+  else
+    return=$(${_DOCKER_BIN} service ls | grep "*:5000->5000/tcp")
+    if [[ $return != "" ]]
+    then
+      return_list=($return)
+      ${_DOCKER_BIN} service update ${return_list[0]}
+    fi
   fi
+
+
+
   echo "Registry_up_flag: $REGISTRY_UP_FLAG"
   echo "export REGISTRY_UP_FLAG=$REGISTRY_UP_FLAG" >> ${HOME}/teamcode/appsAway/scripts/${_APPSAWAY_ENV_FILE}
 
