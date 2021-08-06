@@ -205,29 +205,7 @@ run_deploy()
   log "executing docker stack deploy"
   cd $APPSAWAY_APP_PATH
   export $(cat .env)
-
-  if [[ ${LOCAL_IMAGE_FLAG} == true ]]
-  then    
-    REGISTRY_UP_FLAG=true
-    registry_up=$(${_DOCKER_BIN} service ls | grep "*:5000->5000/tcp" | tr -d ' ') 
-    if [ "$registry_up" == "" ]
-    then     
-      REGISTRY_UP_FLAG=false
-      echo "Creating the local registry"
-      ${_DOCKER_BIN} service create --name registry --publish published=5000,target=5000 registry:2 
-    fi
-    echo "Registry_up_flag: $REGISTRY_UP_FLAG"
-    echo "export REGISTRY_UP_FLAG=$REGISTRY_UP_FLAG" >> ${HOME}/teamcode/appsAway/scripts/${_APPSAWAY_ENVFILE}
-    
-    ${_DOCKER_BIN} tag ${LOCAL_IMAGE_NAME} ${APPSAWAY_CONSOLENODE_ADDR}:5000/${LOCAL_IMAGE_NAME}
-    ${_DOCKER_BIN} push ${APPSAWAY_CONSOLENODE_ADDR}:5000/${LOCAL_IMAGE_NAME}
-    # echo "export APPSAWAY_IMAGES=\"localhost:5000/${LOCAL_IMAGE_NAME}\"" >> ${HOME}/teamcode/appsAway/scripts/appsAway_setEnvironment.local.sh
-    # source ${HOME}/teamcode/appsAway/scripts/appsAway_setEnvironment.local.sh
-    # for i in "${!APPSAWAY_IMAGES[@]}"; 
-    # do
-    #   ${_DOCKER_BIN} push ${APPSAWAY_IMAGES[$i]}:${APPSAWAY_VERSIONS[$i]}
-    # done 
-  fi  
+  
   for _file2deploy in ${APPSAWAY_DEPLOY_YAML_FILE_LIST}
   do       
     log "downloading the image: ${_DOCKER_COMPOSE_BIN_CONSOLE} -f ${_file2deploy} up" # pull "
