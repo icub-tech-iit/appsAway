@@ -346,9 +346,7 @@ find_docker_images()
       ${_DOCKER_BIN} service update ${return_list[0]}
     fi
   fi
-
-
-
+  
   echo "Registry_up_flag: $REGISTRY_UP_FLAG"
   echo "export REGISTRY_UP_FLAG=$REGISTRY_UP_FLAG" >> ${HOME}/teamcode/appsAway/scripts/${_APPSAWAY_ENV_FILE}
 
@@ -364,18 +362,16 @@ find_docker_images()
     if [[ $result != "" ]]
     then
       ${_DOCKER_BIN} tag $current_image ${APPSAWAY_CONSOLENODE_ADDR}:5000/$current_image
-      log "Before the push"
+      log "Pushing $current_image into the local registry"
       ${_DOCKER_BIN} push ${APPSAWAY_CONSOLENODE_ADDR}:5000/$current_image
-      log "After the push"
       APPSAWAY_REGISTRY_IMAGES="$APPSAWAY_REGISTRY_IMAGES ${APPSAWAY_CONSOLENODE_ADDR}:5000/${APPSAWAY_IMAGES_LIST[$index]}"
     else
       IMAGE_FOUND_LOCALLY=$(${_DOCKER_BIN} images --format "{{.Repository}}:{{.Tag}}" | grep $current_image) 
       if [[ $IMAGE_FOUND_LOCALLY != "" ]]  
       then
         ${_DOCKER_BIN} tag $current_image ${APPSAWAY_CONSOLENODE_ADDR}:5000/$current_image
-        log "Before the push"
+        log "Pushing $current_image into the local registry"
         ${_DOCKER_BIN} push ${APPSAWAY_CONSOLENODE_ADDR}:5000/$current_image
-        log "After the push"
         APPSAWAY_REGISTRY_IMAGES="$APPSAWAY_REGISTRY_IMAGES ${APPSAWAY_CONSOLENODE_ADDR}:5000/${APPSAWAY_IMAGES_LIST[$index]}" 
       else
         exit_err "Image $current_image was not found on DockerHub nor locally. Please be sure that the name is correct."
