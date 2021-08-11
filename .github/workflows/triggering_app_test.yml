@@ -9,6 +9,18 @@ jobs:
     test:
       runs-on: ubuntu-latest
       if: contains(github.event.pull_request.head.ref, 'add_app')
-      steps:     
+      steps:  
+      - uses: actions/checkout@v2
+        with:
+          branch: ${{ github.event.pull_request.head.ref }} 
+          
       - name: test
-        run:  echo " ${{ toJson(github.event) }}"
+        run:  |
+          ip_list=($(hostname --all-ip-address))
+          echo "Ip addresses: ${ip_list[@]}"
+          app_name_list=${{ toJson(github.event.pull_request.body) }}
+          for each_app in $app_name_list
+          do
+            cd $HOME/teamcode/appsAway/demos/$each_app
+            ./test-script.sh $each_app ${ip_list[0]}
+          done
