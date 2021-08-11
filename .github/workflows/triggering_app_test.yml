@@ -1,13 +1,13 @@
 name: Triggering app test
 
 on:
-  pull_request_target:
-    types: [opened]
-    branches:
-      - 'master'
+  pull_request:
+     types: [opened]
+     branches:
+        - master
 jobs:
     test:
       runs-on: ubuntu-latest
       steps:     
       - name: test
-        run: echo "This is a test"
+        run: echo ${{ github.event }}
