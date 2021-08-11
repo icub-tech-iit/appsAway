@@ -6,7 +6,7 @@ on:
     types: [opened]
     branches:
       - 'master'
- jobs:
+jobs:
     test:
       runs-on: ubuntu-latest
       steps:     
