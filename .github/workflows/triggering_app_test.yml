@@ -1,7 +1,6 @@
 name: Triggering app test
 
 on:
-  push:
   pull_request:
      branches:
         - add_app*
