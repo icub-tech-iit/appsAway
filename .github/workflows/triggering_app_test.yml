@@ -2,10 +2,9 @@ name: Triggering app test
 
 on:
   push:
-  pull_request_target:
-    types: [opened]
-    branches:
-      - 'master'
+  pull_request:
+     branches:
+        - add_app*
 jobs:
     test:
       runs-on: ubuntu-latest
