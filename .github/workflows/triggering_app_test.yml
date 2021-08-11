@@ -11,4 +11,4 @@ jobs:
       if: contains(github.event.pull_request.head.ref, 'add_app')
       steps:     
       - name: test
-        run:  echo " ${{ toJson(github.event.pull_request.head.ref) }}"
+        run:  echo " ${{ toJson(github.event) }}"
