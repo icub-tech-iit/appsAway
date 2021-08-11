@@ -16,6 +16,7 @@ jobs:
           
       - name: test
         run:  |
+          pwd && ls 
           ip_list=($(hostname --all-ip-address))
           echo "Ip addresses: ${ip_list[@]}"
           app_name_list=${{ toJson(github.event.pull_request.body) }}
