@@ -10,4 +10,4 @@ jobs:
       runs-on: ubuntu-latest
       steps:     
       - name: test
-        run:  echo " ${{ toJson(github.event) }}"
+        run:  echo " ${{ toJson(github.event.pull_request.head.ref) }}"
