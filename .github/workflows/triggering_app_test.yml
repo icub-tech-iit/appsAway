@@ -2,6 +2,7 @@ name: Triggering app test
 
 on:
   pull_request:
+     types: [opened]
      branches:
         - add_app*
 jobs:
