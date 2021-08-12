@@ -358,6 +358,7 @@ find_docker_images()
     else
       current_image=${APPSAWAY_IMAGES_LIST[$index]}:${APPSAWAY_TAGS_LIST[$index]}
     fi
+    echo "Pulling image $current_image, this might take a few minutes..."
     result=$(${_DOCKER_BIN} pull --quiet $current_image &> /dev/null || true)
     if [[ $result != "" ]]
     then
