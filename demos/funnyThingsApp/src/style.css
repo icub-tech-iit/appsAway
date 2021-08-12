@@ -1,0 +1,125 @@
+body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+	margin: auto;
+	max-width: 38rem;
+	padding: 2rem;
+	display: flex;
+	flex-direction: column;
+	gap: 1px
+  }
+  
+  .panels-container {
+	width: 90%;
+	height: 300px;
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+  }
+  
+  .arrow-container {
+	height: 100%;
+	width: fit-content;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+  }
+  
+  .arrow-container > span {
+	font-weight: bold;
+	color: gray;
+	font-size: 1.2em;
+  }
+  
+  .panel-container {
+	width: 47%;
+  }
+  
+  .panel {
+	width: 100%;
+	height: 90%;
+	border-radius: 2px;
+	border: 1px solid gray;
+	overflow: auto;
+  }
+  
+  .red {
+	background-color: red;
+  }
+  
+  .panel > .panel-item {
+	height: 2.5em;
+	display: flex;
+	align-items: center;
+	color: white;
+	border-radius: 1px;
+	position: relative;
+  }
+  
+  .panel-item:hover::after {
+	background-color: rgba(255,255,255,0.8);
+	position: absolute;
+	top: 0;
+	left: 0;
+	height: 2.5em;
+	width: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	font-weight: bold;
+	cursor: pointer;
+  }
+  
+  .right-panel > .panel-item:hover::after {
+	content: "Add Activity";
+	color: darkgreen;
+  }
+  
+  .left-panel > .panel-item:hover::after {
+	content: "Remove Activity";
+	color: darkred;
+  }
+  
+  .panel-item > * {
+	margin-left: 6px;
+  }
+  
+  .purple {
+	background-color: #3a144b;
+  }
+  
+  .coral {
+	background-color: #ee4d56;
+  }
+  
+  .orange {
+	background-color: #f2973a;
+  }
+  
+  .green {
+	background-color: #67ae88;
+  }
+  
+  .blue {
+	background-color: #3c7c85;
+  }
+
+  .slateBlue {
+	background-color: #6A5ACD;
+  }
+  
+  button {
+	all: unset;
+	background-color: green;
+	color: white;
+	font-weight: bold;
+	padding: 10px;
+	border-radius: 4px;
+	box-shadow: 0px 5px 10px gray;
+	transition: background-color 0.3s ease;
+	width: fit-content;
+  }
+  
+  button:hover {
+	background-color: #0c0;
+	cursor: pointer;
+  }

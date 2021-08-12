@@ -9,7 +9,8 @@
   "author": "Vadim Tikhanoff",
   "license": "ISC",
   "dependencies": {
-    "electron": "^13.1.9"
+    "electron": "^13.1.9",
+    "exec-async": "^2.2.0"
   },
   "devDependencies": {
     "@shopify/draggable": "^1.0.0-beta.8"
