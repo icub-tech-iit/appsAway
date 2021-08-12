@@ -4,6 +4,7 @@
         <meta charset="utf-8">
         <!--<script src="https://cdn.jsdelivr.net/npm/@shopify/draggable@1.0.0-beta.8/lib/draggable.bundle.js"></script> -->
         <script src="https://cdn.jsdelivr.net/npm/@shopify/draggable@1.0.0-beta.2/lib/draggable.min.js"></script>
+        <link rel="stylesheet" href="style.css" />
         <script src="./renderer.js"></script>
         <script type="module" src="./draggable.js"></script>
         <!--
@@ -13,28 +14,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <!--<link rel="stylesheet" href="https://bootswatch.com/5/cerulean/bootstrap.min.css">-->
         <style>
-            .grid {
-                display: grid;
-                grid-template: 150px 150px 150px / 150px 150px 150px 150px;
-                grid-gap: 10px;
-                background-color: #ffffff;
-                padding: 10px;
-            }
-            .draggable {
-                background-color: #ff3946;
-                box-shadow: 10px 10px 10px #7777;
-            }
-
-            .draggable, .droppable.draggable-dropzone--occupied{
-                width: 100px; 
-                height: 100px; 
-            }
-            .droppable{
-                width: 100px; 
-                height: 100px;
-                border: solid;
-                display: flex;
-            }
+            
 		</style>
     </head>
     <body>
@@ -51,17 +31,5 @@
         </div>  
     </body>
 
-    <script type="text/javascript">
-        const containers = document.querySelectorAll('.block')
-
-        const droppable = new Draggable.Droppable(containers, {
-            draggable: '.draggable',
-            droppable: '.droppable'
-        });
-
-        droppable.on('drag:start', () => console.log('drag:start'));
-        droppable.on('droppable:over', () => console.log('droppable:over'));
-        droppable.on('droppable:out', () => console.log('droppable:out'));
-
-    </script>
+    <script src="draggable.js"></script>
 </html>

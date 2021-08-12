@@ -1,54 +1,10 @@
-//import {Sortable, Plugins} from '@shopify/draggable';
-  
-export default function MultipleContainers() {
-const containers = document.querySelectorAll('#MultipleContainers .StackedList');
+const containers = document.querySelectorAll('.block')
 
-if (containers.length === 0) {
-    return false;
-}
-
-const sortable = new Sortable(containers, {
-    draggable: `.${Classes.draggable}`,
-    mirror: {
-    constrainDimensions: true,
-    },
-    plugins: [Plugins.ResizeMirror],
+const droppable = new Draggable.Droppable(containers, {
+    draggable: '.draggable',
+    droppable: '.droppable'
 });
 
-const containerTwoCapacity = 3;
-const containerTwoParent = sortable.containers[1].parentNode;
-let currentMediumChildren;
-let capacityReached;
-let lastOverContainer;
-
-// --- Draggable events --- //
-sortable.on('drag:start', (evt) => {
-    currentMediumChildren = sortable.getDraggableElementsForContainer(sortable.containers[1])
-    .length;
-    capacityReached = currentMediumChildren === containerTwoCapacity;
-    lastOverContainer = evt.sourceContainer;
-    containerTwoParent.classList.toggle(Classes.capacity, capacityReached);
-});
-
-sortable.on('sortable:sort', (evt) => {
-    if (!capacityReached) {
-    return;
-    }
-
-    const sourceIsCapacityContainer = evt.dragEvent.sourceContainer === sortable.containers[1];
-
-    if (!sourceIsCapacityContainer && evt.dragEvent.overContainer === sortable.containers[1]) {
-    evt.cancel();
-    }
-});
-
-sortable.on('sortable:sorted', (evt) => {
-    if (lastOverContainer === evt.dragEvent.overContainer) {
-    return;
-    }
-
-    lastOverContainer = evt.dragEvent.overContainer;
-});
-
-return sortable;
-}
+droppable.on('drag:start', () => console.log('drag:start'));
+droppable.on('droppable:over', () => console.log('droppable:over'));
+droppable.on('droppable:out', () => console.log('droppable:out'));
