@@ -1,0 +1,17 @@
+{
+  "name": "electron-local",
+  "version": "1.0.0",
+  "description": "Funny things application",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "Vadim Tikhanoff",
+  "license": "ISC",
+  "dependencies": {
+    "electron": "^13.1.9"
+  },
+  "devDependencies": {
+    "@shopify/draggable": "^1.0.0-beta.8"
+  }
+}
