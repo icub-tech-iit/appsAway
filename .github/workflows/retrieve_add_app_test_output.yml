@@ -18,11 +18,6 @@ jobs:
         - uses: tzkhan/pr-update-action@v2
           with:
             repo-token: "${{ secrets.GITHUB_TOKEN }}"
-           # base-branch-regex: '[a-z\d-_.\\/]+'
             head-branch-regex: 'add_app'
-           # head-branch-regex: 'add_app_\d+'
-           # title-template: '[%headbranch%] '
             body-template: |
                   Test script result: ${{ steps.print-test-result.outputs.test_success }}
-           # body-update-action: 'suffix'
-           # body-uppercase-base-match: false
