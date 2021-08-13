@@ -11,6 +11,7 @@ function createWindow(){
         minHeight: 700,
         minWidth: 1000,
         webPreferences: {
+            icon: 'assets/icon.png',
             nodeIntegration: true, 
             contextIsolation: false,
             devTools: true,
