@@ -1,0 +1,8 @@
+build*
+*~
+*.user
+.DS_Store
+*.local.*
+.vscode
+node_modules*
+*-lock.json
