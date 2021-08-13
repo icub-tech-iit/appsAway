@@ -37,7 +37,7 @@ jobs:
         with:
           private_key: ${{ secrets.ICUB_TECH_CODE_APP_KEY }}
           app_id: ${{ secrets.ICUB_TECH_CODE_APP_ID }}
-          repository: icub-tech-iit/code
+          repository: lauracavaliere/code
             
       - name: Repository Dispatch
         uses: peter-evans/repository-dispatch@v1
