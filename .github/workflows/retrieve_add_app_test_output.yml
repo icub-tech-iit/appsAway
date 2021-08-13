@@ -1,0 +1,16 @@
+name: retrieve_add_app_test_output
+
+on: 
+    repository_dispatch:
+        types: [sending_test_outcome]
+
+jobs:
+    changing_pr_body:
+        runs-on: [ubuntu-latest]
+        steps:
+        - name: Print test-script.sh result
+          id: print-test-result
+          run: |
+             test_success=${{ github.event.client_payload.test_success }}
+             echo "Test script result: $test_success"
+             
