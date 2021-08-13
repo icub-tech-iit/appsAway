@@ -1,5 +1,5 @@
 var ACTIONS = {
-    TALK: "Talk",
+    SPEAK: "Talk",
     WAVE: "Wave",
     GRASP: "Grasp an object",
     EMOTION: "Display an Emotion",
@@ -9,7 +9,7 @@ var ACTIONS = {
 }
 
 var OPTIONS = {
-    TALK: [
+    SPEAK: [
         {
             type: "string",
             label: "Text:",
@@ -49,10 +49,12 @@ var OPTIONS = {
             type: "select",
             label: "Emotion:",
             options: [
-                "Happy",
+                "Smile",
                 "Sad",
                 "Angry",
-                "Suspicious"
+                "Surprised",
+                "Suspicious",
+                "Evil"
             ],
             default_value: 0
         }

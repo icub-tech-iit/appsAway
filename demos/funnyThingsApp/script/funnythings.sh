@@ -53,7 +53,11 @@ gaze() {
 }
 
 speak() {
-    echo "\"$1\"" | yarp write ... /iSpeak
+    echo "\"$1\"" | yarp write ... /iSpeak && echo "\"$1\"" | yarp write ... /read
+}
+
+wait() {
+    wait_till_quiet
 }
 
 blink() {
@@ -115,7 +119,7 @@ sad() {
     echo "set reb sad" | yarp rpc /icub/face/emotions/in
 }
 
-cun() {
+suspicious() {
     echo "set reb cun" | yarp rpc /icub/face/emotions/in
     echo "set leb cun" | yarp rpc /icub/face/emotions/in
 }

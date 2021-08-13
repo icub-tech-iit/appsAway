@@ -1,4 +1,5 @@
-const exec = require('child_process').exec;
+const exec = require('node-exec-promise').exec;
+//const {​​​ forEach }​​​ = require('p-iteration')
 
 let actionBlockParameters = {}
 
@@ -196,15 +197,43 @@ const closeOptions = (event, activity) => {
     optionsDiv.style.minHeight = 'fit-content'
 }
 
-const runDemo = () => {
-    let str = "\"this is a test\""
-    activitiesToPerform.forEach((activity) => {
-      exec(`../script/funnythings.sh ${activity.toLowerCase()} ${str}`, (err,stdout,stderr)=>{
-      //exec(`/training/electron/${activity.toLowerCase()}.sh`, (err,stdout,stderr)=>{
-            console.log(`${activity} err: ${err}`);
-            console.log(`${activity} stdout: ${stdout}`);
-            console.log(`${activity} stderr: ${stderr}`);
-        });
+const runDemo = async() => {
+     
+    activitiesToPerform.forEach(async(activity) => {
+
+      console.log( activity.activity.toLowerCase() );     
+      //if (activity.hasOwnProperty("options") )
+      if (activity.activity == "SPEAK"){
+
+        for await (let options of activity.options) {
+        //activity.options.forEach(async(options) => {
+          if (options.label == "Text:")
+          {
+            let speakStr = options.value
+            let out = await exec(`../script/funnythings.sh ${activity.activity.toLowerCase()} \"${speakStr}\"`);
+            console.log(out)
+          }
+          if (options.label == "Wait until finish:")
+          {
+            let speakWait = options.value
+            if (speakWait == "Wait")
+            {
+              console.log("in wait")
+              let out = await exec(`../script/funnythings.sh ${speakWait.toLowerCase()}`);
+              
+              console.log("Finished")
+            }
+          }
+        }//)
+      }
+      if (activity.activity == "WAVE"){
+        let arm = `hello_${activity.options[0].value.toLowerCase()}`
+        let out = await exec(`../script/funnythings.sh ${arm}`);
+      }
+      if (activity.activity == "EMOTION"){
+        let emotion = activity.options[0].value.toLowerCase()
+        let out = await exec(`../script/funnythings.sh ${emotion}`);
+      }
     })
 }
 
