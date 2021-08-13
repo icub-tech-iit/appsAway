@@ -70,7 +70,7 @@ var OPTIONS = {
     ],
     EMOTION: [
         {
-            type: "select",
+            type: "dropdown",
             label: "Emotion:",
             options: [
                 "Smile",

@@ -176,6 +176,26 @@ const expandOrCloseOptions = (event, activity) => {
 
                     labelIdCounter += 1
                     break
+                case 'dropdown':
+                    let dropdown = createElement('select', {
+                        name: `${optionTemplate.label}${labelIdCounter}`
+                    })
+
+                    optionTemplate.options.forEach((dropdownOption) => {
+                        let dropdownDOMOption = createElement('option', {
+                            value: dropdownOption
+                        })
+                        if (dropdownDOMOption.value == optionItem.value) {
+                            dropdownDOMOption.selected = true
+                        }
+                        dropdownDOMOption.innerHTML = dropdownOption
+                        dropdown.appendChild(dropdownDOMOption)
+                    })
+
+                    dropdown.addEventListener('change', (event) => {changeActivityValue(activityIndex, index, event.target.value)})
+
+                    optionDiv.appendChild(dropdown)
+                    break
             }
             
             optionsDiv.appendChild(optionDiv)

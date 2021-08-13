@@ -45,6 +45,9 @@ var createElement = (label, options = null) => {
         if (options.hasOwnProperty('checked')) {
             newElement.setAttribute('checked', options.checked)
         }
+        if (options.hasOwnProperty('selected')) {
+            newElement.setAttribute('selected', options.selected)
+        }
         if (options.hasOwnProperty('onChange')) {
             newElement.addEventListener('change', options.onChange)
         }
