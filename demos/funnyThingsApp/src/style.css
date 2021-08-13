@@ -43,6 +43,15 @@ body {
 	flex-direction: column;
 	gap: 1px;
 	color: #4d4d4d;
+	background-color: whitesmoke;
+  }
+  body > div {
+	background-color: white;
+	padding: 2em;
+    border-radius: 5px;
+    box-shadow: 2px 2px 10px lightgrey;
+	width: 800px;
+    height: 520px;
   }
   
   .panels-container {
@@ -208,7 +217,7 @@ body {
   }
   
   .buttons-container {
-	  padding-top: 20px;
+	  padding-top: 40px;
 	  width: 100%;
 	  display:flex;
 	  justify-content: flex-end;
