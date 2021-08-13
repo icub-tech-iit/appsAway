@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <title>Hello World!</title>
     <link rel="stylesheet" href="style.css">
+    <script defer type="text/javascript" src="constants.js"></script>
+    <script defer type="text/javascript" src="state.js"></script>
+    <script defer type="text/javascript" src="dom.js"></script>
     <script defer type="text/javascript" src="renderer.js"></script>
   </head>
   <body>
@@ -22,6 +25,10 @@
         <div class="left-panel panel"></div>
       </div>         
     </div>
-    <button onclick="runDemo()">Run your demo!</button>
+    <div class="buttons-container">
+      <button onclick="runDemo()">Run</button>
+      <button class="danger" onclick="stopDemo()">Stop</button>
+      <button class="warning" onclick="clearAll()">Clear</button>
+    </div>    
   </body>
 </html>

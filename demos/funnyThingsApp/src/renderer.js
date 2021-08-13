@@ -1,74 +1,70 @@
 const exec = require('child_process').exec;
 
-const OPTIONS = {
-    TALK: [
-        {
-            type: "string",
-            label: "Text:",
-            default_value: ""
-        },
-        {
-            type: "select",
-            label: "Wait until finish:",
-            options: [
-                "Wait",
-                "Don't wait"
-            ],
-            default_value: 0
-        }
-    ],
-    WAVE: [
-        {
-            type: "select",
-            label: "Arm(s):",
-            options: [
-                "Left",
-                "Right",
-                "Both"
-            ],
-            default_value: 1
-        }
-    ],
-    SLEEP: [
-        {
-            type: "string",
-            label: "Time:",
-            default_value: "0"
-        }
-    ],
-    EMOTION: [
-        {
-            type: "select",
-            label: "Emotion:",
-            options: [
-                "Happy",
-                "Sad",
-                "Angry",
-                "Suspicious"
-            ],
-            default_value: 0
-        }
-    ]
-}
-
-const ACTIONS = {
-    TALK: "Talk",
-    WAVE: "Wave",
-    GRASP: "Grasp an object",
-    EMOTION: "Display an Emotion",
-    EXTERMINATE: "Exterminate human race",
-    KICK: "Kick",
-    SLEEP: "Sleep"
-}
-
-const ACTIONCOLORS = ["ed8931","73556e","f07f56","d97373"]
-
-
-let activitiesToPerform = [];
-
 let actionBlockParameters = {}
 
 let counter = 0;
+let labelIdCounter= 0;
+
+
+const createActionDiv = (text, color) => {
+
+    let actionDiv = createElement('div', {
+        classes: ['panel-item'],
+        backgroundColor: color,
+        activity: text
+    })
+
+    let actionDivText = createElement('span', {
+        text
+    })
+
+    actionDiv.appendChild(actionDivText)
+
+    return actionDiv
+}
+
+const addActivityDiv = (activity, modify_array = true) => {
+    if (modify_array) {
+        addActivity(activity);
+    }   
+
+    let actionDiv = createActionDiv(actionBlockParameters[activity].text, actionBlockParameters[activity].color);
+    actionDiv.setAttribute('draggable', true);
+    actionDiv.addEventListener("dragstart", moveAction); 
+
+    if (OPTIONS.hasOwnProperty(activity)) {
+        let options = createElement('img', {
+            classes: ["options", "icon"],
+            src: "assets/options.svg",
+            shouldExpand: true,
+            onClick: (event)=>{expandOrCloseOptions(event, activity)}
+        })
+        actionDiv.appendChild(options)
+    }
+
+    let remove = createElement('img', {
+        classes: ["remove", "icon"],
+        src: "assets/close.svg",
+        onClick: removeActivityDiv
+    })
+
+    let optionsDiv = createElement('div', {
+        classes: ["act-options"],
+    })
+
+    actionDiv.appendChild(optionsDiv)
+    actionDiv.appendChild(remove)
+    
+    myActivitesPanel.appendChild(actionDiv);
+}
+
+const removeActivityDiv = (event) => {
+    let node = findPanelItem(event.target);
+    let indexToRemove = findChildIndex(node);
+    removeActivity(indexToRemove)
+    let parent = node.parentNode;
+    parent.removeChild(node);
+}
 
 Object.keys(ACTIONS).map((actionsKey) => {
     let actionColorKeys = Object.keys(ACTIONCOLORS);
@@ -85,24 +81,33 @@ Object.keys(ACTIONS).map((actionsKey) => {
 const allActivitesPanel = document.querySelector(".right-panel");
 const myActivitesPanel = document.querySelector(".left-panel");
 
+for (let action in actionBlockParameters) {
+    let actionDiv = createActionDiv(actionBlockParameters[action].text, actionBlockParameters[action].color);
+    actionDiv.onclick = ()=>{addActivityDiv(action)};
+    allActivitesPanel.appendChild(actionDiv);
+}
+
 let draggedItem;
+
+const moveAction = (event) => {
+    draggedItem = event.target
+}
 
 document.addEventListener("drop", function(event) {
     let target = event.target
-    if (myActivitesPanel.contains(target)) { 
-        let dropTarget = target.closest(".panel-item")
-        let indexOfDropTarget = Array.from(myActivitesPanel.children).indexOf(dropTarget);
-        let indexOfDraggedItem = Array.from(myActivitesPanel.children).indexOf(draggedItem);
+    if (myActivitesPanel.contains(target) && myActivitesPanel != target) { 
+        let dropTarget = findPanelItem(target)
+        let indexOfDropTarget = findChildIndex(dropTarget, myActivitesPanel);
+        let indexOfDraggedItem = findChildIndex(draggedItem, myActivitesPanel);
         
-        activitiesToPerform.splice(indexOfDropTarget, 0, activitiesToPerform.splice(indexOfDraggedItem, 1)[0])
+        repositionActivity(indexOfDraggedItem, indexOfDropTarget)
         
         myActivitesPanel.innerHTML = ''
 
         for (let activity of activitiesToPerform) {
-            addActivity(activity, false)
+            addActivityDiv(activity.activity, false)
         }
     }
-    console.log("drop")
 })
 
 document.addEventListener("dragenter", function(event) {
@@ -113,83 +118,79 @@ document.addEventListener("dragover", function(event) {
     event.preventDefault()
 })
 
-const createActionDiv = (text, color) => {
-    let actionDiv = document.createElement('div');
-    actionDiv.classList.add('panel-item');
-    actionDiv.style.backgroundColor = `#${color}`
-    let actionDivText = document.createElement('span');
-    actionDivText.textContent = text;
-    actionDiv.appendChild(actionDivText);
-    actionDiv.activity = text;
-    return actionDiv
+const expandOrCloseOptions = (event, activity) => {
+    if (event.target.shouldExpand == true) {
+        let actionDiv = findPanelItem(event.target)
+        let activityIndex = findChildIndex(actionDiv)
+        let optionsDiv = actionDiv.querySelector(".act-options")
+        let optionsTemplate = OPTIONS[activity]
+        let specificOptions = activitiesToPerform[activityIndex].options
+        optionsDiv.style.minHeight = `${30* specificOptions.length}px`
+        optionsTemplate.forEach((optionTemplate, index) => {
+            let optionItem = specificOptions[index]
+
+            let optionDiv = createElement('div', {
+                maxHeight: 25
+            })
+
+            let label = createElement('span', {
+                text: optionTemplate.label
+            })
+
+            optionDiv.appendChild(label)
+
+            switch (optionTemplate.type) {
+                case 'string':
+
+                    let input = createElement('input', {
+                        type: 'text',
+                        defaultValue: optionItem.value,
+                        onChange: (event)=>{changeActivityValue(activityIndex, index, event.target.value)}
+                    })
+
+                    optionDiv.appendChild(input)
+                    break;
+                case 'select':
+                    
+                    optionTemplate.options.forEach((radioOption) => {
+                        let radioDOMOptions = {
+                            type: 'radio',
+                            value: radioOption,
+                            name: `${optionTemplate.label}${labelIdCounter}`,
+                            onClick: (event)=>{changeActivityValue(activityIndex, index, event.target.value)}
+                        }
+                        if (radioOption == optionItem.value) {
+                            radioDOMOptions.checked = true
+                        }
+                        let input = createElement('input', radioDOMOptions)
+                        optionDiv.appendChild(input)
+                        
+                        let inputLabel = createElement('span', {
+                            text: radioOption
+                        })
+                        optionDiv.appendChild(inputLabel)
+                    })
+
+                    labelIdCounter += 1
+                    break
+            }
+            
+            optionsDiv.appendChild(optionDiv)
+            })
+    } else {
+        let actionDiv = findPanelItem(event.target)
+        let optionsDiv = actionDiv.querySelector(".act-options")
+        optionsDiv.innerHTML = ''
+        optionsDiv.style.minHeight = 'fit-content'
+    }
+    event.target.shouldExpand = !event.target.shouldExpand
 }
 
-const removeActivity = (event) => {
-    let node = event.target.closest(".panel-item");
-    let parent = node.parentNode;
-    let indexToRemove = Array.from(parent.children).indexOf(node);
-    activitiesToPerform.splice(indexToRemove, 1);
-    parent.removeChild(node);
-}
-
-const moveAction = (event) => {
-    draggedItem = event.target
-}
-
-const expandOptions = (event, activity) => {
-    let actionDiv = event.target.closest(".panel-item")
+const closeOptions = (event, activity) => {
+    let actionDiv = findPanelItem(event.target)
     let optionsDiv = actionDiv.querySelector(".act-options")
-    let specificOptions = OPTIONS[activity]
-    optionsDiv.style.minHeight = `${25 * OPTIONS[activity].length}px`
-    for (let option of specificOptions) {
-        let optionDiv = document.createElement('div')
-        optionDiv.style.maxHeight = '25px'
-        let label = document.createElement('span')
-        label.textContent = option.label
-        optionDiv.appendChild(label)
-
-        switch (option.type) {
-            case 'string':
-                let input = document.createElement('input')
-                input.type = 'text'
-                input.defaultValue = option.default_value
-                optionDiv.appendChild(input)
-                break;
-        }
-        
-        optionsDiv.appendChild(optionDiv)
-    }
-}
-
-const addActivity = (activity, modify_array = true) => {
-    let actionDiv = createActionDiv(actionBlockParameters[activity].text, actionBlockParameters[activity].color);
-    options = document.createElement('img')
-    if (Object.keys(OPTIONS).includes(activity)) {
-        options.classList.add("options", "icon")
-        options.src = "assets/options.svg"
-        options.addEventListener("click", (event)=>{expandOptions(event, activity)})
-        actionDiv.appendChild(options)
-    }
-    remove = document.createElement('img')
-    remove.classList.add("remove", "icon")
-    remove.src = "assets/close.svg"
-    remove.addEventListener('click', removeActivity);
-    let optionsDiv = document.createElement('div')
-    optionsDiv.classList.add("act-options")
-    actionDiv.appendChild(optionsDiv)
-    actionDiv.appendChild(remove)
-    actionDiv.setAttribute('draggable', true);
-    actionDiv.addEventListener("dragstart", moveAction);
-    if (modify_array) {
-        activitiesToPerform.push(activity);
-    }    
-    myActivitesPanel.appendChild(actionDiv);
-}
-
-for (let action in actionBlockParameters) {
-    let actionDiv = createActionDiv(actionBlockParameters[action].text, actionBlockParameters[action].color);
-    actionDiv.onclick = ()=>{addActivity(action)};
-    allActivitesPanel.appendChild(actionDiv);
+    optionsDiv.innerHTML = ''
+    optionsDiv.style.minHeight = 'fit-content'
 }
 
 const runDemo = () => {
@@ -202,4 +203,10 @@ const runDemo = () => {
             console.log(`${activity} stderr: ${stderr}`);
         });
     })
+}
+
+
+const clearAll = () => {
+    clearActivities()
+    myActivitesPanel.innerHTML = ''
 }
