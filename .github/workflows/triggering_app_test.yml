@@ -46,5 +46,5 @@ jobs:
         with:
           token: ${{ env.GITHUB_APPS_TOKEN }}   
           repository: lauracavaliere/code
-          event-type: triggering_code_for_testing
-          client-payload: '{"type": "triggering_code_for_testing", "app_name_list": ${{ toJson(github.event.pull_request.body) }}}'
+          event-type: add_app_testing_from_appsaway
+          client-payload: '{"type": "add_app_testing_from_appsaway", "app_name_list": ${{ toJson(github.event.pull_request.body) }}}'
