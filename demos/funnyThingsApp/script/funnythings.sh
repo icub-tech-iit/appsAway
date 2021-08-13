@@ -79,6 +79,18 @@ go_home_helper() {
     go_home_helperL $1
 }
 
+home_left() {
+    go_home_helperL 2.0
+}
+
+home_right() {
+    go_home_helperR 2.0
+}
+
+home_both() {
+    go_home_helper
+}
+
 go_home() {
     gaze "look-around 0.0 0.0 5.0"
     sleep 1.0
@@ -142,6 +154,14 @@ wait_till_quiet() {
     done
     echo "I'm not speaking any more :)"
     echo $isSpeaking
+}
+
+victory_left() {
+    victory left_arm
+}
+
+victory_right() {
+    victory right_arm
 }
 
 victory() {

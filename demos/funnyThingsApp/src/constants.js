@@ -1,10 +1,10 @@
 var ACTIONS = {
     SPEAK: "Talk",
     WAVE: "Wave",
-    GRASP: "Grasp an object",
+    HOME: "Return to home position",
     EMOTION: "Display an Emotion",
-    EXTERMINATE: "Exterminate human race",
-    KICK: "Kick",
+    VICTORY: "Perform a victory pose",
+    FONZIE: "Fonzie",
     SLEEP: "Sleep"
 }
 
@@ -22,10 +22,34 @@ var OPTIONS = {
                 "Wait",
                 "Don't wait"
             ],
-            default_value: 0
+            default_value: 1
         }
     ],
     WAVE: [
+        {
+            type: "select",
+            label: "Arm(s):",
+            options: [
+                "Left",
+                "Right",
+                "Both"
+            ],
+            default_value: 1
+        }
+    ],
+    HOME: [
+        {
+            type: "select",
+            label: "Arm(s):",
+            options: [
+                "Left",
+                "Right",
+                "Both"
+            ],
+            default_value: 1
+        }
+    ],
+    VICTORY: [
         {
             type: "select",
             label: "Arm(s):",

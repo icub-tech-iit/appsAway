@@ -1,5 +1,5 @@
 const exec = require('node-exec-promise').exec;
-//const {​​​ forEach }​​​ = require('p-iteration')
+const {forEach, forEachSeries} = require('p-iteration')
 
 let actionBlockParameters = {}
 
@@ -205,7 +205,8 @@ const runDemo = async() => {
       //if (activity.hasOwnProperty("options") )
       if (activity.activity == "SPEAK"){
 
-        for await (let options of activity.options) {
+        //for await (let options of activity.options) {​
+        await forEachSeries(activity.options, async (options) => {
         //activity.options.forEach(async(options) => {
           if (options.label == "Text:")
           {
@@ -224,15 +225,31 @@ const runDemo = async() => {
               console.log("Finished")
             }
           }
-        }//)
+        })
       }
+
       if (activity.activity == "WAVE"){
         let arm = `hello_${activity.options[0].value.toLowerCase()}`
         let out = await exec(`../script/funnythings.sh ${arm}`);
       }
+
+      if (activity.activity == "HOME"){
+        let arm = `home_${activity.options[0].value.toLowerCase()}`
+        let out = await exec(`../script/funnythings.sh ${arm}`);
+      }
+
+      if (activity.activity == "VICTORY"){
+        let arm = `victory_${activity.options[0].value.toLowerCase()}`
+        let out = await exec(`../script/funnythings.sh ${arm}`);
+      }
+      
       if (activity.activity == "EMOTION"){
         let emotion = activity.options[0].value.toLowerCase()
+        console.log(emotion)
         let out = await exec(`../script/funnythings.sh ${emotion}`);
+      }
+      if (activity.activity == "FONZIE"){
+        let out = await exec(`../script/funnythings.sh fonzie`);
       }
     })
 }
