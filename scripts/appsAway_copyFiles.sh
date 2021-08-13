@@ -272,21 +272,21 @@ overwrite_yaml_files()
   do
       if [[ $APPSAWAY_IMAGES != '' ]] 
       then
-          list_images=($APPSAWAY_IMAGES)
-          list_versions=($APPSAWAY_VERSIONS)
-          list_tags=($APPSAWAY_TAGS)
-      
-          if [[ $LOCAL_IMAGE_FLAG == true ]]
-          then
-              echo "overwriting ${APPSAWAY_CONSOLENODE_ADDR}:5000/${LOCAL_IMAGE_NAME} in ${yml_files[$i]}" 
-              sed -i 's,image: .*$,image: '"${APPSAWAY_CONSOLENODE_ADDR}:5000/${LOCAL_IMAGE_NAME}"',g' ${yml_files[$i]}
-          else
-              for (( j=0; j<${#list_images[@]}; j++ ))
-              do
-                  echo "overwriting ${list_images[$j]} in ${yml_files[$i]}" 
-                  sed -i 's,image: '"${list_images[$j]}"'.*$,image: '"${list_images[$j]}"':'"${list_versions[$j]}"'_'"${list_tags[$j]}"',g' ${yml_files[$i]}
-              done
-          fi    
+        list_images=($APPSAWAY_IMAGES)
+        list_yml_images=($APPSAWAY_YML_IMAGES)
+        list_versions=($APPSAWAY_VERSIONS)
+        list_tags=($APPSAWAY_TAGS)
+  
+        for (( j=0; j<${#list_images[@]}; j++ ))
+        do
+            echo "overwriting ${list_yml_images[$j]} with ${list_images[$j]} in ${yml_files[$i]}" 
+            if [[ ${list_versions[$j]} == "n/a" ]]
+            then
+              sed -i 's,image: '"${list_yml_images[$j]}"'.*$,image: '"${list_images[$j]}"':'"${list_tags[$j]}"',g' ${yml_files[$i]}
+            else
+              sed -i 's,image: '"${list_yml_images[$j]}"'.*$,image: '"${list_images[$j]}"':'"${list_versions[$j]}"'_'"${list_tags[$j]}"',g' ${yml_files[$i]}
+            fi 
+        done         
       fi
 
       if [[ $APPSAWAY_SENSORS != '' ]] 
