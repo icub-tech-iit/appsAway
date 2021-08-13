@@ -1,11 +1,11 @@
-name: retrieve_add_app_test_output
+name: Retrieving the test-script.sh output from code
 
 on: 
     repository_dispatch:
         types: [sending_test_outcome]
 
 jobs:
-    changing_pr_body:
+    updating_pr_body:
         runs-on: [ubuntu-latest]
         steps:
         - name: Print test-script.sh result
@@ -13,4 +13,11 @@ jobs:
           run: |
              test_success=${{ github.event.client_payload.test_success }}
              echo "Test script result: $test_success"
-             
+             echo "::set-output name=test_success::$test_success"
+
+        - uses: tzkhan/pr-update-action@v2
+          with:
+            repo-token: "${{ secrets.GITHUB_TOKEN }}"
+            head-branch-regex: 'add_app'
+            body-template: |
+                  Test script result: ${{ steps.print-test-result.outputs.test_success }}
