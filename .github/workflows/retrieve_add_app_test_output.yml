@@ -13,7 +13,7 @@ jobs:
           run: |
              test_success=${{ github.event.client_payload.test_success }}
              echo "Test script result: $test_success"
-             echo "::set-output name=test_success::$test_success
+             echo "::set-output name=test_success::$test_success"
 
         - uses: tzkhan/pr-update-action@v2
           with:
