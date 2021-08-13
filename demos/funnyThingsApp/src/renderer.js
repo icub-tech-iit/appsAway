@@ -78,8 +78,8 @@ Object.keys(ACTIONS).map((actionsKey) => {
     }
 }) // actionBlockParameters = { TALK = {text: "Talk", color: "purple"}, [...] }
 
-const allActivitesPanel = document.querySelector(".right-panel");
-const myActivitesPanel = document.querySelector(".left-panel");
+const allActivitesPanel = document.querySelector(".left-panel");
+const myActivitesPanel = document.querySelector(".right-panel");
 
 for (let action in actionBlockParameters) {
     let actionDiv = createActionDiv(actionBlockParameters[action].text, actionBlockParameters[action].color);
@@ -126,6 +126,8 @@ const expandOrCloseOptions = (event, activity) => {
         let optionsTemplate = OPTIONS[activity]
         let specificOptions = activitiesToPerform[activityIndex].options
         optionsDiv.style.minHeight = `${30* specificOptions.length}px`
+        actionDiv.style.minHeight = `${50 + 30* specificOptions.length}px`
+
         optionsTemplate.forEach((optionTemplate, index) => {
             let optionItem = specificOptions[index]
 
@@ -182,6 +184,7 @@ const expandOrCloseOptions = (event, activity) => {
         let optionsDiv = actionDiv.querySelector(".act-options")
         optionsDiv.innerHTML = ''
         optionsDiv.style.minHeight = 'fit-content'
+        actionDiv.style.minHeight = '50px';
     }
     event.target.shouldExpand = !event.target.shouldExpand
 }

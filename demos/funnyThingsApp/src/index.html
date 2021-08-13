@@ -11,24 +11,30 @@
   </head>
   <body>
     <h1>Funny Things Demo</h1>
-    <p>Choose the actions the robot will perform:</p>
+    <h3>Choose the actions the robot will perform</h3>
     <div class="panels-container">
       <div class="panel-container">
-        <span>Available Actions:</span>
-        <div class="right-panel panel"></div>
+        <span>Available Actions</span>
+        <div class="left-panel panel"></div>
       </div>
       <div class="arrow-container">
         <span>></span>
       </div>
       <div class="panel-container">
-        <span>Your Awesome Demo!:</span>
-        <div class="left-panel panel"></div>
+        <span>Your Awesome Demo</span>
+        <div class="right-panel panel"></div>
       </div>         
     </div>
     <div class="buttons-container">
-      <button onclick="runDemo()">Run</button>
-      <button class="danger" onclick="stopDemo()">Stop</button>
-      <button class="warning" onclick="clearAll()">Clear</button>
+      <button class="run" onclick="runDemo()">
+        <img src="assets/run.png"/>
+      </button>
+      <button class="stop" onclick="stopDemo()">
+        <img src="assets/stop.png"/>
+      </button>
+      <button class="clear" onclick="clearAll()">
+        <img src="assets/run.png"/>
+      </button>
     </div>    
   </body>
 </html>
