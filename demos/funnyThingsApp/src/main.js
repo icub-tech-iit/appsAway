@@ -7,7 +7,7 @@ function createWindow(){
     //Create browser window
     const mainWindow = new BrowserWindow({
         width: 1000,
-        height: 650,
+        height: 700,
         webPreferences: {
             nodeIntegration: true, 
             contextIsolation: false,
@@ -15,6 +15,11 @@ function createWindow(){
             preload: path.join(__dirname, 'preload.js')
         }
     })
+
+    // Uncomment if you want to set a fixed window size
+    // mainWindow.setResizable(false);
+    // mainWindow.setMaximizable(false);
+    mainWindow.setMenu(null);
 
     // Load index.html
     mainWindow.loadFile('index.html')

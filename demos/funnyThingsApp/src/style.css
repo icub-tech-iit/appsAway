@@ -33,25 +33,34 @@ h6 {
   font-size: 1.15rem;
 }
 
+html {
+	height: 100%;
+}
+
 body {
 	font-family: 'Manrope', sans-serif;
-	font-weight: 300;
-	margin: auto;
-	max-width: 50rem;
-	padding: 2rem;
-	display: flex;
-	flex-direction: column;
+	font-weight: 300;	
+	height: 100%;
 	gap: 1px;
 	color: #4d4d4d;
 	background-color: whitesmoke;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center; 
   }
   body > div {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center; 
 	background-color: white;
 	padding: 2em;
     border-radius: 5px;
     box-shadow: 2px 2px 10px lightgrey;
 	width: 800px;
     height: 520px;
+	max-width: 50rem;
   }
   
   .panels-container {
