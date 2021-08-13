@@ -2,7 +2,7 @@ name: Triggering app test
 
 on:
   pull_request:
-     types: [opened, synchronize, reopened, edited]
+     types: [opened]
      branches:
         - master 
 jobs:
