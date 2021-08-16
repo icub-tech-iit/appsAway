@@ -10,34 +10,13 @@ jobs:
       runs-on: ubuntu-latest
       if: contains(github.event.pull_request.head.ref, 'add_app')
       steps:  
-     # - uses: actions/checkout@v2
-     #   with:
-     #     branch: ${{ github.event.pull_request.head.ref }} 
-     #     path: teamcode/appsAway
-          
-     # - name: Move teamcode folder
-     #   run: |
-     #     rm -rf $HOME/teamcode
-     #     mv $GITHUB_WORKSPACE/teamcode $HOME
-          
-     # - name: test
-     #   run:  |
-     #     pwd && ls 
-     #     ip_list=($(hostname --all-ip-address))
-     #     echo "Ip addresses: ${ip_list[@]}"
-     #     app_name_list=${{ toJson(github.event.pull_request.body) }}
-     #     for each_app in $app_name_list
-     #     do
-     #       cd $HOME/teamcode/appsAway/demos/$each_app
-     #       ./test-script.sh $each_app ${ip_list[0]}
-     #     done
       - name: Get Token
         id: get_workflow_token
         uses: tibdex/github-app-token@v1
         with:
           private_key: ${{ secrets.ICUB_TECH_CODE_APP_KEY }}
           app_id: ${{ secrets.ICUB_TECH_CODE_APP_ID }}
-          repository: lauracavaliere/code
+          repository: icub-tech-iit/code
             
       - name: Repository Dispatch
         uses: peter-evans/repository-dispatch@v1
@@ -45,6 +24,6 @@ jobs:
           GITHUB_APPS_TOKEN: ${{ steps.get_workflow_token.outputs.token }}
         with:
           token: ${{ env.GITHUB_APPS_TOKEN }}   
-          repository: lauracavaliere/code
+          repository: icub-tech-iit/code
           event-type: add_app_testing_from_appsaway
           client-payload: '{"type": "add_app_testing_from_appsaway", "app_name_list": ${{ toJson(github.event.pull_request.body) }}, "pr_context": ${{  toJson(github.event.pull_request) }}}'
