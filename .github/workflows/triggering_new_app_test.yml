@@ -1,0 +1,29 @@
+name: Triggering new app test
+
+on:
+  pull_request:
+    types: [opened]
+    branches:
+        - master 
+jobs:
+    triggering_code:
+      runs-on: ubuntu-latest
+      if: contains(github.event.pull_request.head.ref, 'add_app')
+      steps:  
+      - name: Get Token
+        id: get_workflow_token
+        uses: tibdex/github-app-token@v1
+        with:
+          private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
+          app_id: ${{ secrets.APPLICATION_ID }}
+          repository: icub-tech-iit/code
+            
+      - name: Repository Dispatch
+        uses: peter-evans/repository-dispatch@v1
+        env:
+          GITHUB_APPS_TOKEN: ${{ steps.get_workflow_token.outputs.token }}
+        with:
+          token: ${{ env.GITHUB_APPS_TOKEN }}   
+          repository: icub-tech-iit/code
+          event-type: add_app_testing_from_appsaway
+          client-payload: '{"type": "add_app_testing_from_appsaway", "app_name_list": ${{ toJson(github.event.pull_request.body) }}, "pr_context": ${{  toJson(github.event.pull_request) }}}'
