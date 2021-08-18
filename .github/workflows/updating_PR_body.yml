@@ -1,0 +1,17 @@
+name: Updating pr body
+
+on: 
+  repository_dispatch:
+    types: [sending_test_outcome]
+
+jobs:
+  updating_pr_body:
+    runs-on: [ubuntu-latest]
+    steps:
+    - uses: lauracavaliere/pr-update-action@master
+      with:
+        pr-context: "${{ toJson(github.event.client_payload.pr_context) }}"
+        repo-token: "${{ secrets.GITHUB_TOKEN }}"
+        head-branch-regex: 'add_app_\d+'
+        body-template: |
+              Test script result\: ${{ github.event.client_payload.test_success }}
