@@ -218,20 +218,22 @@ set_hardware_labels()
   fi
 
   if [ "$APPSAWAY_CUDANODE_ADDR" != "" ]; then
-    APPSAWAY_CUDANODE_ADDR_LIST=($APPSAWAY_CUDANODE_ADDR)
-    APPSAWAY_CUDANODE_USERNAME_LIST=($APPSAWAY_CUDANODE_USERNAME)
-    for index in "${!APPSAWAY_CUDANODE_ADDR_LIST[@]}"
+    _APPSAWAY_CUDANODE_ADDR_LIST=($APPSAWAY_CUDANODE_ADDR)
+    _APPSAWAY_CUDANODE_USERNAME_LIST=($APPSAWAY_CUDANODE_USERNAME)
+    for index in "${!_APPSAWAY_CUDANODE_ADDR_LIST[@]}"
     do
-      ${_DOCKER_BIN} ${_DOCKER_PARAMS} node update --label-add type=cuda $(ip2hostname ${APPSAWAY_CUDANODE_USERNAME[$index]} ${APPSAWAY_CUDANODE_ADDR_LIST[$index]})
+      log "changing label to cuda on machine with username ${_APPSAWAY_CUDANODE_USERNAME_LIST[$index]} on IP ${_APPSAWAY_CUDANODE_ADDR_LIST[$index]}"
+      ${_DOCKER_BIN} ${_DOCKER_PARAMS} node update --label-add type=cuda $(ip2hostname ${_APPSAWAY_CUDANODE_USERNAME_LIST[$index]} ${_APPSAWAY_CUDANODE_ADDR_LIST[$index]})
     done
   fi
 
   if [ "$APPSAWAY_WORKERNODE_ADDR" != "" ]; then
-    APPSAWAY_WORKERNODE_ADDR_LIST=($APPSAWAY_WORKERNODE_ADDR)
-    APPSAWAY_WORKERNODE_USERNAME_LIST=($APPSAWAY_WORKERNODE_USERNAME)
-    for index in "${!APPSAWAY_WORKERNODE_ADDR_LIST[@]}"
+    _APPSAWAY_WORKERNODE_ADDR_LIST=($APPSAWAY_WORKERNODE_ADDR)
+    _APPSAWAY_WORKERNODE_USERNAME_LIST=($APPSAWAY_WORKERNODE_USERNAME)
+    for index in "${!_APPSAWAY_WORKERNODE_ADDR_LIST[@]}"
     do
-      ${_DOCKER_BIN} ${_DOCKER_PARAMS} node update --label-add type=worker $(ip2hostname ${APPSAWAY_WORKERNODE_USERNAME[$index]} ${APPSAWAY_WORKERNODE_ADDR_LIST[$index]})
+      log "changing label to worker on machine with username ${_APPSAWAY_CUDANODE_USERNAME_LIST[$index]} on IP ${_APPSAWAY_CUDANODE_ADDR_LIST[$index]}"
+      ${_DOCKER_BIN} ${_DOCKER_PARAMS} node update --label-add type=worker $(ip2hostname ${_APPSAWAY_WORKERNODE_USERNAME_LIST[$index]} ${_APPSAWAY_WORKERNODE_ADDR_LIST[$index]})
     done
   fi
 }
