@@ -8,6 +8,12 @@ jobs:
   updating_pr_body:
     runs-on: [ubuntu-latest]
     steps:
+    - name: Formatting test-script outcome
+      id: format-outcome
+      run: |
+        test_outcome=$(echo ${{ github.event.client_payload.test_success }} | tr ' ' '\n')
+        echo "::set-output name=test_outcome::$test_outcome"
+        
     - uses: lauracavaliere/pr-update-action@master
       with:
         pr-context: "${{ toJson(github.event.client_payload.pr_context) }}"
@@ -15,4 +21,4 @@ jobs:
         head-branch-regex: 'add_app_\d+'
         body-template: |
               Test script result\:
-              ${{ github.event.client_payload.test_success }}
+              ${{ steps.format-outcome.outputs.test_outcome }}
