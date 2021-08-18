@@ -88,7 +88,7 @@ check_docker_version() {
       fi
       _IS_CUDA=$( echo ${nodes_name_array[$iter]} | grep 'icubcuda' || true)
       if [[ $_IS_CUDA != "" ]] ; then
-        _OUTPUT=$(${_SSH_BIN} ${_SSH_PARAMS} $username@$node "nvidia-container-runtime --version 2>&1" | grep 'runc version' || true)
+        _OUTPUT=$(${_SSH_BIN} ${_SSH_PARAMS} $username@$node "nvidia-docker --version 2>&1" | grep 'Docker version' || true)
         if [[ $_OUTPUT == "" ]] ; then
           # ADD THIS NODE TO THE HOSTS_CUDA.INI
           _CUDA_ADDR_LIST="$_CUDA_ADDR_LIST $node"
