@@ -289,6 +289,25 @@ copy_yaml_files()
       fi
     done
   fi
+  _CUDA_NODE_LIST=( $APPSAWAY_CUDANODE_ADDR )
+  _CUDA_USERNAME_LIST=( $APPSAWAY_CUDANODE_USERNAME )
+  iter=0
+  for node in ${_CUDA_NODE_LIST}
+  do
+    log "creating path ${_APPSAWAY_APP_PATH_NOT_CONSOLE} on CUDA node with IP ${_CUDA_NODE_LIST[iter]}"
+    ${_SSH_BIN} ${_SSH_PARAMS} ${_CUDA_USERNAME_LIST[iter]}@${_CUDA_NODE_LIST[iter]} "mkdir -p ${_APPSAWAY_APP_PATH_NOT_CONSOLE}"
+    iter=$((iter+1))
+  done
+
+  _WORKER_NODE_LIST=( $APPSAWAY_WORKERNODE_ADDR )
+  _WORKER_USERNAME_LIST=( $APPSAWAY_WORKERNODE_USERNAME )
+  iter=0
+  for node in ${_WORKER_NODE_LIST}
+  do
+    log "creating path ${_APPSAWAY_APP_PATH_NOT_CONSOLE} on WORKER node with IP ${_WORKER_NODE_LIST[iter]}"
+    ${_SSH_BIN} ${_SSH_PARAMS} ${_WORKER_USERNAME_LIST[iter]}@${_WORKER_NODE_LIST[iter]} "mkdir -p ${_APPSAWAY_APP_PATH_NOT_CONSOLE}"
+    iter=$((iter+1))
+  done
 }
 
 scp_to_node()
@@ -314,10 +333,13 @@ copy_yarp_files()
     if [ "$node_ip" != "$APPSAWAY_CONSOLENODE_ADDR" ]; then
       username=$( eval echo "\$$iter")
       log "copying folder on node $node_ip.."
+      log "command is: scp_to_node ${_DOCKER_ENV_FILE} ${username} ${node_ip} ${_APPSAWAY_APP_PATH_NOT_CONSOLE}"
       scp_to_node ${_DOCKER_ENV_FILE} ${username} ${node_ip} ${_APPSAWAY_APP_PATH_NOT_CONSOLE}
+      log "copying yarp conf files on node $node_ip.."
       scp_to_node ${_YARP_CONFIG_FILES_PATH} ${username} ${node_ip} ${_APPSAWAY_APP_PATH_NOT_CONSOLE}
       for folder in ${APPSAWAY_DATA_FOLDERS}
       do
+        log "copying data folder $folder on node $node_ip.."
         scp_to_node ${APPSAWAY_APP_PATH}/${folder} ${username} ${node_ip} ${_APPSAWAY_APP_PATH_NOT_CONSOLE} 
       done
     fi
@@ -336,7 +358,7 @@ find_docker_images()
   then     
     REGISTRY_UP_FLAG=false
     echo "Creating the local registry"
-    ${_DOCKER_BIN} service create --name registry \
+    ${_DOCKER_BIN} service create --constraint node.role==manager --name registry \
     --publish published=5000,target=5000 --replicas 1 registry:2 
   else
     return=$(${_DOCKER_BIN} service ls | grep "*:5000->5000/tcp")
