@@ -16,7 +16,7 @@ jobs:
         markdown_list="<ul>"
         for el in ${our_list[@]}
         do
-          markdown_list="$markdown_list <li>el</li>"
+          markdown_list="$markdown_list <li>$el</li>"
         done
         markdown_list="$markdown_list</ul>"
         echo "Result: $markdown_list"
@@ -29,4 +29,4 @@ jobs:
         head-branch-regex: 'add_app_\d+'
         body-template: |
               Test script result\:
-              "${{ steps.format-outcome.outputs.test_outcome }}"
+              ${{ steps.format-outcome.outputs.test_outcome }}
