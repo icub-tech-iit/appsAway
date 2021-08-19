@@ -12,15 +12,15 @@ jobs:
       id: format-outcome
       run: |
         test_outcome="${{ github.event.client_payload.test_success }}"
-        our_list=($test_outcome)
-        markdown_list="<ul>"
-        for el in ${our_list[@]}
+        test_outcome_list=($test_outcome)
+        multilines_list="<ul>"
+        for el in ${test_outcome_list[@]}
         do
-          markdown_list="$markdown_list <li>$el</li>"
+          multilines_list="$multilines_list <li>$el</li>"
         done
-        markdown_list="$markdown_list</ul>"
-        echo "Result: $markdown_list"
-        echo "::set-output name=test_outcome::$markdown_list"
+        multilines_list="$multilines_list</ul>"
+        echo "Result: $multilines_list"
+        echo "::set-output name=test_outcome::$multilines_list"
         
     - uses: lauracavaliere/pr-update-action@master
       with:
