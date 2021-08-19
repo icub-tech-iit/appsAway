@@ -11,7 +11,7 @@ jobs:
     - name: Formatting test-script outcome
       id: format-outcome
       run: |
-        test_outcome=${{ github.event.client_payload.test_success }}
+        test_outcome="${{ github.event.client_payload.test_success }}"
         our_list=($test_outcome)
         markdown_list="<ul>"
         for el in ${our_list[@]}
