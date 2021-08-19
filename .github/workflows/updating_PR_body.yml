@@ -21,4 +21,4 @@ jobs:
         head-branch-regex: 'add_app_\d+'
         body-template: |
               Test script result\:
-              ${{ steps.format-outcome.outputs.test_outcome }}
+              "${{ steps.format-outcome.outputs.test_outcome }}"
