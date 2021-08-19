@@ -266,7 +266,7 @@ run_hardware_steps_via_ssh()
     scp_to_node ${_CWD}/appsAway_containerPermissions.sh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR $_APPSAWAY_APP_PATH_NOT_CONSOLE
     scp_to_node ${_CWD}/appsAway_changeNewFilesPermissions.sh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR $_APPSAWAY_APP_PATH_NOT_CONSOLE  
     echo "COPYING appsAway_changeNewFilesPermissions.sh"
-    cd  ${_OS_HOME_DIR}/${APPSAWAY_CONSOLENODE_ADDR}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}  
+    cd  ${_OS_HOME_DIR}/${APPSAWAY_CONSOLENODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}  
     ls
  fi
  if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
