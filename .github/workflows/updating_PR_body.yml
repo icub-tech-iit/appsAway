@@ -12,6 +12,7 @@ jobs:
       id: format-outcome
       run: |
         test_outcome=$(echo ${{ github.event.client_payload.test_success }} | tr ' ' '\n')
+        echo "Test outcome: $test_outcome"
         echo "::set-output name=test_outcome::$test_outcome"
         
     - uses: lauracavaliere/pr-update-action@master
