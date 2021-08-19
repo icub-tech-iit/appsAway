@@ -11,9 +11,16 @@ jobs:
     - name: Formatting test-script outcome
       id: format-outcome
       run: |
-        test_outcome=($(echo ${{ github.event.client_payload.test_success }} | tr ' ' '\n'))
-        echo "Test outcome: ${test_outcome[@]}"
-        echo "::set-output name=test_outcome::${test_outcome[@]}"
+        test_outcome=${{ github.event.client_payload.test_success }}
+        our_list=($test_outcome)
+        markdown_list="<ul>"
+        for el in ${our_list[@]}
+        do
+          markdown_list="$markdown_list <li>el</li>"
+        done
+        markdown_list="$markdown_list</ul>"
+        echo "Result: $markdown_list"
+        echo "::set-output name=test_outcome::$markdown_list"
         
     - uses: lauracavaliere/pr-update-action@master
       with:
