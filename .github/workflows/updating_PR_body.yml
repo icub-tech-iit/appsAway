@@ -16,13 +16,10 @@ jobs:
         multilines_list="<ul>"
         for el in ${test_outcome_list[@]}
         do
-          echo $el
-          el=$(echo $el | tr ':' ': ')
-          echo $el
+          el=$(echo $el | sed 's/:/: /g')
           multilines_list="$multilines_list <li>$el</li>"
         done
         multilines_list="$multilines_list</ul>"
-        echo "Result: $multilines_list"
         echo "::set-output name=test_outcome::$multilines_list"
         
     - uses: lauracavaliere/pr-update-action@master
