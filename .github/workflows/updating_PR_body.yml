@@ -16,6 +16,9 @@ jobs:
         multilines_list="<ul>"
         for el in ${test_outcome_list[@]}
         do
+          echo $el
+          el=$(echo $el | tr ':' ': ')
+          echo $el
           multilines_list="$multilines_list <li>$el</li>"
         done
         multilines_list="$multilines_list</ul>"
