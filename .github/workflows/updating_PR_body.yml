@@ -11,7 +11,7 @@ jobs:
     - name: Formatting test-script outcome
       id: format-outcome
       run: |
-        test_outcome="${{ github.event.client_payload.test_success }}"
+        test_outcome="${{ github.event.client_payload.test_outcome }}"
         test_outcome_list=($test_outcome)
         multilines_list="<ul>"
         for el in ${test_outcome_list[@]}
@@ -20,7 +20,7 @@ jobs:
           multilines_list="$multilines_list <li>$el</li>"
         done
         multilines_list="$multilines_list</ul>"
-        echo "::set-output name=test_outcome::$multilines_list"
+        echo "::set-output name=formatted_outcome::$multilines_list"
         
     - uses: lauracavaliere/pr-update-action@master
       with:
@@ -29,4 +29,4 @@ jobs:
         head-branch-regex: 'add_app_\d+'
         body-template: |
               Test script result\:
-              ${{ steps.format-outcome.outputs.test_outcome }}
+              ${{ steps.format-outcome.outputs.formatted_outcome }}
