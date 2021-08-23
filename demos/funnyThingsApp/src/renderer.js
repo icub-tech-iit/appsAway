@@ -307,7 +307,7 @@ const generateFullFilename = (filename) => {
 const exportActivities = () => {
     dialog.showSaveDialog({
         title: 'Save your activites',
-        defaultPath: '/',
+        defaultPath: '~/mydemo.funnythings',
         buttonLabel: 'Save',
         filters: [
             {
