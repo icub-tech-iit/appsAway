@@ -1,5 +1,11 @@
 const exec = require('node-exec-promise').exec;
 const {forEach, forEachSeries} = require('p-iteration')
+const electron = require('electron');
+const path = require('path');
+const fs = require('fs');
+
+const dialog = electron.remote.dialog;
+
 
 let actionBlockParameters = {}
 
@@ -218,64 +224,108 @@ const closeOptions = (event, activity) => {
 }
 
 const runDemo = async() => {
-     
-    activitiesToPerform.forEach(async(activity) => {
+    run = true;
+
+    await forEachSeries(activitiesToPerform, async (activity) => {
 
       console.log( activity.activity.toLowerCase() );     
-      //if (activity.hasOwnProperty("options") )
-      if (activity.activity == "SPEAK"){
-
-        //for await (let options of activity.options) {​
-        await forEachSeries(activity.options, async (options) => {
-        //activity.options.forEach(async(options) => {
-          if (options.label == "Text:")
-          {
-            let speakStr = options.value
-            let out = await exec(`../script/funnythings.sh ${activity.activity.toLowerCase()} \"${speakStr}\"`);
-            console.log(out)
-          }
-          if (options.label == "Wait until finish:")
-          {
-            let speakWait = options.value
-            if (speakWait == "Wait")
-            {
-              console.log("in wait")
-              let out = await exec(`../script/funnythings.sh ${speakWait.toLowerCase()}`);
-              
-              console.log("Finished")
-            }
-          }
-        })
-      }
-
-      if (activity.activity == "WAVE"){
-        let arm = `hello_${activity.options[0].value.toLowerCase()}`
-        let out = await exec(`../script/funnythings.sh ${arm}`);
-      }
-
-      if (activity.activity == "HOME"){
-        let arm = `home_${activity.options[0].value.toLowerCase()}`
-        let out = await exec(`../script/funnythings.sh ${arm}`);
-      }
-
-      if (activity.activity == "VICTORY"){
-        let arm = `victory_${activity.options[0].value.toLowerCase()}`
-        let out = await exec(`../script/funnythings.sh ${arm}`);
-      }
       
-      if (activity.activity == "EMOTION"){
-        let emotion = activity.options[0].value.toLowerCase()
-        console.log(emotion)
-        let out = await exec(`../script/funnythings.sh ${emotion}`);
-      }
-      if (activity.activity == "FONZIE"){
-        let out = await exec(`../script/funnythings.sh fonzie`);
+      if (run) {
+        if (activity.activity == "SPEAK"){
+
+            //for await (let options of activity.options) {​
+            await forEachSeries(activity.options, async (options) => {
+            //activity.options.forEach(async(options) => {
+              if (options.label == "Text:")
+              {
+                let speakStr = options.value
+                let out = await exec(`../script/funnythings.sh ${activity.activity.toLowerCase()} \"${speakStr}\"`);
+                console.log(out)
+              }
+              if (options.label == "Wait until finish:")
+              {
+                let speakWait = options.value
+                if (speakWait == "Wait")
+                {
+                  console.log("in wait")
+                  let out = await exec(`../script/funnythings.sh ${speakWait.toLowerCase()}`);
+                  
+                  console.log("Finished")
+                }
+              }
+            })
+          }
+    
+          if (activity.activity == "WAVE"){
+            let arm = `hello_${activity.options[0].value.toLowerCase()}`
+            let out = await exec(`../script/funnythings.sh ${arm}`);
+          }
+    
+          if (activity.activity == "HOME"){
+            let arm = `home_${activity.options[0].value.toLowerCase()}`
+            let out = await exec(`../script/funnythings.sh ${arm}`);
+          }
+    
+          if (activity.activity == "VICTORY"){
+            let arm = `victory_${activity.options[0].value.toLowerCase()}`
+            let out = await exec(`../script/funnythings.sh ${arm}`);
+          }
+          
+          if (activity.activity == "EMOTION"){
+            let emotion = activity.options[0].value.toLowerCase()
+            console.log(emotion)
+            let out = await exec(`../script/funnythings.sh ${emotion}`);
+          }
+          if (activity.activity == "FONZIE"){
+            let out = await exec(`../script/funnythings.sh fonzie`);
+          }
+      } else {
+          console.log(`Activity ${activity.activity} was skipped because running status was set to ${run}`)
       }
     })
+}
+
+const stopDemo = () => {
+    run = false
 }
 
 
 const clearAll = () => {
     clearActivities()
     myActivitesPanel.innerHTML = ''
+}
+
+const generateFullFilename = (filename) => {
+    let filenameArray = filename.split('.');
+    if (filenameArray.length == 1 || filenameArray[filenameArray.length - 1] !== 'funnythings') {
+        return filename + '.funnythings'
+    } else {
+        return filename
+    }
+}
+
+const exportActivities = () => {
+    dialog.showSaveDialog({
+        title: 'Save your activites',
+        defaultPath: '/',
+        buttonLabel: 'Save',
+        filters: [
+            {
+                name: 'Funny Things Demos',
+                extensions: ['funnythings']
+            }
+        ]
+    }).then(file => {
+        console.log(file.canceled)
+        if (!file.canceled) {
+            console.log(file.filePath.toString());
+
+            fs.writeFile(generateFullFilename(file.filePath.toString()), JSON.stringify(activitiesToPerform), function (err) {
+                if (err) throw err;
+                console.log('Saved!')
+            })
+        }
+    }).catch(err => {
+        console.log(err)
+    })
 }

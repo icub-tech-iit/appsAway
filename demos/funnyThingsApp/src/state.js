@@ -1,5 +1,7 @@
 var activitiesToPerform = []
 
+var run = false;
+
 var addActivity = (activity) => {
     if (ACTIONS.hasOwnProperty(activity)) {
         let newActivity = {
