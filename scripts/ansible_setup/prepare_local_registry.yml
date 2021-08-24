@@ -2,8 +2,51 @@
   hosts: nodes
   become: yes
   tasks:      
+    - name: Update packages
+      shell: apt-get update
+      ignore_errors: yes
+      when: ansible_distribution != 'MacOSX'
+
+    - name: Install jq
+      apt: 
+        name:
+          - jq
+        state: latest
+        autoclean: yes
+      when: ansible_distribution != 'MacOSX'
+
+    - name: Initialize JSON structure
+      shell: |
+        _is_empty=$( cat /etc/docker/daemon.json | grep "{" )
+        if [[ $_is_empty == "" ]]
+        then
+          echo "{}" > /etc/docker/daemon.json
+        fi
+      args:
+        warn: no
+      when: ansible_distribution != 'MacOSX'
+
     - name: Adding local registry
-      shell: echo "{ \"insecure-registries\":[\""{{ ansible_console_host }}":5000\"] }" > /etc/docker/daemon.json
+      shell: |
+        _registry={{ ansible_console_host }}:5000
+        _has_insecure_registry=$( cat /etc/docker/daemon.json | grep "insecure-registries" )
+        if [[ $_has_insecure_registry != "" ]]
+        then
+          _has_registry=$( cat /etc/docker/daemon.json | grep $_registry )
+          if [[ $_has_registry == "" ]]
+          then
+            jq --arg registry "$_registry" '."insecure-registries"[."insecure-registries"| length] |= . + $registry' /etc/docker/daemon.json > daemon_new.txt
+            mv daemon_new.txt /etc/docker/daemon.json
+            echo "edited registries"
+          fi
+        else
+          jq --arg registry $_registry '. += {"insecure-registries": [$registry] }' /etc/docker/daemon.json > daemon_new.txt
+          mv daemon_new.txt /etc/docker/daemon.json
+          echo "added registries"
+        fi
+      args:
+        warn: no
+      when: ansible_distribution != 'MacOSX'
 
     - name: Stop docker
       shell: sudo systemctl stop docker
