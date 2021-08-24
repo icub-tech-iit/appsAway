@@ -13,6 +13,23 @@
     <div>
       <h1>Funny Things Application</h1>
       <h3>Choose the actions the robot will perform</h3>
+      <div class="buttons-container top-actions">
+        <div class="dropdown">
+          <button onclick="importActivities()">
+            Import...
+          </button>
+        </div>
+        <div class="dropdown">
+          <button>
+            Export...
+          </button>
+          <div class="dropdown-content">
+            <a href="#" onclick="exportActivities()">Export as funnythings file</a>
+            <a href="#">Export as bash file</a>
+          </div>
+        </div>
+      </div>
+
       <div class="panels-container">
         <div class="panel-container">
           <span>Available Actions</span>
@@ -35,12 +52,6 @@
         </button>
         <button onclick="clearAll()" data="Clear">
           <img src="assets/clear.png"/>
-        </button>
-        <button onclick="exportActivities()" data="Export">
-          e
-        </button>
-        <button onclick="importActivities()" data="Import">
-          i
         </button>
       </div>   
     </div> 
