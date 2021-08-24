@@ -142,6 +142,11 @@ body {
 	position: absolute;
   }
 
+  img.run-action {
+	top: 13px;
+	right: 60px;
+  }
+
   img.options {
 	right: 45px;
 	top: 17px;
@@ -330,8 +335,13 @@ body {
 	   border-radius: 5px;
 	   border: 2px solid #dd3519;
 	   box-shadow: 1px 4px 4px grey;
-	   transition: all 0.3s ease-out;
+	   transition: opacity 0.3s ease-out, transform 0.3s ease-out;
 	   opacity: 1;
+	   display: none;
+   }
+
+   .displayable {
+	   display: block;
    }
 
    .invisible {

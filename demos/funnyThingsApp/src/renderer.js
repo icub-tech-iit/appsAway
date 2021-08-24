@@ -40,6 +40,14 @@ const addActivityDiv = (activity, modify_array = true) => {
     actionDiv.setAttribute('draggable', true);
     actionDiv.addEventListener("dragstart", moveAction); 
 
+    let runAction = createElement('img', {
+        classes: ["run-action", "icon"],
+        src: "assets/run-no-circle.svg",
+        onClick: (event)=>{runSingleAction(findChildIndex(findPanelItem(event.target)))}
+    })
+
+    actionDiv.appendChild(runAction);
+
     if (OPTIONS.hasOwnProperty(activity)) {
         let options = createElement('img', {
             classes: ["options", "icon"],
@@ -126,6 +134,11 @@ document.addEventListener("dragenter", function(event) {
 document.addEventListener("dragover", function(event) {
     event.preventDefault()
 })
+
+const runSingleAction = (index) => {
+    let bashActionsArray = generateBashActionsArray(activitiesToPerform);
+    exec(`../script/funnythings.sh ${bashActionsArray[index]}`).then(out => {})
+}
 
 const expandOrCloseOptions = (event, activity) => {
     if (event.target.shouldExpand == true) {
@@ -350,10 +363,16 @@ const importActivities = () => {
                         addActivityDiv(activity.activity, false)
                     }
                 } else {
-                    errorMessage.classList.toggle('invisible');
+                    errorMessage.classList.toggle('displayable');
                     setTimeout( () => {
                         errorMessage.classList.toggle('invisible');
-                    }, 2500);
+                    }, 100);
+                    setTimeout( () => {
+                        errorMessage.classList.toggle('invisible');
+                    }, 2600);
+                    setTimeout( () => {
+                        errorMessage.classList.toggle('displayable');
+                    }, 4000);
                 }
             });
         }
