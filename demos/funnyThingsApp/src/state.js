@@ -16,10 +16,10 @@ var addActivity = (activity) => {
                 switch (option.type) {
                     case 'string':
                     case 'float':
-                        optionValue.value == option.default_value;
+                        optionValue.value = option.default_value;
                         break;
                     default:
-                        optionValue.value == option.options[option.default_value];
+                        optionValue.value = option.options[option.default_value];
                 }
                 options.push(optionValue)
             }
