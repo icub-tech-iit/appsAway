@@ -88,6 +88,7 @@ Object.keys(ACTIONS).map((actionsKey) => {
 
 const allActivitesPanel = document.querySelector(".left-panel");
 const myActivitesPanel = document.querySelector(".right-panel");
+const errorMessage = document.querySelector(".popup");
 
 for (let action in actionBlockParameters) {
     let actionDiv = createActionDiv(actionBlockParameters[action].text, actionBlockParameters[action].color);
@@ -332,15 +333,27 @@ const importActivities = () => {
         if (!file.canceled) {
             fs.readFile(file.filePaths.toString(), 'utf8', (err, data) => {
                 if (err) throw err;
-                let parsedData = JSON.parse(data);
+                let parsedData;
+                let isValidJson = true;
+                try {
+                    parsedData = JSON.parse(data);
+                } catch(err) {
+                    isValidJson = false;
+                }
+
                 console.log(checkActivites(parsedData) ? 'Valid input' : 'There is something wrong')
-                if (checkActivites(parsedData)) {
+                if (isValidJson && checkActivites(parsedData)) {
                     activitiesToPerform = parsedData;
                     console.log('Imported!')
                     myActivitesPanel.innerHTML = ''
                     for (let activity of activitiesToPerform) {
                         addActivityDiv(activity.activity, false)
                     }
+                } else {
+                    errorMessage.classList.toggle('invisible');
+                    setTimeout( () => {
+                        errorMessage.classList.toggle('invisible');
+                    }, 2500);
                 }
             });
         }
