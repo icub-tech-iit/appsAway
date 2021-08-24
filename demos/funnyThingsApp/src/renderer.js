@@ -3,6 +3,7 @@ const {forEach, forEachSeries} = require('p-iteration')
 const electron = require('electron');
 const path = require('path');
 const fs = require('fs');
+const bashParser = require('bash-parser');
 
 const dialog = electron.remote.dialog;
 
@@ -231,65 +232,61 @@ const closeOptions = (event, activity) => {
     optionsDiv.style.minHeight = 'fit-content'
 }
 
+const generateBashActionsArray = (activities) => {
+    let bashActionsArray = [];
+    activities.forEach((activity) => {     
+          if (activity.activity == "SPEAK"){
+              //for await (let options of activity.options) {​
+              activity.options.forEach((options) => {
+              //activity.options.forEach(async(options) => {
+                if (options.label == "Text:")
+                {
+                  let speakStr = options.value
+                  bashActionsArray.push(`${activity.activity.toLowerCase()} \"${speakStr}\"`);
+                }
+                if (options.label == "Wait until finish:")
+                {
+                  let speakWait = options.value
+                  if (speakWait == "Wait")
+                  {
+                    bashActionsArray.push(`${speakWait.toLowerCase()}`);
+                  }
+                }
+              })
+            }
+      
+            if (activity.activity == "WAVE"){
+              let arm = `hello_${activity.options[0].value.toLowerCase()}`
+              bashActionsArray.push(arm);
+            }
+      
+            if (activity.activity == "HOME"){
+              let arm = `home_${activity.options[0].value.toLowerCase()}`
+              bashActionsArray.push(arm);
+            }
+      
+            if (activity.activity == "VICTORY"){
+              let arm = `victory_${activity.options[0].value.toLowerCase()}`
+              bashActionsArray.push(arm);
+            }
+            
+            if (activity.activity == "EMOTION"){
+              let emotion = activity.options[0].value.toLowerCase()
+              bashActionsArray.push(emotion);
+            }
+            if (activity.activity == "FONZIE"){
+              bashActionsArray.push('fonzie')
+            }
+        });
+    return bashActionsArray;
+} 
+
 const runDemo = async() => {
     run = true;
+    let bashActions = generateBashActionsArray(activitiesToPerform);
 
-    await forEachSeries(activitiesToPerform, async (activity) => {
-
-      console.log( activity.activity.toLowerCase() );     
-      
-      if (run) {
-        if (activity.activity == "SPEAK"){
-
-            //for await (let options of activity.options) {​
-            await forEachSeries(activity.options, async (options) => {
-            //activity.options.forEach(async(options) => {
-              if (options.label == "Text:")
-              {
-                let speakStr = options.value
-                let out = await exec(`../script/funnythings.sh ${activity.activity.toLowerCase()} \"${speakStr}\"`);
-                console.log(out)
-              }
-              if (options.label == "Wait until finish:")
-              {
-                let speakWait = options.value
-                if (speakWait == "Wait")
-                {
-                  console.log("in wait")
-                  let out = await exec(`../script/funnythings.sh ${speakWait.toLowerCase()}`);
-                  
-                  console.log("Finished")
-                }
-              }
-            })
-          }
-    
-          if (activity.activity == "WAVE"){
-            let arm = `hello_${activity.options[0].value.toLowerCase()}`
-            let out = await exec(`../script/funnythings.sh ${arm}`);
-          }
-    
-          if (activity.activity == "HOME"){
-            let arm = `home_${activity.options[0].value.toLowerCase()}`
-            let out = await exec(`../script/funnythings.sh ${arm}`);
-          }
-    
-          if (activity.activity == "VICTORY"){
-            let arm = `victory_${activity.options[0].value.toLowerCase()}`
-            let out = await exec(`../script/funnythings.sh ${arm}`);
-          }
-          
-          if (activity.activity == "EMOTION"){
-            let emotion = activity.options[0].value.toLowerCase()
-            console.log(emotion)
-            let out = await exec(`../script/funnythings.sh ${emotion}`);
-          }
-          if (activity.activity == "FONZIE"){
-            let out = await exec(`../script/funnythings.sh fonzie`);
-          }
-      } else {
-          console.log(`Activity ${activity.activity} was skipped because running status was set to ${run}`)
-      }
+    await forEachSeries(bashActions, async (bashAction) => {
+        let out = await exec(`../script/funnythings.sh ${bashAction}`)
     })
 }
 
@@ -367,4 +364,8 @@ const importActivities = () => {
     }).catch(err => {
         console.log(err)
     })
+}
+
+const bashParserThings = ()=>{
+    generateBashActionsArray(activitiesToPerform);
 }
