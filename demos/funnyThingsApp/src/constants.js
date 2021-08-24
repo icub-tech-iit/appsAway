@@ -63,11 +63,12 @@ var OPTIONS = {
     ],
     SLEEP: [
         {
-            type: "string",
+            type: "float",
             label: "Time:",
-            default_value: "0"
+            default_value: 0.0
         }
     ],
+    FONZIE: [],
     EMOTION: [
         {
             type: "dropdown",

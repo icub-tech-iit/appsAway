@@ -202,6 +202,14 @@ const expandOrCloseOptions = (event, activity) => {
 
                     optionDiv.appendChild(dropdown)
                     break
+                case 'float':
+                    let numberInput = createElement('input', {
+                        type: 'number',
+                        defaultValue: optionItem.value,
+                        onChange: (event)=>{changeActivityValue(activityIndex, index, event.target.value)}
+                    })
+                    optionDiv.appendChild(numberInput)
+                    break
             }
             
             optionsDiv.appendChild(optionDiv)
@@ -320,7 +328,7 @@ const exportActivities = () => {
         if (!file.canceled) {
             console.log(file.filePath.toString());
 
-            fs.writeFile(generateFullFilename(file.filePath.toString()), JSON.stringify(activitiesToPerform), function (err) {
+            fs.writeFile(generateFullFilename(file.filePath.toString()), JSON.stringify(activitiesToPerform, null, 2), function (err) {
                 if (err) throw err;
                 console.log('Saved!')
             })
@@ -332,13 +340,28 @@ const exportActivities = () => {
 
 const importActivities = () => {
     dialog.showOpenDialog({ 
-        properties: ['openFile']
+        properties: ['openFile'],
+        buttonLabel: 'Load',
+        filters: [
+            {
+                name: 'Funny Things Demos',
+                extensions: ['funnythings']
+            }
+        ]
     }).then(file => {
         if (!file.canceled) {
             fs.readFile(file.filePaths.toString(), 'utf8', (err, data) => {
                 if (err) throw err;
-                activitiesToPerform = JSON.parse(data);
-                console.log('Imported!')
+                let parsedData = JSON.parse(data);
+                console.log(checkActivites(parsedData) ? 'Valid input' : 'There is something wrong')
+                if (checkActivites(parsedData)) {
+                    activitiesToPerform = parsedData;
+                    console.log('Imported!')
+                    myActivitesPanel.innerHTML = ''
+                    for (let activity of activitiesToPerform) {
+                        addActivityDiv(activity.activity, false)
+                    }
+                }
             });
         }
     }).catch(err => {
