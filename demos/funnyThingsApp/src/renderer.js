@@ -329,3 +329,19 @@ const exportActivities = () => {
         console.log(err)
     })
 }
+
+const importActivities = () => {
+    dialog.showOpenDialog({ 
+        properties: ['openFile']
+    }).then(file => {
+        if (!file.canceled) {
+            fs.readFile(file.filePaths.toString(), 'utf8', (err, data) => {
+                if (err) throw err;
+                activitiesToPerform = JSON.parse(data);
+                console.log('Imported!')
+            });
+        }
+    }).catch(err => {
+        console.log(err)
+    })
+}
