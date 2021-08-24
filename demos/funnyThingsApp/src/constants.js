@@ -68,7 +68,6 @@ var OPTIONS = {
             default_value: 0.0
         }
     ],
-    FONZIE: [],
     EMOTION: [
         {
             type: "dropdown",

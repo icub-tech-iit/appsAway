@@ -1,5 +1,5 @@
 const exec = require('node-exec-promise').exec;
-const {forEach, forEachSeries} = require('p-iteration')
+const {forEach, forEachSeries, filter} = require('p-iteration')
 const electron = require('electron');
 const path = require('path');
 const fs = require('fs');
@@ -310,29 +310,12 @@ const generateFullFilename = (filename) => {
 }
 
 const exportActivities = () => {
-    dialog.showSaveDialog({
-        title: 'Save your activites',
-        defaultPath: '~/mydemo.funnythings',
-        buttonLabel: 'Save',
-        filters: [
-            {
-                name: 'Funny Things Demos',
-                extensions: ['funnythings']
-            }
-        ]
-    }).then(file => {
-        console.log(file.canceled)
-        if (!file.canceled) {
-            console.log(file.filePath.toString());
-
-            fs.writeFile(generateFullFilename(file.filePath.toString()), JSON.stringify(activitiesToPerform, null, 2), function (err) {
-                if (err) throw err;
-                console.log('Saved!')
-            })
-        }
-    }).catch(err => {
-        console.log(err)
-    })
+    saveTextFile(JSON.stringify(activitiesToPerform, null, 2),
+    'Save your activites',
+    '~/mydemo.funnythings',
+    'Save',
+    'Funny Things Demos',
+    ['funnythings'])
 }
 
 const importActivities = () => {
@@ -366,6 +349,41 @@ const importActivities = () => {
     })
 }
 
+const saveTextFile = (textContent, title, defaultPath, buttonLabel, filterName, extensions) => {
+    dialog.showSaveDialog({
+        title,
+        defaultPath,
+        buttonLabel,
+        filters: [
+            {
+                name: filterName,
+                extensions
+            }
+        ]
+    }).then(file => {
+        if (!file.canceled) {    
+            fs.writeFile(file.filePath.toString(), textContent, function (err) {
+                if (err) throw err;
+                console.log('Saved!')
+            })
+        }
+    }).catch(err => {
+        console.log(err)
+    })
+}
+
 const bashParserThings = ()=>{
-    generateBashActionsArray(activitiesToPerform);
+    let actionsArray = generateBashActionsArray(activitiesToPerform);
+    fs.readFile('../script/funnythings_template.sh', 'utf8', (err, data) => {
+        let newFunnyThingScriptContent = data;
+        actionsArray.forEach((action) => {
+            newFunnyThingScriptContent += action + '\n'
+        })
+        saveTextFile(newFunnyThingScriptContent,
+                        'Save your bash script',
+                        '~/mydemoscript.sh',
+                        'Save',
+                        'Shell scripts',
+                        ['sh']);
+    })
 }
