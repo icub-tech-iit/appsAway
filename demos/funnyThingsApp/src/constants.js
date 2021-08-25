@@ -5,6 +5,10 @@ var ACTIONS = {
     EMOTION: "Display an Emotion",
     VICTORY: "Perform a victory pose",
     FONZIE: "Fonzie",
+    MUSCLES: "Show Muscles",
+    GESTURE: "Show Gesture",
+    QUESTION: "Scuzzzzi",
+    GREET: "Greet with Thumb",
     SLEEP: "Sleep"
 }
 
@@ -35,6 +39,15 @@ var OPTIONS = {
                 "Both"
             ],
             default_value: 1
+        },
+        {
+            type: "select",
+            label: "Wait until finished:",
+            options: [
+                "Wait",
+                "Don't wait"
+            ],
+            default_value: 1
         }
     ],
     HOME: [
@@ -45,6 +58,15 @@ var OPTIONS = {
                 "Left",
                 "Right",
                 "Both"
+            ],
+            default_value: 1
+        },
+        {
+            type: "select",
+            label: "Wait until finished:",
+            options: [
+                "Wait",
+                "Don't wait"
             ],
             default_value: 1
         }
@@ -59,6 +81,99 @@ var OPTIONS = {
                 "Both"
             ],
             default_value: 1
+        },
+        {
+            type: "select",
+            label: "Wait until finished:",
+            options: [
+                "Wait",
+                "Don't wait"
+            ],
+            default_value: 1
+        }
+    ],
+    MUSCLES: [
+        {
+            type: "select",
+            label: "Arm(s):",
+            options: [
+                "Left",
+                "Right",
+                "Both"
+            ],
+            default_value: 1
+        },
+        {
+            type: "select",
+            label: "Wait until finished:",
+            options: [
+                "Wait",
+                "Don't wait"
+            ],
+            default_value: 1
+        }
+    ],
+    GESTURE: [
+        {
+            type: "select",
+            label: "Arm(s):",
+            options: [
+                "Left",
+                "Right",
+                "Both"
+            ],
+            default_value: 1
+        },
+        {
+            type: "select",
+            label: "Wait until finished:",
+            options: [
+                "Wait",
+                "Don't wait"
+            ],
+            default_value: 1
+        }
+    ],
+    QUESTION: [
+        {
+            type: "select",
+            label: "Arm(s):",
+            options: [
+                "Left",
+                "Right",
+                "Both"
+            ],
+            default_value: 1
+        },
+        {
+            type: "select",
+            label: "Wait until finished:",
+            options: [
+                "Wait",
+                "Don't wait"
+            ],
+            default_value: 1
+        }
+    ],
+    GREET: [
+        {
+            type: "select",
+            label: "Arm(s):",
+            options: [
+                "Left",
+                "Right",
+                "Both"
+            ],
+            default_value: 1
+        },
+        {
+            type: "select",
+            label: "Wait until finished:",
+            options: [
+                "Wait",
+                "Don't wait"
+            ],
+            default_value: 1
         }
     ],
     SLEEP: [
@@ -66,6 +181,17 @@ var OPTIONS = {
             type: "float",
             label: "Time:",
             default_value: 0.0
+        }
+    ],
+    FONZIE: [
+        {
+            type: "select",
+            label: "Wait until finished:",
+            options: [
+                "Wait",
+                "Don't wait"
+            ],
+            default_value: 1
         }
     ],
     EMOTION: [

@@ -3,7 +3,6 @@ const {forEach, forEachSeries, filter} = require('p-iteration')
 const electron = require('electron');
 const path = require('path');
 const fs = require('fs');
-const bashParser = require('bash-parser');
 
 const dialog = electron.remote.dialog;
 
@@ -249,47 +248,143 @@ const closeOptions = (event, activity) => {
 const generateBashActionsArray = (activities) => {
     let bashActionsArray = [];
     activities.forEach((activity) => {     
+          if (activity.activity == "SLEEP"){
+            bashActionsArray.push(`sleep ${activity.options[0].value}`);
+          }
           if (activity.activity == "SPEAK"){
               //for await (let options of activity.options) {​
               activity.options.forEach((options) => {
               //activity.options.forEach(async(options) => {
                 if (options.label == "Text:")
                 {
-                  let speakStr = options.value
-                  bashActionsArray.push(`${activity.activity.toLowerCase()} \"${speakStr}\"`);
+                  let cmd = options.value
+                  bashActionsArray.push(`${activity.activity.toLowerCase()} \"${cmd}\"`);
                 }
                 if (options.label == "Wait until finish:")
                 {
-                  let speakWait = options.value
-                  if (speakWait == "Wait")
+                  let cmd_wait = options.value
+                  if (cmd_wait == "Wait")
                   {
-                    bashActionsArray.push(`${speakWait.toLowerCase()}`);
+                    bashActionsArray.push(`${cmd_wait.toLowerCase()}`);
                   }
                 }
               })
             }
       
             if (activity.activity == "WAVE"){
-              let arm = `hello_${activity.options[0].value.toLowerCase()}`
-              bashActionsArray.push(arm);
+              let cmd = `hello_${activity.options[0].value.toLowerCase()}`
+              bashActionsArray.push(cmd);
+              if (activity.options[1].label == "Wait until finished:")
+              {
+                let wait_val = activity.options[1].value
+                if (wait_val == "Wait")
+                {
+                    let cmd_wait = `hello_wait_${activity.options[0].value.toLowerCase()}`
+                    bashActionsArray.push(cmd_wait);
+                }
+              }
+            }
+
+            if (activity.activity == "MUSCLES"){
+              let cmd = `show_muscles_${activity.options[0].value.toLowerCase()}`
+              bashActionsArray.push(cmd);
+              if (activity.options[1].label == "Wait until finished:")
+              {
+                let wait_val = activity.options[1].value
+                if (wait_val == "Wait")
+                {
+                  let cmd_wait = `show_muscles_wait_${activity.options[0].value.toLowerCase()}`
+                  bashActionsArray.push(cmd_wait);
+                }
+              }
+            }
+
+            if (activity.activity == "GESTURE"){
+              let cmd = `gesture_${activity.options[0].value.toLowerCase()}`
+              bashActionsArray.push(cmd);
+              if (activity.options[1].label == "Wait until finished:")
+              {
+                let wait_val = activity.options[1].value
+                if (wait_val == "Wait")
+                {
+                  let cmd_wait = `gesture_wait_${activity.options[0].value.toLowerCase()}`
+                  bashActionsArray.push(cmd_wait);
+                }
+              }
+            }
+
+            if (activity.activity == "QUESTION"){
+              let cmd = `question_${activity.options[0].value.toLowerCase()}`
+              bashActionsArray.push(cmd);
+              if (activity.options[1].label == "Wait until finished:")
+              {
+                let wait_val = activity.options[1].value
+                if (wait_val == "Wait")
+                {
+                  let cmd_wait = `question_wait_${activity.options[0].value.toLowerCase()}`
+                  bashActionsArray.push(cmd_wait);
+                }
+              }
+            }
+
+            if (activity.activity == "GREET"){
+              let cmd = `greet_thumb_${activity.options[0].value.toLowerCase()}`
+              bashActionsArray.push(cmd);
+              if (activity.options[1].label == "Wait until finished:")
+              {
+                let wait_val = activity.options[1].value
+                if (wait_val == "Wait")
+                {
+                  let cmd_wait = `greet_thumb_wait_${activity.options[0].value.toLowerCase()}`
+                  bashActionsArray.push(cmd_wait);
+                }
+              }
             }
       
             if (activity.activity == "HOME"){
-              let arm = `home_${activity.options[0].value.toLowerCase()}`
-              bashActionsArray.push(arm);
+              let cmd = `home_${activity.options[0].value.toLowerCase()}`
+              bashActionsArray.push(cmd);
+              if (activity.options[1].label == "Wait until finished:")
+              {
+                let wait_val = activity.options[1].value
+                if (wait_val == "Wait")
+                {
+                  let cmd_wait = `home_wait_${activity.options[0].value.toLowerCase()}`
+                  bashActionsArray.push(cmd_wait);
+                }
+              }
             }
       
             if (activity.activity == "VICTORY"){
               let arm = `victory_${activity.options[0].value.toLowerCase()}`
               bashActionsArray.push(arm);
+              if (activity.options[1].label == "Wait until finished:")
+              { 
+                let wait_val = activity.options[1].value
+                if (wait_val == "Wait")
+                {
+                  let cmd_wait = `victory_wait_${activity.options[0].value.toLowerCase()}`
+                  bashActionsArray.push(cmd_wait);
+                }
+              }
             }
             
             if (activity.activity == "EMOTION"){
               let emotion = activity.options[0].value.toLowerCase()
               bashActionsArray.push(emotion);
             }
+
             if (activity.activity == "FONZIE"){
               bashActionsArray.push('fonzie')
+              if (activity.options[0].label == "Wait until finished:")
+              {
+                let wait_val = activity.options[0].value
+                if (wait_val == "Wait")
+                {
+                  let cmd_wait = `fonzie_wait`
+                  bashActionsArray.push(cmd_wait);
+                }
+              }
             }
         });
     return bashActionsArray;
@@ -404,18 +499,28 @@ const saveTextFile = (textContent, title, defaultPath, buttonLabel, filterName, 
     })
 }
 
-const bashParserThings = ()=>{
+const bashExporter = ()=>{
+    let newFunnyThingScriptContent;
     let actionsArray = generateBashActionsArray(activitiesToPerform);
     fs.readFile('../script/funnythings_template.sh', 'utf8', (err, data) => {
-        let newFunnyThingScriptContent = data;
+        newFunnyThingScriptContent = data;
+
+        newFunnyThingScriptContent += "\n" 
+        newFunnyThingScriptContent += "runDemo() { \n" 
         actionsArray.forEach((action) => {
-            newFunnyThingScriptContent += action + '\n'
+            newFunnyThingScriptContent += "  " + action + '\n'
         })
-        saveTextFile(newFunnyThingScriptContent,
-                        'Save your bash script',
-                        '~/mydemoscript.sh',
-                        'Save',
-                        'Shell scripts',
-                        ['sh']);
+        newFunnyThingScriptContent += "} " 
+        fs.readFile('../script/funnythings_main_template.sh', 'utf8', (mainErr, mainData) => {
+            newFunnyThingScriptContent += mainData;
+            
+            saveTextFile(newFunnyThingScriptContent,
+                'Save your bash script',
+                '~/mydemoscript.sh',
+                'Save',
+                'Shell scripts',
+                ['sh']);
+        })
+        
     })
 }

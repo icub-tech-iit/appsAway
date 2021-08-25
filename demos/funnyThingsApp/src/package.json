@@ -9,10 +9,7 @@
   "author": "Vadim Tikhanoff",
   "license": "ISC",
   "dependencies": {
-    "await-exec": "^0.1.2",
-    "bash-parser": "^0.5.0",
     "electron": "^13.1.9",
-    "exec-async": "^2.2.0",
     "node-exec-promise": "^1.0.2",
     "p-iteration": "^1.1.8"
   },
