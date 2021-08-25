@@ -11,7 +11,6 @@ function createWindow(){
         minHeight: 700,
         minWidth: 1000,
         webPreferences: {
-            icon: 'assets/icon.png',
             nodeIntegration: true, 
             contextIsolation: false,
             devTools: true,
@@ -24,6 +23,8 @@ function createWindow(){
     // mainWindow.setResizable(false);
     // mainWindow.setMaximizable(false);
     mainWindow.setMenu(null);
+
+    mainWindow.setIcon(path.join(__dirname, 'assets/icon.png'));
 
     // Load index.html
     mainWindow.loadFile('index.html')
