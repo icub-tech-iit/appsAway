@@ -42,7 +42,7 @@ const addActivityDiv = (activity, modify_array = true) => {
     let runAction = createElement('img', {
         classes: ["run-action", "icon"],
         src: "assets/run-no-circle.svg",
-        onClick: (event)=>{runSingleAction(findChildIndex(findPanelItem(event.target)))}
+        onClick: (event)=>{runSingleAction(activitiesToPerform[findChildIndex(findPanelItem(event.target))])}
     })
 
     actionDiv.appendChild(runAction);
@@ -134,9 +134,13 @@ document.addEventListener("dragover", function(event) {
     event.preventDefault()
 })
 
-const runSingleAction = (index) => {
-    let bashActionsArray = generateBashActionsArray(activitiesToPerform);
-    exec(`../script/funnythings.sh ${bashActionsArray[index]}`).then(out => {})
+const runSingleAction = async (activity) => {
+    let bashActions = generateBashAction(activity);
+    await forEachSeries(bashActions, async (bashAction) => {
+        console.log(`running action ${bashAction}`)
+        let out = await exec(`../script/funnythings.sh ${bashAction}`)
+        console.log(`skipping bash actions ${bashAction}`)
+    })
 }
 
 const expandOrCloseOptions = (event, activity) => {
@@ -245,156 +249,168 @@ const closeOptions = (event, activity) => {
     optionsDiv.style.minHeight = 'fit-content'
 }
 
+const generateBashAction = (activity) => {
+    let bashActions = [];
+    if (activity.activity == "SLEEP"){
+        bashActions.push(`sleep ${activity.options[0].value}`);
+      }
+      if (activity.activity == "SPEAK"){
+          //for await (let options of activity.options) {​
+          activity.options.forEach((options) => {
+          //activity.options.forEach(async(options) => {
+            if (options.label == "Text:")
+            {
+              let cmd = options.value
+              bashActions.push(`${activity.activity.toLowerCase()} \"${cmd}\"`);
+            }
+            if (options.label == "Wait until finish:")
+            {
+              let cmd_wait = options.value
+              if (cmd_wait == "Wait")
+              {
+                bashActions.push(`${cmd_wait.toLowerCase()}`);
+              }
+            }
+          })
+        }
+  
+        if (activity.activity == "WAVE"){
+          let cmd = `hello_${activity.options[0].value.toLowerCase()}`
+          bashActions.push(cmd);
+          if (activity.options[1].label == "Wait until finished:")
+          {
+            let wait_val = activity.options[1].value
+            if (wait_val == "Wait")
+            {
+                let cmd_wait = `hello_wait_${activity.options[0].value.toLowerCase()}`
+                bashActions.push(cmd_wait);
+            }
+          }
+        }
+
+        if (activity.activity == "MUSCLES"){
+          let cmd = `show_muscles_${activity.options[0].value.toLowerCase()}`
+          bashActions.push(cmd);
+          if (activity.options[1].label == "Wait until finished:")
+          {
+            let wait_val = activity.options[1].value
+            if (wait_val == "Wait")
+            {
+              let cmd_wait = `show_muscles_wait_${activity.options[0].value.toLowerCase()}`
+              bashActions.push(cmd_wait);
+            }
+          }
+        }
+
+        if (activity.activity == "GESTURE"){
+          let cmd = `gesture_${activity.options[0].value.toLowerCase()}`
+          bashActions.push(cmd);
+          if (activity.options[1].label == "Wait until finished:")
+          {
+            let wait_val = activity.options[1].value
+            if (wait_val == "Wait")
+            {
+              let cmd_wait = `gesture_wait_${activity.options[0].value.toLowerCase()}`
+              bashActions.push(cmd_wait);
+            }
+          }
+        }
+
+        if (activity.activity == "QUESTION"){
+          let cmd = `question_${activity.options[0].value.toLowerCase()}`
+          bashActions.push(cmd);
+          if (activity.options[1].label == "Wait until finished:")
+          {
+            let wait_val = activity.options[1].value
+            if (wait_val == "Wait")
+            {
+              let cmd_wait = `question_wait_${activity.options[0].value.toLowerCase()}`
+              bashActions.push(cmd_wait);
+            }
+          }
+        }
+
+        if (activity.activity == "GREET"){
+          let cmd = `greet_thumb_${activity.options[0].value.toLowerCase()}`
+          bashActions.push(cmd);
+          if (activity.options[1].label == "Wait until finished:")
+          {
+            let wait_val = activity.options[1].value
+            if (wait_val == "Wait")
+            {
+              let cmd_wait = `greet_thumb_wait_${activity.options[0].value.toLowerCase()}`
+              bashActions.push(cmd_wait);
+            }
+          }
+        }
+  
+        if (activity.activity == "HOME"){
+          let cmd = `home_${activity.options[0].value.toLowerCase()}`
+          bashActions.push(cmd);
+          if (activity.options[1].label == "Wait until finished:")
+          {
+            let wait_val = activity.options[1].value
+            if (wait_val == "Wait")
+            {
+              let cmd_wait = `home_wait_${activity.options[0].value.toLowerCase()}`
+              bashActions.push(cmd_wait);
+            }
+          }
+        }
+  
+        if (activity.activity == "VICTORY"){
+          let arm = `victory_${activity.options[0].value.toLowerCase()}`
+          bashActions.push(arm);
+          if (activity.options[1].label == "Wait until finished:")
+          { 
+            let wait_val = activity.options[1].value
+            if (wait_val == "Wait")
+            {
+              let cmd_wait = `victory_wait_${activity.options[0].value.toLowerCase()}`
+              bashActions.push(cmd_wait);
+            }
+          }
+        }
+        
+        if (activity.activity == "EMOTION"){
+          let emotion = activity.options[0].value.toLowerCase()
+          bashActions.push(emotion);
+        }
+
+        if (activity.activity == "FONZIE"){
+          bashActions.push('fonzie')
+          if (activity.options[0].label == "Wait until finished:")
+          {
+            let wait_val = activity.options[0].value
+            if (wait_val == "Wait")
+            {
+              let cmd_wait = `fonzie_wait`
+              bashActions.push(cmd_wait);
+            }
+          }
+        }
+        return bashActions;
+}
+
 const generateBashActionsArray = (activities) => {
     let bashActionsArray = [];
     activities.forEach((activity) => {     
-          if (activity.activity == "SLEEP"){
-            bashActionsArray.push(`sleep ${activity.options[0].value}`);
-          }
-          if (activity.activity == "SPEAK"){
-              //for await (let options of activity.options) {​
-              activity.options.forEach((options) => {
-              //activity.options.forEach(async(options) => {
-                if (options.label == "Text:")
-                {
-                  let cmd = options.value
-                  bashActionsArray.push(`${activity.activity.toLowerCase()} \"${cmd}\"`);
-                }
-                if (options.label == "Wait until finish:")
-                {
-                  let cmd_wait = options.value
-                  if (cmd_wait == "Wait")
-                  {
-                    bashActionsArray.push(`${cmd_wait.toLowerCase()}`);
-                  }
-                }
-              })
-            }
-      
-            if (activity.activity == "WAVE"){
-              let cmd = `hello_${activity.options[0].value.toLowerCase()}`
-              bashActionsArray.push(cmd);
-              if (activity.options[1].label == "Wait until finished:")
-              {
-                let wait_val = activity.options[1].value
-                if (wait_val == "Wait")
-                {
-                    let cmd_wait = `hello_wait_${activity.options[0].value.toLowerCase()}`
-                    bashActionsArray.push(cmd_wait);
-                }
-              }
-            }
-
-            if (activity.activity == "MUSCLES"){
-              let cmd = `show_muscles_${activity.options[0].value.toLowerCase()}`
-              bashActionsArray.push(cmd);
-              if (activity.options[1].label == "Wait until finished:")
-              {
-                let wait_val = activity.options[1].value
-                if (wait_val == "Wait")
-                {
-                  let cmd_wait = `show_muscles_wait_${activity.options[0].value.toLowerCase()}`
-                  bashActionsArray.push(cmd_wait);
-                }
-              }
-            }
-
-            if (activity.activity == "GESTURE"){
-              let cmd = `gesture_${activity.options[0].value.toLowerCase()}`
-              bashActionsArray.push(cmd);
-              if (activity.options[1].label == "Wait until finished:")
-              {
-                let wait_val = activity.options[1].value
-                if (wait_val == "Wait")
-                {
-                  let cmd_wait = `gesture_wait_${activity.options[0].value.toLowerCase()}`
-                  bashActionsArray.push(cmd_wait);
-                }
-              }
-            }
-
-            if (activity.activity == "QUESTION"){
-              let cmd = `question_${activity.options[0].value.toLowerCase()}`
-              bashActionsArray.push(cmd);
-              if (activity.options[1].label == "Wait until finished:")
-              {
-                let wait_val = activity.options[1].value
-                if (wait_val == "Wait")
-                {
-                  let cmd_wait = `question_wait_${activity.options[0].value.toLowerCase()}`
-                  bashActionsArray.push(cmd_wait);
-                }
-              }
-            }
-
-            if (activity.activity == "GREET"){
-              let cmd = `greet_thumb_${activity.options[0].value.toLowerCase()}`
-              bashActionsArray.push(cmd);
-              if (activity.options[1].label == "Wait until finished:")
-              {
-                let wait_val = activity.options[1].value
-                if (wait_val == "Wait")
-                {
-                  let cmd_wait = `greet_thumb_wait_${activity.options[0].value.toLowerCase()}`
-                  bashActionsArray.push(cmd_wait);
-                }
-              }
-            }
-      
-            if (activity.activity == "HOME"){
-              let cmd = `home_${activity.options[0].value.toLowerCase()}`
-              bashActionsArray.push(cmd);
-              if (activity.options[1].label == "Wait until finished:")
-              {
-                let wait_val = activity.options[1].value
-                if (wait_val == "Wait")
-                {
-                  let cmd_wait = `home_wait_${activity.options[0].value.toLowerCase()}`
-                  bashActionsArray.push(cmd_wait);
-                }
-              }
-            }
-      
-            if (activity.activity == "VICTORY"){
-              let arm = `victory_${activity.options[0].value.toLowerCase()}`
-              bashActionsArray.push(arm);
-              if (activity.options[1].label == "Wait until finished:")
-              { 
-                let wait_val = activity.options[1].value
-                if (wait_val == "Wait")
-                {
-                  let cmd_wait = `victory_wait_${activity.options[0].value.toLowerCase()}`
-                  bashActionsArray.push(cmd_wait);
-                }
-              }
-            }
-            
-            if (activity.activity == "EMOTION"){
-              let emotion = activity.options[0].value.toLowerCase()
-              bashActionsArray.push(emotion);
-            }
-
-            if (activity.activity == "FONZIE"){
-              bashActionsArray.push('fonzie')
-              if (activity.options[0].label == "Wait until finished:")
-              {
-                let wait_val = activity.options[0].value
-                if (wait_val == "Wait")
-                {
-                  let cmd_wait = `fonzie_wait`
-                  bashActionsArray.push(cmd_wait);
-                }
-              }
-            }
-        });
+          let bashAction = generateBashAction(activity)
+          bashActionsArray = [...bashActionsArray, ...bashAction]
+    });
     return bashActionsArray;
 } 
 
 const runDemo = async() => {
     run = true;
+    let actionCounter = 0;
     let bashActions = generateBashActionsArray(activitiesToPerform);
 
     await forEachSeries(bashActions, async (bashAction) => {
+        if (!('wait' in bashAction)) {
+            console.log(Array.from(myActivitesPanel.children)[actionCounter])
+            actionCounter += 1;
+        }
         if (run)
         {
           console.log(`running action ${bashAction}`)
