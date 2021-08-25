@@ -395,7 +395,15 @@ const runDemo = async() => {
     let bashActions = generateBashActionsArray(activitiesToPerform);
 
     await forEachSeries(bashActions, async (bashAction) => {
-        let out = await exec(`../script/funnythings.sh ${bashAction}`)
+        if (run)
+        {
+          console.log(`running action ${bashAction}`)
+          let out = await exec(`../script/funnythings.sh ${bashAction}`)
+        }
+        else 
+        {
+          console.log(`skipping bash actions ${bashAction}`)
+        }
     })
 }
 
