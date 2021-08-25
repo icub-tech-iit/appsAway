@@ -266,7 +266,7 @@ const generateBashAction = (activity) => {
             if (options.label == "Wait until finish:")
             {
               let cmd_wait = options.value
-              if (cmd_wait == "Wait")
+              if (cmd_wait == "Yes")
               {
                 bashActions.push(`${cmd_wait.toLowerCase()}`);
               }
@@ -280,7 +280,7 @@ const generateBashAction = (activity) => {
           if (activity.options[1].label == "Wait until finished:")
           {
             let wait_val = activity.options[1].value
-            if (wait_val == "Wait")
+            if (wait_val == "Yes")
             {
                 let cmd_wait = `hello_wait_${activity.options[0].value.toLowerCase()}`
                 bashActions.push(cmd_wait);
@@ -294,7 +294,7 @@ const generateBashAction = (activity) => {
           if (activity.options[1].label == "Wait until finished:")
           {
             let wait_val = activity.options[1].value
-            if (wait_val == "Wait")
+            if (wait_val == "Yes")
             {
               let cmd_wait = `show_muscles_wait_${activity.options[0].value.toLowerCase()}`
               bashActions.push(cmd_wait);
@@ -308,7 +308,7 @@ const generateBashAction = (activity) => {
           if (activity.options[1].label == "Wait until finished:")
           {
             let wait_val = activity.options[1].value
-            if (wait_val == "Wait")
+            if (wait_val == "Yes")
             {
               let cmd_wait = `gesture_wait_${activity.options[0].value.toLowerCase()}`
               bashActions.push(cmd_wait);
@@ -322,7 +322,7 @@ const generateBashAction = (activity) => {
           if (activity.options[1].label == "Wait until finished:")
           {
             let wait_val = activity.options[1].value
-            if (wait_val == "Wait")
+            if (wait_val == "Yes")
             {
               let cmd_wait = `question_wait_${activity.options[0].value.toLowerCase()}`
               bashActions.push(cmd_wait);
@@ -336,7 +336,7 @@ const generateBashAction = (activity) => {
           if (activity.options[1].label == "Wait until finished:")
           {
             let wait_val = activity.options[1].value
-            if (wait_val == "Wait")
+            if (wait_val == "Yes")
             {
               let cmd_wait = `greet_thumb_wait_${activity.options[0].value.toLowerCase()}`
               bashActions.push(cmd_wait);
@@ -350,7 +350,7 @@ const generateBashAction = (activity) => {
           if (activity.options[1].label == "Wait until finished:")
           {
             let wait_val = activity.options[1].value
-            if (wait_val == "Wait")
+            if (wait_val == "Yes")
             {
               let cmd_wait = `home_wait_${activity.options[0].value.toLowerCase()}`
               bashActions.push(cmd_wait);
@@ -364,7 +364,7 @@ const generateBashAction = (activity) => {
           if (activity.options[1].label == "Wait until finished:")
           { 
             let wait_val = activity.options[1].value
-            if (wait_val == "Wait")
+            if (wait_val == "Yes")
             {
               let cmd_wait = `victory_wait_${activity.options[0].value.toLowerCase()}`
               bashActions.push(cmd_wait);
@@ -382,7 +382,7 @@ const generateBashAction = (activity) => {
           if (activity.options[0].label == "Wait until finished:")
           {
             let wait_val = activity.options[0].value
-            if (wait_val == "Wait")
+            if (wait_val == "Yes")
             {
               let cmd_wait = `fonzie_wait`
               bashActions.push(cmd_wait);
@@ -414,26 +414,20 @@ const runDemo = async() => {
         if (!(bashAction.includes("wait"))) {
             arrayOfPanelItems.forEach((panelItem, index) => {
                 if (index == actionCounter) {
-                    panelItem.classList.add('highlight')
+                    panelItem.classList.remove('low-light')
                 } else {
-                    panelItem.classList.remove('highlight')
+                    panelItem.classList.add('low-light')
                 }
             })
             actionCounter += 1;
         }
-        if (run)
-        {
-          console.log(`running action ${bashAction}`)
-          let out = await exec(`../script/funnythings.sh ${bashAction}`)
-        }
-        else 
-        {
-          console.log(`skipping bash actions ${bashAction}`)
+        if (run) {
+          await exec(`../script/funnythings.sh ${bashAction}`)
         }
     })
 
     arrayOfPanelItems.forEach((panelItem) => {
-        panelItem.classList.remove('highlight')
+        panelItem.classList.remove('low-light')
     })
     runButton.disabled = false;
     clearButton.disabled = false;
@@ -489,7 +483,6 @@ const importActivities = () => {
                     isValidJson = false;
                 }
 
-                console.log(checkActivites(parsedData) ? 'Valid input' : 'There is something wrong')
                 if (isValidJson && checkActivites(parsedData)) {
                     activitiesToPerform = parsedData;
                     console.log('Imported!')
@@ -533,6 +526,11 @@ const saveTextFile = (textContent, title, defaultPath, buttonLabel, filterName, 
                 if (err) throw err;
                 console.log('Saved!')
             })
+        }
+        return file
+    }).then(file => {
+        if (!file.canceled && extensions.includes('sh')) {
+            alert(`Run your script by typing: \n ${file.filePath.toString()} runDemo`);
         }
     }).catch(err => {
         console.log(err)

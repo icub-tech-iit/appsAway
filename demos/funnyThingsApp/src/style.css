@@ -117,6 +117,7 @@ body {
 	position: relative;
 	width: 350px;
 	box-shadow: 1px 1px 4px gray;
+	transition: opacity 0.3s ease;
   }
   
   .left-panel > .panel-item:hover::after {
@@ -197,8 +198,8 @@ body {
 	  align-items: center;
   }
 
-  .highlight {
-	border: 5px solid green;
+  .low-light {
+	  opacity: 0.5;
   }
 
   .act-options > div {
@@ -261,7 +262,16 @@ body {
   button > img {
 	height: 20px;
 	width: 20px;
-	transition: height 0.25s ease, width 0.25s ease;
+	transition: height 0.25s ease, width 0.25s ease, opacity 0.3s ease;
+  }
+
+  button:disabled > img {
+	opacity: 0.5;
+  }
+
+  button:disabled:hover > img {
+	height: 20px;
+	width: 20px;
   }
 
   button:hover img {

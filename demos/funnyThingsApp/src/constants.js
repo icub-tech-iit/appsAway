@@ -23,10 +23,10 @@ var OPTIONS = {
             type: "select",
             label: "Wait until finish:",
             options: [
-                "Wait",
-                "Don't wait"
+                "Yes",
+                "No"
             ],
-            default_value: 1
+            default_value: 0
         }
     ],
     WAVE: [
@@ -44,10 +44,10 @@ var OPTIONS = {
             type: "select",
             label: "Wait until finished:",
             options: [
-                "Wait",
-                "Don't wait"
+                "Yes",
+                "No"
             ],
-            default_value: 1
+            default_value: 0
         }
     ],
     HOME: [
@@ -65,10 +65,10 @@ var OPTIONS = {
             type: "select",
             label: "Wait until finished:",
             options: [
-                "Wait",
-                "Don't wait"
+                "Yes",
+                "No"
             ],
-            default_value: 1
+            default_value: 0
         }
     ],
     VICTORY: [
@@ -86,10 +86,10 @@ var OPTIONS = {
             type: "select",
             label: "Wait until finished:",
             options: [
-                "Wait",
-                "Don't wait"
+                "Yes",
+                "No"
             ],
-            default_value: 1
+            default_value: 0
         }
     ],
     MUSCLES: [
@@ -107,10 +107,10 @@ var OPTIONS = {
             type: "select",
             label: "Wait until finished:",
             options: [
-                "Wait",
-                "Don't wait"
+                "Yes",
+                "No"
             ],
-            default_value: 1
+            default_value: 0
         }
     ],
     GESTURE: [
@@ -128,10 +128,10 @@ var OPTIONS = {
             type: "select",
             label: "Wait until finished:",
             options: [
-                "Wait",
-                "Don't wait"
+                "Yes",
+                "No"
             ],
-            default_value: 1
+            default_value: 0
         }
     ],
     QUESTION: [
@@ -149,10 +149,10 @@ var OPTIONS = {
             type: "select",
             label: "Wait until finished:",
             options: [
-                "Wait",
-                "Don't wait"
+                "Yes",
+                "No"
             ],
-            default_value: 1
+            default_value: 0
         }
     ],
     GREET: [
@@ -170,10 +170,10 @@ var OPTIONS = {
             type: "select",
             label: "Wait until finished:",
             options: [
-                "Wait",
-                "Don't wait"
+                "Yes",
+                "No"
             ],
-            default_value: 1
+            default_value: 0
         }
     ],
     SLEEP: [
@@ -188,10 +188,10 @@ var OPTIONS = {
             type: "select",
             label: "Wait until finished:",
             options: [
-                "Wait",
-                "Don't wait"
+                "Yes",
+                "No"
             ],
-            default_value: 1
+            default_value: 0
         }
     ],
     EMOTION: [
