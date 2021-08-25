@@ -137,9 +137,7 @@ document.addEventListener("dragover", function(event) {
 const runSingleAction = async (activity) => {
     let bashActions = generateBashAction(activity);
     await forEachSeries(bashActions, async (bashAction) => {
-        console.log(`running action ${bashAction}`)
-        let out = await exec(`../script/funnythings.sh ${bashAction}`)
-        console.log(`skipping bash actions ${bashAction}`)
+        let out = await exec(`../script/funnythings.sh ${bashAction}`)    
     })
 }
 
@@ -407,8 +405,10 @@ const runDemo = async() => {
     let bashActions = generateBashActionsArray(activitiesToPerform);
 
     await forEachSeries(bashActions, async (bashAction) => {
-        if (!('wait' in bashAction)) {
+        if (!(bashAction.includes("wait"))) {
             console.log(Array.from(myActivitesPanel.children)[actionCounter])
+            let panelItem = Array.from(myActivitesPanel.children)[actionCounter];
+            panelItem.style.backgroundColor = "grey";
             actionCounter += 1;
         }
         if (run)
