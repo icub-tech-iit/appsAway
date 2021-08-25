@@ -197,6 +197,10 @@ body {
 	  align-items: center;
   }
 
+  .highlight {
+	border: 5px solid green;
+  }
+
   .act-options > div {
 	display: flex;
     align-items: center;

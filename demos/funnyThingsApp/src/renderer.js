@@ -95,6 +95,8 @@ Object.keys(ACTIONS).map((actionsKey) => {
 
 const allActivitesPanel = document.querySelector(".left-panel");
 const myActivitesPanel = document.querySelector(".right-panel");
+const runButton = document.querySelector("#run");
+const clearButton = document.querySelector("#clear");
 const errorMessage = document.querySelector(".popup");
 
 for (let action in actionBlockParameters) {
@@ -402,13 +404,21 @@ const generateBashActionsArray = (activities) => {
 const runDemo = async() => {
     run = true;
     let actionCounter = 0;
+    let arrayOfPanelItems = Array.from(myActivitesPanel.children);
     let bashActions = generateBashActionsArray(activitiesToPerform);
+
+    runButton.disabled = true;
+    clearButton.disabled = true;
 
     await forEachSeries(bashActions, async (bashAction) => {
         if (!(bashAction.includes("wait"))) {
-            console.log(Array.from(myActivitesPanel.children)[actionCounter])
-            let panelItem = Array.from(myActivitesPanel.children)[actionCounter];
-            panelItem.style.backgroundColor = "grey";
+            arrayOfPanelItems.forEach((panelItem, index) => {
+                if (index == actionCounter) {
+                    panelItem.classList.add('highlight')
+                } else {
+                    panelItem.classList.remove('highlight')
+                }
+            })
             actionCounter += 1;
         }
         if (run)
@@ -421,6 +431,12 @@ const runDemo = async() => {
           console.log(`skipping bash actions ${bashAction}`)
         }
     })
+
+    arrayOfPanelItems.forEach((panelItem) => {
+        panelItem.classList.remove('highlight')
+    })
+    runButton.disabled = false;
+    clearButton.disabled = false;
 }
 
 const stopDemo = () => {
