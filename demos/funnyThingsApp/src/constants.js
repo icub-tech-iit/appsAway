@@ -7,7 +7,7 @@ var ACTIONS = {
     FONZIE: "Fonzie",
     MUSCLES: "Show Muscles",
     GESTURE: "Show Gesture",
-    QUESTION: "Scuzzzzi",
+    QUESTION: "Raise Hand",
     GREET: "Greet with Thumb",
     SLEEP: "Sleep"
 }
@@ -211,4 +211,5 @@ var OPTIONS = {
     ]
 }
 
-var ACTIONCOLORS = ["233d4d","fe7f2d","fcca46","a1c181","619b8a"]
+//var ACTIONCOLORS = ["233d4d","fe7f2d","fcca46","a1c181","619b8a"]
+var ACTIONCOLORS = ["f94144","f3722c","f8961e","f9c74f","90be6d","43aa8b","577590"]

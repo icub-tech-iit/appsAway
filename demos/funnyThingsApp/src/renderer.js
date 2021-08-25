@@ -137,7 +137,6 @@ document.addEventListener("dragover", function(event) {
 })
 
 const runSingleAction = async (activity, activityIndex) => {
-    run = true;
     let arrayOfPanelItems = Array.from(myActivitesPanel.children);
     let bashActions = generateBashAction(activity);
 
@@ -154,9 +153,7 @@ const runSingleAction = async (activity, activityIndex) => {
                 }
             })
         }
-        if (run) {
-            await exec(`../script/funnythings.sh ${bashAction}`)
-        }  
+        await exec(`../script/funnythings.sh ${bashAction}`)
     })
     arrayOfPanelItems.forEach((panelItem) => {
         panelItem.classList.remove('low-light')
@@ -290,7 +287,7 @@ const generateBashAction = (activity) => {
               let cmd_wait = options.value
               if (cmd_wait == "Yes")
               {
-                bashActions.push(`${cmd_wait.toLowerCase()}`);
+                bashActions.push(`speak_wait`);
               }
             }
           })

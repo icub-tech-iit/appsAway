@@ -56,7 +56,7 @@ speak() {
     echo "\"$1\"" | yarp write ... /iSpeak && echo "\"$1\"" | yarp write ... /read
 }
 
-wait() {
+speak_wait() {
     wait_till_quiet
 }
 
