@@ -42,7 +42,7 @@ const addActivityDiv = (activity, modify_array = true) => {
     let runAction = createElement('img', {
         classes: ["run-action", "icon"],
         src: "assets/run-no-circle.svg",
-        onClick: (event)=>{runSingleAction(activitiesToPerform[findChildIndex(findPanelItem(event.target))])}
+        onClick: (event)=>{runSingleAction(activitiesToPerform[findChildIndex(findPanelItem(event.target))], findChildIndex(findPanelItem(event.target)))}
     })
 
     actionDiv.appendChild(runAction);
@@ -136,11 +136,33 @@ document.addEventListener("dragover", function(event) {
     event.preventDefault()
 })
 
-const runSingleAction = async (activity) => {
+const runSingleAction = async (activity, activityIndex) => {
+    run = true;
+    let arrayOfPanelItems = Array.from(myActivitesPanel.children);
     let bashActions = generateBashAction(activity);
+
+    runButton.disabled = true;
+    clearButton.disabled = true;
+
     await forEachSeries(bashActions, async (bashAction) => {
-        let out = await exec(`../script/funnythings.sh ${bashAction}`)    
+        if (!(bashAction.includes("wait"))) {
+            arrayOfPanelItems.forEach((panelItem, index) => {
+                if (index == activityIndex) {
+                    panelItem.classList.remove('low-light')
+                } else {
+                    panelItem.classList.add('low-light')
+                }
+            })
+        }
+        if (run) {
+            await exec(`../script/funnythings.sh ${bashAction}`)
+        }  
     })
+    arrayOfPanelItems.forEach((panelItem) => {
+        panelItem.classList.remove('low-light')
+    })
+    runButton.disabled = false;
+    clearButton.disabled = false;
 }
 
 const expandOrCloseOptions = (event, activity) => {
