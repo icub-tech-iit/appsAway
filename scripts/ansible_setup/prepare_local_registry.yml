@@ -17,9 +17,10 @@
 
     - name: Initialize JSON structure
       shell: |
-        _is_empty=$( cat /etc/docker/daemon.json | grep "{" )
-        if [[ $_is_empty == "" ]]
+        if [ -s /etc/docker/daemon.json ]
         then
+          echo "File is not empty"
+        else
           echo "{}" > /etc/docker/daemon.json
         fi
       args:
@@ -30,15 +31,15 @@
       shell: |
         _registry={{ ansible_console_host }}:5000
         _has_insecure_registry=$( cat /etc/docker/daemon.json | grep "insecure-registries" )
-        if [[ $_has_insecure_registry != "" ]]
+        if [$_has_insecure_registry != ""]
         then
-          _has_registry=$( cat /etc/docker/daemon.json | grep $_registry )
-          if [[ $_has_registry == "" ]]
+          _has_registry=$(cat /etc/docker/daemon.json | grep $_registry )
+          if [$_has_registry == ""]
           then
             jq --arg registry "$_registry" '."insecure-registries"[."insecure-registries"| length] |= . + $registry' /etc/docker/daemon.json > daemon_new.txt
             mv daemon_new.txt /etc/docker/daemon.json
             echo "edited registries"
-          fi
+           fi
         else
           jq --arg registry $_registry '. += {"insecure-registries": [$registry] }' /etc/docker/daemon.json > daemon_new.txt
           mv daemon_new.txt /etc/docker/daemon.json
