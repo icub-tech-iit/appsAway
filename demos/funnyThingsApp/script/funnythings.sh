@@ -201,20 +201,23 @@ victory_both() {
     echo "ctpq time 2.0 off 0 pos (-57.0 32.0 -1.0 88.0 56.0 -30.0 -11.0 18.0 40.0 50.0 167.0 0.0 0.0 0.0 0.0 222.0)" | yarp rpc /ctpservice/right_arm/rpc
 }
 
-point_eye() {
-    echo "ctpq time 2 off 0 pos (-50.0 33.0 45.0 95.0 -58.0 24.0 -11.0 10.0 28.0 11.0 78.0 32.0 15.0 60.0 130.0 170.0)" | yarp rpc /ctpservice/left_arm/rpc
-    sleep 3.0 && blink && blink
-    go_home
+point_wait_eye() {
+    sleep 2.0
 }
 
-point_ear_right() {
-    echo "ctpq time 2 off 0 pos (-18.0 59.0 -30.0 105.0 -22.0 28.0 -6.0 6.0 55.0 30.0 33.0 4.0 9.0 58.0 113.0 192.0)" | yarp rpc /ctpservice/right_arm/rpc
-    sleep 3.0
-    go_home_helperR 2.0
+point_eye_left() {
+    echo "ctpq time 2 off 0 pos (-50.0 33.0 45.0 95.0 -58.0 24.0 -11.0 10.0 28.0 11.0 78.0 32.0 15.0 60.0 130.0 170.0)" | yarp rpc /ctpservice/left_arm/rpc
+}
+
+point_eye_right() {
+    echo "ctpq time 2 off 0 pos (-50.0 33.0 45.0 95.0 -58.0 24.0 -11.0 10.0 28.0 11.0 78.0 32.0 15.0 60.0 130.0 170.0)" | yarp rpc /ctpservice/right_arm/rpc
+}
+
+point_wait_ears() {
+     sleep 4.0
 }
 
 point_ears() {
-    breathers "stop"
 
     echo "ctpq time 1 off 0 pos (-10.0 8.0 -37.0 7.0 -21.0 1.0)" | yarp rpc /ctpservice/head/rpc
     echo "ctpq time 2 off 0 pos (-18.0 59.0 -30.0 105.0 -22.0 28.0 -6.0 6.0 55.0 30.0 33.0 4.0 9.0 58.0 113.0 192.0)" | yarp rpc /ctpservice/left_arm/rpc
@@ -224,22 +227,22 @@ point_ears() {
     echo "ctpq time 2 off 0 pos (-18.0 59.0 -30.0 105.0 -22.0 28.0 -6.0 6.0 55.0 30.0 33.0 4.0 9.0 58.0 113.0 192.0)" | yarp rpc /ctpservice/right_arm/rpc
 
     echo "ctpq time 2 off 0 pos (-0.0 0.0 -0.0 0.0 -0.0 0.0)" | yarp rpc /ctpservice/head/rpc
-    go_home_helperL 2.0
-    go_home_helperR 2.0
-
-    breathers "start"
 }
 
-point_arms() {
-    breathers "stop"
+point_wait_arm() {
+    sleep 2.0
+}
+
+point_arm_right() {
 
     echo "ctpq time 2 off 0 pos (-60.0 32.0 80.0 85.0 -13.0 -3.0 -8.0 15.0 37.0 47.0 52.0 9.0 1.0 42.0 106.0 250.0)" | yarp rpc /ctpservice/right_arm/rpc
     echo "ctpq time 2 off 0 pos (-64.0 43.0 6.0 52.0 -28.0 -0.0 -7.0 15.0 30.0 7.0 0.0 4.0 0.0 2.0 8.0 43.0)" | yarp rpc /ctpservice/left_arm/rpc
-    sleep 3.0
-    go_home_helperL 2.0
-    go_home_helperR 2.0
+}
 
-    breathers "start"
+point_arm_left() {
+
+    echo "ctpq time 2 off 0 pos (-60.0 32.0 80.0 85.0 -13.0 -3.0 -8.0 15.0 37.0 47.0 52.0 9.0 1.0 42.0 106.0 250.0)" | yarp rpc /ctpservice/right_arm/rpc
+    echo "ctpq time 2 off 0 pos (-64.0 43.0 6.0 52.0 -28.0 -0.0 -7.0 15.0 30.0 7.0 0.0 4.0 0.0 2.0 8.0 43.0)" | yarp rpc /ctpservice/left_arm/rpc
 }
 
 fonzie_wait() {
@@ -395,23 +398,26 @@ gesture_right() {
     echo "ctpq time 1.5 off 0 pos (-39.0 37.0 -17.0 53.0 -47.0 14.0 -2.0 -1.0 8.0 45 3.4 2.4 2.2 0.0 6.8 17)" | yarp rpc /ctpservice/right_arm/rpc
 }
 
+
+gaze_look-around() {
+    gaze "look-around 15.0 0.0 5.0"
+}
+
+gaze_idle() {
+    gaze "idle"
+}
+
 #######################################################################################
 # SEQUENCE FUNCTIONS
 #######################################################################################
 # Skin DEMO.
 
-sequence_14_() {
-    gaze "look-around 15.0 0.0 5.0"
-    speak "Sono fatto di cinquemilla pezzi, posso riconoscere gli oggetti intorno a me, ed afferrarli. e posso usarli per svolgere alcuni semplici compiti."
-    sleep 1.5
-    echo "ctpq time 1.0 off 0 pos (-12.0 37.0 6.0 67.0 -52.0 -14.0 9.0    12.0 -6.0 37.0 2.0 0.0 3.0 2.0 1.0 0.0)" | yarp rpc /ctpservice/left_arm/rpc
-    echo "ctpq time 1.0 off 0 pos (-13.0 29.0 18.0 59.0 -59.0 -12.0 -6.0    0.0 9.0 42.0 2.0 0.0 1.0 0.0 8.0 4.0)" | yarp rpc /ctpservice/right_arm/rpc
-    sleep 2.0
-    go_home_helper 1.2
-    wait_till_quiet
+balancing_wait() {
+    sleep 3.0
+}
 
-    speak "Da poco, ho imparato a stare in equilibrio senza cadere, e presto imparero' a camminare, proprio come voi."
-    sleep 1.0
+balancing() {
+
     echo "ctpq time 1.0 off 0 pos (-15.0 36.0 8.0 77.0 45.0 3.0 3.0    0.0 9.0 42.0 2.0 0.0 1.0 0.0 8.0 4.0)" | yarp rpc /ctpservice/right_arm/rpc
     echo "ctpq time 1.0 off 0 pos (-6.0 30.0 13.0 67.0 49.0 -13.0 5.0    12.0 -6.0 37.0 2.0 0.0 3.0 2.0 1.0 0.0)" | yarp rpc /ctpservice/left_arm/rpc
     sleep 0.5
@@ -422,22 +428,6 @@ sequence_14_() {
 
     echo "ctpq time 0.7 off 0 pos (-15.0 36.0 8.0 77.0 45.0 3.0 3.0    0.0 9.0 42.0 2.0 0.0 1.0 0.0 8.0 4.0)" | yarp rpc /ctpservice/right_arm/rpc
     echo "ctpq time 0.7 off 0 pos (-6.0 30.0 13.0 67.0 49.0 -13.0 5.0    12.0 -6.0 37.0 2.0 0.0 3.0 2.0 1.0 0.0)" | yarp rpc /ctpservice/left_arm/rpc
-    sleep 2.0
-    go_home_helper 2.0
-
-    wait_till_quiet
-    speak "E poi sono l'unico robot al mondo dotato di una pelle sensibile, che mi permette di sentire quando vengo toccato, spinto, o se mi fanno il solletico."
-    sleep 3.5
-    gaze "look -20.0 -30.0 0.0"
-    echo "ctpq time 1.3 off 0 pos (-46.0 48.0 74.0 106.0 13.0 0.0 9.0    0.0 12.0 34.0 1.0 0.0 1.0 50.0 82.0 116.0)" | yarp rpc /ctpservice/right_arm/rpc
-    sleep 0.7
-    echo "ctpq time 1.0 off 0 pos (-22.0 34.0 48.0 73.0 37.0 3.0 -7.0    12.0 -6.0 37.0 2.0 0.0 3.0 2.0 1.0 0.0)" | yarp rpc /ctpservice/left_arm/rpc
-    sleep 3.0
-    gaze "look-around 0.0 0.0 5.0"
-
-    go_home_helper 2.0
-
-    wait_till_quiet
 }
 
 

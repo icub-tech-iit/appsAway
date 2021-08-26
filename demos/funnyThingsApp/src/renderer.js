@@ -362,6 +362,47 @@ const generateBashAction = (activity) => {
             }
           }
         }
+
+        if (activity.activity == "POINTARM"){
+          let cmd = `point_arm_${activity.options[0].value.toLowerCase()}`
+          bashActions.push(cmd);
+          if (activity.options[1].label == "Wait until finished:")
+          {
+            let wait_val = activity.options[1].value
+            if (wait_val == "Yes")
+            {
+              let cmd_wait = `point_wait_arm`
+              bashActions.push(cmd_wait);
+            }
+          }
+        }
+
+        if (activity.activity == "POINTEYE"){
+          let cmd = `point_eye_${activity.options[0].value.toLowerCase()}`
+          bashActions.push(cmd);
+          if (activity.options[1].label == "Wait until finished:")
+          {
+            let wait_val = activity.options[1].value
+            if (wait_val == "Yes")
+            {
+              let cmd_wait = `point_wait_eye`
+              bashActions.push(cmd_wait);
+            }
+          }
+        }
+
+        if (activity.activity == "POINTEARS"){
+            bashActions.push('point_ears')
+            if (activity.options[0].label == "Wait until finished:")
+            {
+              let wait_val = activity.options[0].value
+              if (wait_val == "Yes")
+              {
+                let cmd_wait = `point_wait_ears`
+                bashActions.push(cmd_wait);
+              }
+            }
+          }
   
         if (activity.activity == "HOME"){
           let cmd = `home_${activity.options[0].value.toLowerCase()}`
@@ -408,8 +449,53 @@ const generateBashAction = (activity) => {
             }
           }
         }
+        if (activity.activity == "GAZETYPE"){  
+          let cmd = `gaze_${activity.options[0].value.toLowerCase()}`
+          bashActions.push(cmd);
+          console.log(cmd)
+        }
+
+        if (activity.activity == "GAZELOOK"){  
+          let cmd = `gaze \"look ${activity.options[0].value.toLowerCase()} ${activity.options[1].value.toLowerCase()} ${activity.options[2].value.toLowerCase()}\"`
+          bashActions.push(cmd);
+          console.log(cmd)
+        }
+
+        if (activity.activity == "BALANCE"){
+            bashActions.push('balancing')
+            if (activity.options[0].label == "Wait until finished:")
+            {
+              let wait_val = activity.options[0].value
+              if (wait_val == "Yes")
+              {
+                let cmd_wait = `balancing_wait`
+                bashActions.push(cmd_wait);
+              }
+            }
+          }
+
         return bashActions;
 }
+/*
+if (activity.activity == "SPEAK"){
+    //for await (let options of activity.options) {​
+    activity.options.forEach((options) => {
+    //activity.options.forEach(async(options) => {
+      if (options.label == "Text:")
+      {
+        let cmd = options.value
+        bashActions.push(`${activity.activity.toLowerCase()} \"${cmd}\"`);
+      }
+      if (options.label == "Wait until finish:")
+      {
+        let cmd_wait = options.value
+        if (cmd_wait == "Yes")
+        {
+          bashActions.push(`speak_wait`);
+        }
+      }
+    })
+  }*/
 
 const generateBashActionsArray = (activities) => {
     let bashActionsArray = [];
