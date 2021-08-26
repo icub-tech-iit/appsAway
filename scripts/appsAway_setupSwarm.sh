@@ -164,23 +164,72 @@ run_via_ssh()
 
 swarm_start()
 {
-  _SWARM_INIT_COMMAND=$( ${_DOCKER_BIN} ${_DOCKER_PARAMS} swarm init --advertise-addr ${APPSAWAY_CONSOLENODE_ADDR} | egrep -i '^\s{4}')
+  _SWARM_INIT_COMMAND=$( ${_DOCKER_BIN} ${_DOCKER_PARAMS} swarm init --advertise-addr ${APPSAWAY_CONSOLENODE_ADDR} --force-new-cluster | egrep -i '^\s{4}')
   if [ "$_SWARM_INIT_COMMAND" == "" ]; then
     error "swarm init command string is empty (failed swarm initialization?)"
   fi
+
+  cleanup_swarm
+  log "setting up swarm after cleaning"
+
+  _SWARM_NODE_IPS=""
+  while read -r line ; do
+    _MANAGER_STATUS_FOUND=$(echo $line | grep "MANAGER STATUS" || true)
+    _LEADER_FOUND=$(echo $line | grep Leader || true)
+    if [ "$_LEADER_FOUND" == "" ] && [ "$_MANAGER_STATUS_FOUND" == "" ]; then
+      line=($line)
+      _SWARM_NODE_ID=${line[0]}
+      _SWARM_NODE_IP=( $( docker node inspect ${_SWARM_NODE_ID} | grep "Addr" | tr ':' ' ' | tr '"' ' ') )
+      _SWARM_NODE_IP=${_SWARM_NODE_IP[1]}
+      _SWARM_NODE_IPS="$_SWARM_NODE_IPS $_SWARM_NODE_IP"
+    fi
+  done < <(docker node ls)
 
   iter=1
   List=$APPSAWAY_NODES_USERNAME_LIST
   set -- $List
   for node_ip in ${APPSAWAY_NODES_ADDR_LIST}
   do
-    if [ "$node_ip" != "$APPSAWAY_CONSOLENODE_ADDR" ]; then
+    if [ "$node_ip" != "$APPSAWAY_CONSOLENODE_ADDR" ]; then     
       username=$( eval echo "\$$iter")
       log "running init on node $node_ip.."
-      run_via_ssh $username $node_ip "$_SWARM_INIT_COMMAND"
+      if [ "$_SWARM_NODE_IPS" != "" ]; then
+        if echo $node_ip | grep -w $_SWARM_NODE_IPS > /dev/null; then
+          log "node is already inside the swarm"
+        else
+          log "node is not inside the swarm.."
+          log "testing node status.."
+          run_via_ssh $username $node_ip "_SWARM_STATUS=\$(${_DOCKER_BIN} info | grep Swarm); if echo \$_SWARM_STATUS | grep -w active || echo \$_SWARM_STATUS | grep -w pending ; then ${_DOCKER_BIN} swarm leave; fi"
+          log "initializing the node.."
+          run_via_ssh $username $node_ip "$_SWARM_INIT_COMMAND"
+        fi
+      else
+          log "node is not inside the swarm.."
+          log "testing node status.."
+          run_via_ssh $username $node_ip "_SWARM_STATUS=\$(${_DOCKER_BIN} info | grep Swarm); if echo \$_SWARM_STATUS | grep -w active || echo \$_SWARM_STATUS | grep -w pending ; then ${_DOCKER_BIN} swarm leave; fi"
+          log "initializing the node.."
+          run_via_ssh $username $node_ip "$_SWARM_INIT_COMMAND"
+      fi
     fi
     iter=$((iter+1))
   done
+}
+
+cleanup_swarm()
+{
+  _SWARM_NODE_DOWN=( $( ${_DOCKER_BIN} node ls | tr '*' ' ' | grep Down || true ) )
+  _SWARM_NODE_DOWN_SIZE=$( ${_DOCKER_BIN} node ls | tr '*' ' ' | grep -c Down || true )     
+  log "found $_SWARM_NODE_DOWN_SIZE machines down in the swarm"
+  log "cleaning up.."
+  if (( $_SWARM_NODE_DOWN_SIZE > 0 )); then
+    for i in $(seq 0 $((_SWARM_NODE_DOWN_SIZE-1)))
+    do
+      j=$((i*5))
+      _SWARM_NODE_ID=${_SWARM_NODE_DOWN[$j]}
+      log "cleaning $_SWARM_NODE_ID"
+      ${_DOCKER_BIN} node rm $_SWARM_NODE_ID 
+    done
+  fi
 }
 
 ip2hostname()
@@ -210,11 +259,11 @@ set_hardware_labels()
 {
   log "setting labels on hardware-dependant nodes.."
   if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
-    ${_DOCKER_BIN} ${_DOCKER_PARAMS} node update --label-add type=head $(ip2hostname $APPSAWAY_ICUBHEADNODE_USERNAME $APPSAWAY_ICUBHEADNODE_ADDR)
+    ${_DOCKER_BIN} ${_DOCKER_PARAMS} node update --label-add type=head $(ip2hostname $APPSAWAY_ICUBHEADNODE_USERNAME $APPSAWAY_ICUBHEADNODE_ADDR) > /dev/null
   fi
 
   if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
-    ${_DOCKER_BIN} ${_DOCKER_PARAMS} node update --label-add type=gui $(ip2hostname $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR)
+    ${_DOCKER_BIN} ${_DOCKER_PARAMS} node update --label-add type=gui $(ip2hostname $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR) > /dev/null
   fi
 
   if [ "$APPSAWAY_CUDANODE_ADDR" != "" ]; then
@@ -223,7 +272,7 @@ set_hardware_labels()
     for index in "${!_APPSAWAY_CUDANODE_ADDR_LIST[@]}"
     do
       log "changing label to cuda on machine with username ${_APPSAWAY_CUDANODE_USERNAME_LIST[$index]} on IP ${_APPSAWAY_CUDANODE_ADDR_LIST[$index]}"
-      ${_DOCKER_BIN} ${_DOCKER_PARAMS} node update --label-add type=cuda $(ip2hostname ${_APPSAWAY_CUDANODE_USERNAME_LIST[$index]} ${_APPSAWAY_CUDANODE_ADDR_LIST[$index]})
+      ${_DOCKER_BIN} ${_DOCKER_PARAMS} node update --label-add type=cuda $(ip2hostname ${_APPSAWAY_CUDANODE_USERNAME_LIST[$index]} ${_APPSAWAY_CUDANODE_ADDR_LIST[$index]}) > /dev/null
     done
   fi
 
@@ -232,8 +281,8 @@ set_hardware_labels()
     _APPSAWAY_WORKERNODE_USERNAME_LIST=($APPSAWAY_WORKERNODE_USERNAME)
     for index in "${!_APPSAWAY_WORKERNODE_ADDR_LIST[@]}"
     do
-      log "changing label to worker on machine with username ${_APPSAWAY_CUDANODE_USERNAME_LIST[$index]} on IP ${_APPSAWAY_CUDANODE_ADDR_LIST[$index]}"
-      ${_DOCKER_BIN} ${_DOCKER_PARAMS} node update --label-add type=worker $(ip2hostname ${_APPSAWAY_WORKERNODE_USERNAME_LIST[$index]} ${_APPSAWAY_WORKERNODE_ADDR_LIST[$index]})
+      log "changing label to worker on machine with username ${_APPSAWAY_WORKERNODE_USERNAME_LIST[$index]} on IP ${_APPSAWAY_WORKERNODE_ADDR_LIST[$index]}"
+      ${_DOCKER_BIN} ${_DOCKER_PARAMS} node update --label-add type=worker $(ip2hostname ${_APPSAWAY_WORKERNODE_USERNAME_LIST[$index]} ${_APPSAWAY_WORKERNODE_ADDR_LIST[$index]}) > /dev/null
     done
   fi
 }
