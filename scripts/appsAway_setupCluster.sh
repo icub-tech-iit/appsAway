@@ -281,7 +281,7 @@ copy_yaml_files()
   _CUDA_NODE_LIST=( $APPSAWAY_CUDANODE_ADDR )
   _CUDA_USERNAME_LIST=( $APPSAWAY_CUDANODE_USERNAME )
   iter=0
-  for node in ${_CUDA_NODE_LIST}
+  for node in ${_CUDA_NODE_LIST[@]}
   do
     log "creating path ${_APPSAWAY_APP_PATH_NOT_CONSOLE} on CUDA node with IP ${_CUDA_NODE_LIST[iter]}"
     ${_SSH_BIN} ${_SSH_PARAMS} ${_CUDA_USERNAME_LIST[iter]}@${_CUDA_NODE_LIST[iter]} "mkdir -p ${_APPSAWAY_APP_PATH_NOT_CONSOLE}"
@@ -291,7 +291,7 @@ copy_yaml_files()
   _WORKER_NODE_LIST=( $APPSAWAY_WORKERNODE_ADDR )
   _WORKER_USERNAME_LIST=( $APPSAWAY_WORKERNODE_USERNAME )
   iter=0
-  for node in ${_WORKER_NODE_LIST}
+  for node in ${_WORKER_NODE_LIST[@]}
   do
     log "creating path ${_APPSAWAY_APP_PATH_NOT_CONSOLE} on WORKER node with IP ${_WORKER_NODE_LIST[iter]}"
     ${_SSH_BIN} ${_SSH_PARAMS} ${_WORKER_USERNAME_LIST[iter]}@${_WORKER_NODE_LIST[iter]} "mkdir -p ${_APPSAWAY_APP_PATH_NOT_CONSOLE}"
