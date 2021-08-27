@@ -3,9 +3,9 @@ version: "3.7"
 x-yarp-base: &yarp-base
   image: icubteamcode/speech:v2020.08.patch-01_master-unstable_sources
   environment:
-    - DISPLAY=${DISPLAY}
-    - QT_X11_NO_MITSHM=1
-    - XAUTHORITY=/root/.Xauthority
+    #- DISPLAY=${DISPLAY}
+    #- QT_X11_NO_MITSHM=1
+    #- XAUTHORITY=/root/.Xauthority
     - YARP_FORWARD_LOG_ENABLE=1
     - FILE_INPUT
     - INPUT_BOX
@@ -16,8 +16,8 @@ x-yarp-base: &yarp-base
     - LANGUAGE_SYNTHESIS_INPUT
     - VOICE_NAME_INPUT
   volumes:
-    - "/tmp/.X11-unix:/tmp/.X11-unix"
-    - "${XAUTHORITY}:/root/.Xauthority"
+    #- "/tmp/.X11-unix:/tmp/.X11-unix"
+    #- "${XAUTHORITY}:/root/.Xauthority"
     - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
     - "${FILE_INPUT_PATH}:/root/authorization"
   networks:
