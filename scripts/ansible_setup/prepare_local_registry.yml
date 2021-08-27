@@ -45,6 +45,9 @@
           mv daemon_new.txt /etc/docker/daemon.json
           echo "added registries"
         fi
+        jq '. + {"max-concurrent-uploads": 50}' /etc/docker/daemon.json > daemon_new.txt
+        jq '. + {"max-concurrent-downloads": 50}' /etc/docker/daemon.json > daemon_new.txt
+        mv daemon_new.txt /etc/docker/daemon.json
       args:
         warn: no
       when: ansible_distribution != 'MacOSX'
