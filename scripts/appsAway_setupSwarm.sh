@@ -183,6 +183,7 @@ swarm_start()
       _SWARM_NODE_IPS="$_SWARM_NODE_IPS $_SWARM_NODE_IP"
     fi
   done < <(docker node ls)
+  log "node ips: $_SWARM_NODE_IPS"
 
   iter=1
   List=$APPSAWAY_NODES_USERNAME_LIST
@@ -193,7 +194,7 @@ swarm_start()
       username=$( eval echo "\$$iter")
       log "running init on node $node_ip.."
       if [ "$_SWARM_NODE_IPS" != "" ]; then
-        if echo $node_ip | grep -w $_SWARM_NODE_IPS > /dev/null; then
+        if echo "$_SWARM_NODE_IPS" | grep -w $node_ip > /dev/null; then
           log "node is already inside the swarm"
         else
           log "node is not inside the swarm.."
