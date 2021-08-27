@@ -40,8 +40,7 @@ function setupEnvironment {
 
             # done < ${yml_files[$i]} 
         done
-      
-
+        
         # # env file is located in iCubApps folder, so we need APPSAWAY_APP_PATH
         # os.chdir(os.environ.get('APPSAWAY_APP_PATH'))
 
