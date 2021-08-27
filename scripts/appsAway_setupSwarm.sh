@@ -131,7 +131,6 @@ init()
  else
   _ALL_LOCAL_IP_ADDRESSES=$(hostname --all-ip-address)
   _ALL_LOCAL_IP_ADDRESSES+=$(hostname --all-fqdns)
-  _ALL_LOCAL_IP_ADDRESSES+=localhost
  fi
  if [ "$_ALL_LOCAL_IP_ADDRESSES" == "" ]; then
    exit_err "unable to read local IP addresses"

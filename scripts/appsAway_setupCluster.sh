@@ -135,7 +135,6 @@ init()
  else
   _ALL_LOCAL_IP_ADDRESSES=$(hostname --all-ip-address)
   _ALL_LOCAL_IP_ADDRESSES+=$(hostname --all-fqdns)
-  _ALL_LOCAL_IP_ADDRESSES+=localhost
  fi
  if [ "$_ALL_LOCAL_IP_ADDRESSES" == "" ]; then
    exit_err "unable to read local IP addresses"
@@ -180,23 +179,13 @@ create_yarp_config_files()
       _YARP_NAMESPACE_CONF=$_YARP_NAMESPACE_FOUND
     else
       log "server not found, using default settings for yarp server"
-      if [ "${APPSAWAY_CONSOLENODE_ADDR}" == "localhost" ]
-      then 
-        _YARP_IP_CONF=$(hostname -I | awk '{print $1}')
-      else
-        _YARP_IP_CONF=$APPSAWAY_CONSOLENODE_ADDR
-      fi
+      _YARP_IP_CONF=$APPSAWAY_CONSOLENODE_ADDR
       _YARP_PORT_CONF=10000
       _YARP_NAMESPACE_CONF=yarp
     fi
   else
     log "yarp binary not found, using default settings for yarp server"
-    if [ "${APPSAWAY_CONSOLENODE_ADDR}" == "localhost" ]
-      then 
-        _YARP_IP_CONF=$(hostname -I | awk '{print $1}')
-      else
-        _YARP_IP_CONF=$APPSAWAY_CONSOLENODE_ADDR
-    fi
+    _YARP_IP_CONF=$APPSAWAY_CONSOLENODE_ADDR
     _YARP_PORT_CONF=10000
     _YARP_NAMESPACE_CONF=yarp # I changed this from /root to /yarp, to match the old filename
   fi
