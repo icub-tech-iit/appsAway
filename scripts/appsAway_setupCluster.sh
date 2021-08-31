@@ -208,7 +208,6 @@ create_env_file()
   echo "USER_PASSWORD=$APPSAWAY_USER_PASSWORD" >> ${APPSAWAY_APP_PATH}/${_DOCKER_ENV_FILE}
   echo "MASTER_ADDR=$APPSAWAY_CONSOLENODE_ADDR" >> ${APPSAWAY_APP_PATH}/${_DOCKER_ENV_FILE}
   echo "YARP_CONF_PATH=${_APPSAWAY_APP_PATH_NOT_CONSOLE}/${_YARP_CONFIG_FILES_PATH}" >> ${APPSAWAY_APP_PATH}/${_DOCKER_ENV_FILE}
-  
 }
 
 copy_yaml_files()
@@ -361,6 +360,7 @@ find_docker_images()
   echo "Registry_up_flag: $REGISTRY_UP_FLAG"
   echo "export REGISTRY_UP_FLAG=$REGISTRY_UP_FLAG" >> ${HOME}/teamcode/appsAway/scripts/${_APPSAWAY_ENV_FILE}
 
+  pull_result=()
   for index in "${!APPSAWAY_IMAGES_LIST[@]}"
   do
     if [[ ${APPSAWAY_VERSIONS_LIST[$index]} != "n/a" ]]
@@ -369,27 +369,62 @@ find_docker_images()
     else
       current_image=${APPSAWAY_IMAGES_LIST[$index]}:${APPSAWAY_TAGS_LIST[$index]}
     fi
-    echo "Pulling image $current_image, this might take a few minutes..."
-    result=$(${_DOCKER_BIN} pull --quiet $current_image &> /dev/null || true)
-    if [[ $result != "" ]]
+    log "Checking if image $current_image exists on DockerHub..."
+    manifest_found=$( ${_DOCKER_BIN} manifest inspect $current_image || true )
+    if [[ $manifest_found == "" ]]; then
+      log "Manifest not found"
+      pull_result+=(1)
+    else
+      log "Manifest found"
+      pull_result+=(0)
+    fi
+  done
+
+  for index in "${!APPSAWAY_IMAGES_LIST[@]}"
+  do
+   if [[ ${APPSAWAY_VERSIONS_LIST[$index]} != "n/a" ]]
     then
+      current_image=${APPSAWAY_IMAGES_LIST[$index]}:${APPSAWAY_VERSIONS_LIST[$index]}_${APPSAWAY_TAGS_LIST[$index]}
+    else
+      current_image=${APPSAWAY_IMAGES_LIST[$index]}:${APPSAWAY_TAGS_LIST[$index]}
+    fi 
+    if (( ${pull_result[$index]} == 0 )); then
+      log "Pulling image $current_image, this might take a few minutes..."
+      ${_DOCKER_BIN} pull --quiet $current_image &> /dev/null || true &
+    fi
+  done
+  wait 
+  log "Pull completed"
+  for index in "${!APPSAWAY_IMAGES_LIST[@]}"
+  do
+    if [[ ${APPSAWAY_VERSIONS_LIST[$index]} != "n/a" ]]
+    then
+      current_image=${APPSAWAY_IMAGES_LIST[$index]}:${APPSAWAY_VERSIONS_LIST[$index]}_${APPSAWAY_TAGS_LIST[$index]}
+    else
+      current_image=${APPSAWAY_IMAGES_LIST[$index]}:${APPSAWAY_TAGS_LIST[$index]}
+    fi
+    if (( ${pull_result[$index]} == 0 )); then
       ${_DOCKER_BIN} tag $current_image ${APPSAWAY_CONSOLENODE_ADDR}:5000/$current_image
-      log "Pushing $current_image into the local registry"
-      ${_DOCKER_BIN} push ${APPSAWAY_CONSOLENODE_ADDR}:5000/$current_image
+      log "Pushing $current_image into the local registry, this might take a few minutes..."
+      ${_DOCKER_BIN} push ${APPSAWAY_CONSOLENODE_ADDR}:5000/$current_image &> /dev/null &
       APPSAWAY_REGISTRY_IMAGES="$APPSAWAY_REGISTRY_IMAGES ${APPSAWAY_CONSOLENODE_ADDR}:5000/${APPSAWAY_IMAGES_LIST[$index]}"
     else
-      IMAGE_FOUND_LOCALLY=$(${_DOCKER_BIN} images --format "{{.Repository}}:{{.Tag}}" | grep $current_image) 
+      IMAGE_FOUND_LOCALLY=$(${_DOCKER_BIN} images --format "{{.Repository}}:{{.Tag}}" | grep $current_image || true) 
       if [[ $IMAGE_FOUND_LOCALLY != "" ]]  
       then
+        log "Image found locally"
         ${_DOCKER_BIN} tag $current_image ${APPSAWAY_CONSOLENODE_ADDR}:5000/$current_image
-        log "Pushing $current_image into the local registry"
-        ${_DOCKER_BIN} push ${APPSAWAY_CONSOLENODE_ADDR}:5000/$current_image
+        log "Pushing $current_image into the local registry, this might take a few minutes..."
+        ${_DOCKER_BIN} push ${APPSAWAY_CONSOLENODE_ADDR}:5000/$current_image &> /dev/null &
         APPSAWAY_REGISTRY_IMAGES="$APPSAWAY_REGISTRY_IMAGES ${APPSAWAY_CONSOLENODE_ADDR}:5000/${APPSAWAY_IMAGES_LIST[$index]}" 
       else
+        log "Image not found locally"
         exit_err "Image $current_image was not found on DockerHub nor locally. Please be sure that the name is correct."
       fi
     fi
   done
+  wait
+  log "Push completed"
   echo "export APPSAWAY_IMAGES=\"$APPSAWAY_REGISTRY_IMAGES\"" >> ${HOME}/teamcode/appsAway/scripts/appsAway_setEnvironment.local.sh
   source ${HOME}/teamcode/appsAway/scripts/appsAway_setEnvironment.local.sh
 }
