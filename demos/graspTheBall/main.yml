@@ -83,7 +83,7 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "gravityCompensator --autoconnect --no_legs --headV2"
+    command: sh -c "yarp wait /icub/head/state:o; gravityCompensator --autoconnect --no_legs --headV2"
     #note: Do I add --headV2 option??.
 
 #------------------------------------------------------------------------------------------------
@@ -101,14 +101,14 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "camCalib --context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_LEFT --name /icub/camcalib/left"
+    command: sh -c "yarp wait /icub/cam/left; camCalib --context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_LEFT --name /icub/camcalib/left"
 
   yCamCalib_r:
     <<: *yarp-base
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "camCalib --context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_RIGHT --name /icub/camcalib/right"
+    command: sh -c "yarp wait /icub/cam/right; camCalib --context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_RIGHT --name /icub/camcalib/right"
 
   yConnectCam_l:
     <<: *yarp-base
