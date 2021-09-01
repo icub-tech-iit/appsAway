@@ -121,4 +121,3 @@ then
     echo "Some commands failed"
     exit 1
 fi
-
