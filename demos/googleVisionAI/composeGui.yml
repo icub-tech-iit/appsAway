@@ -34,7 +34,7 @@ services:
   #Here we open the viewer to see the output image
   yview_image_o:
     <<: *yarp-base
-    command: yarpview --name /outImage 
+    command: sh -c "yarp wait /googleVisionAI/image:o; yarpview --name /outImage" 
 
   #Here we open the viewer to see icub view
   yview_icub_l:
@@ -45,7 +45,7 @@ services:
   #Here we open the viewer to see the input of the custom port
   yview_port_image_i:
     <<: *yarp-base
-    command: yarpview --name /startImage 
+    command: sh -c "if [ ! -z ${CUSTOM_PORT} ]; then yarpview --name /startImage; fi" 
 
 
 
