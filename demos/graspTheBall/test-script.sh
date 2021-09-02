@@ -100,6 +100,7 @@ export APPSAWAY_NODES_NAME_LIST=\"icubconsole\"
 export APPSAWAY_NODES_ADDR_LIST=\"\${APPSAWAY_GUINODE_ADDR} \${APPSAWAY_ICUBHEADNODE_ADDR} \${APPSAWAY_CONSOLENODE_ADDR} \${APPSAWAY_CUDANODE_ADDR} \${APPSAWAY_WORKERNODE_ADDR}\" 
 export APPSAWAY_NODES_USERNAME_LIST=\"\${APPSAWAY_GUINODE_USERNAME} \${APPSAWAY_ICUBHEADNODE_USERNAME} \${APPSAWAY_CONSOLENODE_USERNAME} \${APPSAWAY_CUDANODE_USERNAME} \${APPSAWAY_WORKERNODE_USERNAME}\" " > ./appsAway_setEnvironment.local.sh 
 
+which yarp
 yarpResource=$(yarp resource --context demoRedBall --from config.ini)
 resourcePath=$(echo "$yarpResource" | awk -F'"' '{print $2}' | awk -F'config.ini' '{print $1}')
 echo "demoRedBall context is: $resourcePath"
