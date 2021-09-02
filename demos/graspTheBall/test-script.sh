@@ -102,7 +102,8 @@ export APPSAWAY_NODES_USERNAME_LIST=\"\${APPSAWAY_GUINODE_USERNAME} \${APPSAWAY_
 
 yarpResource=$(yarp resource --context demoRedBall --from config.ini)
 resourcePath=$(echo "$yarpResource" | awk -F'"' '{print $2}' | awk -F'config.ini' '{print $1}')
-echo "export APPSAWAY_DEMOREDBALL_CONTEXT=$resourcePath" >>appsAway_setEnvironment.local.sh
+echo "demoRedBall context is: $resourcePath"
+echo "export APPSAWAY_DEMOREDBALL_CONTEXT=$resourcePath" >> appsAway_setEnvironment.local.sh
 
 chmod +x appsAway_setEnvironment.local.sh
 source ./appsAway_setEnvironment.local.sh
