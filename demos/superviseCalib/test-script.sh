@@ -98,11 +98,12 @@ export APPSAWAY_GUI_YAML_FILE_LIST=composeGui.yml
 export APPSAWAY_STACK_NAME=mystack
 export APPSAWAY_NODES_NAME_LIST=\"icubconsole\" 
 export APPSAWAY_NODES_ADDR_LIST=\"\${APPSAWAY_GUINODE_ADDR} \${APPSAWAY_ICUBHEADNODE_ADDR} \${APPSAWAY_CONSOLENODE_ADDR} \${APPSAWAY_CUDANODE_ADDR} \${APPSAWAY_WORKERNODE_ADDR}\" 
-export APPSAWAY_NODES_USERNAME_LIST=\"\${APPSAWAY_GUINODE_USERNAME} \${APPSAWAY_ICUBHEADNODE_USERNAME} \${APPSAWAY_CONSOLENODE_USERNAME} \${APPSAWAY_CUDANODE_USERNAME} \${APPSAWAY_WORKERNODE_USERNAME}\" " > ./appsAway_setEnvironment.local.sh
+export APPSAWAY_NODES_USERNAME_LIST=\"\${APPSAWAY_GUINODE_USERNAME} \${APPSAWAY_ICUBHEADNODE_USERNAME} \${APPSAWAY_CONSOLENODE_USERNAME} \${APPSAWAY_CUDANODE_USERNAME} \${APPSAWAY_WORKERNODE_USERNAME}\"
+export APPSAWAY_CALIB_CONTEXT=\"/usr/local/src/robot/robotology-superbuild/build/install/share/iCub/contexts/cameraCalibration/icubEyes.ini\" " > ./appsAway_setEnvironment.local.sh
 
-yarpResource=$(yarp resource --context cameraCalibration --from icubEyes.ini)
-resourcePath=$(echo "$yarpResource" | awk -F'"' '{print $2}' | awk -F'icubEyes.ini' '{print $1}')
-echo "export APPSAWAY_CALIB_CONTEXT=$resourcePath" >>appsAway_setEnvironment.local.sh
+#yarpResource=$(yarp resource --context cameraCalibration --from icubEyes.ini)
+#resourcePath=$(echo "$yarpResource" | awk -F'"' '{print $2}' | awk -F'icubEyes.ini' '{print $1}')
+#echo "export APPSAWAY_CALIB_CONTEXT=$resourcePath" >>appsAway_setEnvironment.local.sh
 
 chmod +x appsAway_setEnvironment.local.sh
 source ./appsAway_setEnvironment.local.sh
