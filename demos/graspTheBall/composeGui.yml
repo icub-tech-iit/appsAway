@@ -27,11 +27,11 @@ services:
 #following services are configured in ./icub-main/app/default/scripts/cameras_calib.xml.template
   yview_l:
     <<: *yarp-base
-    command: yarpview --name /icub/view/left --x 0 --y 0 --p 50 --w 320 --h 240
+    command: sh -c "yarp wait /icub/cam/left; yarpview --name /icub/view/left --x 0 --y 0 --p 50 --w 320 --h 240"
 
   yview_r:
     <<: *yarp-base
-    command: yarpview --name /icub/view/right --x 320 --y 0 --p 50 --w 320 --h 240
+    command: sh -c "yarp wait /icub/cam/right; yarpview --name /icub/view/right --x 320 --y 0 --p 50 --w 320 --h 240"
 
   yconnect_l:
     <<: *yarp-base
@@ -51,7 +51,7 @@ services:
 #Following services are configured in icub-basic-demos/demoRedBall/app/scripts/demoRedBall.xml.template
   yview:
     <<: *yarp-base
-    command: yarpview --name /PF3DTracker_viewer --x 320 --y 0 --p 50 --compact
+    command: sh -c "yarp wait /pf3dTracker/video:o; yarpview --name /PF3DTracker_viewer --x 320 --y 0 --p 50 --compact"
 
   yconnect_demo:
     <<: *yarp-base
