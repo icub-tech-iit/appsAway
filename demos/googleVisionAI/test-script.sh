@@ -106,15 +106,17 @@ echo "images: $APPSAWAY_IMAGES"
 echo "versions: $APPSAWAY_VERSIONS"
 echo "tags: $APPSAWAY_TAGS"
  
-echo "about to setup the cluster..." 
-./appsAway_setupCluster.sh
-
 echo "
 FILE_INPUT=team-code.json
 FILE_INPUT_PATH=/home/icub/iCubApps
 CUSTOM_PORT=/webcam" >> $HOME/iCubApps/$APPSAWAY_APP_NAME/.env 
 
+echo "about to setup the swarm..." 
 ./appsAway_setupSwarm.sh
+
+echo "about to setup the cluster..." 
+./appsAway_setupCluster.sh
+
 setupEnvironment
 ./appsAway_copyFiles.sh
 check_failure ./appsAway_startApp.sh
