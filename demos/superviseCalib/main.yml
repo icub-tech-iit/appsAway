@@ -13,7 +13,7 @@ x-yarp-base: &yarp-base
   volumes:
     - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
     - "${APPSAWAY_CALIB_CONTEXT}:/usr/local/share/iCub/contexts/cameraCalibration/:rw"
-    - "${APPSAWAY_CALIB_CONTEXT}:/usr/local/share/ICUBcontrib/robots/${YARP_ROBOT_NAME}/:rw"
+    #- "${APPSAWAY_CALIB_CONTEXT}:/usr/local/share/ICUBcontrib/robots/${YARP_ROBOT_NAME}/:rw"
     - "${CUSTOM_FILE:-/dev/null}:/usr/local/share/iCub/contexts/cameraCalibration/customEyes.ini"
   networks:
     - hostnet
