@@ -4,16 +4,37 @@
   "description": "Funny things application",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "ELECTRON_ENV=development electron .",
+    "build": "electron-builder"
+  },
+  "build": {
+    "appId": "com.iit.funnythings",
+    "productName": "FunnyThingsApp",
+    "files": [
+      "**/*",
+      "../script/**"
+    ],
+    "linux": {
+      "category": "Development"
+    },
+    "extraResources": [
+      {
+        "from": "../script",
+        "to": "script"
+      }
+    ],
+    "icon": "assets/icon.png"
   },
   "author": "Vadim Tikhanoff",
   "license": "ISC",
   "dependencies": {
-    "electron": "^13.1.9",
     "node-exec-promise": "^1.0.2",
     "p-iteration": "^1.1.8"
   },
+  "postinstall": "electron-builder install-app-deps",
   "devDependencies": {
-    "@shopify/draggable": "^1.0.0-beta.8"
+    "electron": "^13.1.9",
+    "@shopify/draggable": "^1.0.0-beta.8",
+    "electron-builder": "^22.11.7"
   }
 }

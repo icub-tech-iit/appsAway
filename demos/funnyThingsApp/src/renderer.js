@@ -1,10 +1,14 @@
 const exec = require('node-exec-promise').exec;
 const {forEach, forEachSeries, filter} = require('p-iteration')
 const electron = require('electron');
+const process = require('process');
 const path = require('path');
 const fs = require('fs');
 
 const dialog = electron.remote.dialog;
+
+console.log(process.env);
+const scriptPath = process.env.ELECTRON_ENV === "development" ? path.join(__dirname, '../script') : path.join(process.resourcesPath, 'script');
 
 
 let actionBlockParameters = {}
@@ -153,7 +157,7 @@ const runSingleAction = async (activity, activityIndex) => {
                 }
             })
         }
-        await exec(`../script/funnythings.sh ${bashAction}`)
+        await exec(`${path.join(scriptPath, 'funnythings.sh')} ${bashAction}`)
     })
     arrayOfPanelItems.forEach((panelItem) => {
         panelItem.classList.remove('low-light')
@@ -527,7 +531,8 @@ const runDemo = async() => {
             actionCounter += 1;
         }
         if (run) {
-          await exec(`../script/funnythings.sh ${bashAction}`)
+          let out = await exec(`${path.join(scriptPath, 'funnythings.sh')} ${bashAction}`)
+          console.log(out.stdout, out.stderr);
         }
     })
 
@@ -645,7 +650,7 @@ const saveTextFile = (textContent, title, defaultPath, buttonLabel, filterName, 
 const bashExporter = ()=>{
     let newFunnyThingScriptContent;
     let actionsArray = generateBashActionsArray(activitiesToPerform);
-    fs.readFile('../script/funnythings_template.sh', 'utf8', (err, data) => {
+    fs.readFile(path.join(scriptPath, 'funnythings_template.sh'), 'utf8', (err, data) => {
         newFunnyThingScriptContent = data;
 
         newFunnyThingScriptContent += "\n" 
@@ -654,7 +659,8 @@ const bashExporter = ()=>{
             newFunnyThingScriptContent += "  " + action + '\n'
         })
         newFunnyThingScriptContent += "} " 
-        fs.readFile('../script/funnythings_main_template.sh', 'utf8', (mainErr, mainData) => {
+        console.log(path.join(scriptPath, 'funnythings_main_template.sh'))
+        fs.readFile(path.join(scriptPath, 'funnythings_main_template.sh'), 'utf8', (mainErr, mainData) => {
             newFunnyThingScriptContent += mainData;
             
             saveTextFile(newFunnyThingScriptContent,

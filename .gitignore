@@ -12,3 +12,4 @@ scripts/ansible_setup/hosts.ini
 scripts/ansible_setup/passwords.enc
 scripts/temp_local_env.sh
 scripts/PIPE
+dist/
