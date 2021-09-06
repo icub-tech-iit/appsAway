@@ -14,6 +14,7 @@ x-yarp-base: &yarp-base
     - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
     - "${APPSAWAY_CALIB_CONTEXT}:/usr/local/share/iCub/contexts/cameraCalibration/:rw"
     - "${APPSAWAY_CALIB_CONTEXT}:/usr/local/share/ICUBcontrib/robots/${YARP_ROBOT_NAME}/:rw"
+    - "${CUSTOM_FILE:-/dev/null}:/usr/local/share/iCub/contexts/cameraCalibration/customEyes.ini"
   networks:
     - hostnet
 
@@ -49,8 +50,7 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "yarp wait /calibSupervisor/imageLeft:o ; if [ ! -z ${CUSTOM_FILE} ]; then run-all.sh /usr/local/share/iCub/contexts/cameraCalibration/${CUSTOM_FILE} outputCalib.ini cameraCalibration $MONO_CALIB; else run-all.sh icubEyes.ini outputCalib.ini cameraCalibration $MONO_CALIB; fi"
-
+    command: sh -c "yarp wait /calibSupervisor/imageLeft:o ; if [ ! -z ${CUSTOM_FILE} ]; then run-all.sh /usr/local/share/iCub/contexts/cameraCalibration/customEyes.ini outputCalib.ini cameraCalibration $MONO_CALIB; else run-all.sh icubEyes.ini outputCalib.ini cameraCalibration $MONO_CALIB; fi"
 
   yStartCalib:
     <<: *yarp-base
