@@ -112,9 +112,6 @@ echo "images: $APPSAWAY_IMAGES"
 echo "versions: $APPSAWAY_VERSIONS"
 echo "tags: $APPSAWAY_TAGS"
  
-echo "about to setup the cluster..." 
-./appsAway_setupCluster.sh
-
 echo "
 CUSTOM_PATH=false
 RGB_CAMERAS=true
@@ -122,7 +119,12 @@ RESOLUTION=320x240
 EVENT_CAMERAS=false
 MONO_CALIB=false" >> $HOME/iCubApps/$APPSAWAY_APP_NAME/.env 
 
+echo "about to setup the swarm..." 
 ./appsAway_setupSwarm.sh
+
+echo "about to setup the cluster..." 
+./appsAway_setupCluster.sh
+
 setupEnvironment
 ./appsAway_copyFiles.sh
 check_failure ./appsAway_startApp.sh

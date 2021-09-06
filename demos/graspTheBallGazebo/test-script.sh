@@ -106,10 +106,12 @@ echo "images: $APPSAWAY_IMAGES"
 echo "versions: $APPSAWAY_VERSIONS"
 echo "tags: $APPSAWAY_TAGS"
  
+echo "about to setup the swarm..." 
+./appsAway_setupSwarm.sh
+
 echo "about to setup the cluster..." 
 ./appsAway_setupCluster.sh
 
-./appsAway_setupSwarm.sh
 setupEnvironment
 ./appsAway_copyFiles.sh
 check_failure ./appsAway_startApp.sh
