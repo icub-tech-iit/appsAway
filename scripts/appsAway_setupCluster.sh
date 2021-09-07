@@ -360,7 +360,7 @@ find_docker_images()
       current_image=${APPSAWAY_IMAGES_LIST[$index]}:${APPSAWAY_TAGS_LIST[$index]}
     fi
     log "Checking if image $current_image exists on DockerHub..."
-    manifest_found=$( ${_DOCKER_BIN} manifest inspect $current_image || true )
+    manifest_found=$( ${_DOCKER_BIN} manifest inspect $current_image 2> /dev/null || true )
     if [[ $manifest_found == "" ]]; then
       log "Manifest not found"
       pull_result+=(1)
@@ -429,6 +429,8 @@ find_docker_images()
         log "Image not found locally"
         exit_err "Image $current_image was not found on DockerHub nor locally. Please be sure that the name is correct."
       fi
+    else
+      APPSAWAY_REGISTRY_IMAGES="$APPSAWAY_REGISTRY_IMAGES ${APPSAWAY_IMAGES_LIST[$index]}" 
     fi
   done
   wait
