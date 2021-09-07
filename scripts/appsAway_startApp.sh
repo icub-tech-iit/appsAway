@@ -237,11 +237,11 @@ run_deploy()
   
   for _file2deploy in ${APPSAWAY_DEPLOY_YAML_FILE_LIST}
   do       
-    log "downloading the image: ${_DOCKER_COMPOSE_BIN_CONSOLE} -f ${_file2deploy} up" # pull "
-    ${_DOCKER_COMPOSE_BIN_CONSOLE} -f ${_file2deploy} pull
-    log "pushing image into service registry for distribution in swarm"
-    ${_DOCKER_COMPOSE_BIN_CONSOLE} -f ${_file2deploy} push
-    log "Image from ${_file2deploy} successfully pushed"
+    #log "downloading the image: ${_DOCKER_COMPOSE_BIN_CONSOLE} -f ${_file2deploy} up" # pull "
+    #${_DOCKER_COMPOSE_BIN_CONSOLE} -f ${_file2deploy} pull
+    #log "pushing image into service registry for distribution in swarm"
+    #${_DOCKER_COMPOSE_BIN_CONSOLE} -f ${_file2deploy} push
+    #log "Image from ${_file2deploy} successfully pushed"
     val1=$(( $val1 + 10 ))
     echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE
     ${_DOCKER_BIN} ${_DOCKER_PARAMS} stack deploy -c ${_file2deploy} ${APPSAWAY_STACK_NAME}
@@ -270,6 +270,7 @@ scp_to_node()
   ip_to_receive=$3
   path_to_receive=$4
   full_path_to_receive=${_OS_HOME_DIR}/${username_to_receive}/${path_to_receive}
+  # TODO: this only works in ubuntu, we should check how to do this in other OS
   ${_SCP_BIN} ${_SCP_PARAMS_DIR} ${file_to_send} ${username_to_receive}@${ip_to_receive}:${full_path_to_receive}/
 }
 
@@ -297,7 +298,7 @@ run_hardware_steps_via_ssh()
     scp_to_node ${_CWD}/appsAway_getVolumesFileList.sh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR $APPSAWAY_APP_PATH_NOT_CONSOLE       
     run_via_ssh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR "export APPSAWAY_OPTIONS=${APPSAWAY_OPTIONS} ; export _YAML_VOLUMES_HOST=\"${_YAML_VOLUMES_HOST}\" ; export APPSAWAY_APP_PATH_NOT_CONSOLE=${APPSAWAY_APP_PATH_NOT_CONSOLE} ; ${_OS_HOME_DIR}/${APPSAWAY_CONSOLENODE_USERNAME}/${APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_getVolumesFileList.sh"  
  fi
- if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
+ ( if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_HEAD_YAML_FILE_LIST}
     do
       log "running ${_DOCKER_COMPOSE_BIN_HEAD} with file ${_OS_HOME_DIR}/${APPSAWAY_ICUBHEADNODE_USERNAME}/${APPSAWAY_APP_PATH_NOT_CONSOLE}/${file} on host $APPSAWAY_ICUBHEADNODE_ADDR"
@@ -307,11 +308,11 @@ run_hardware_steps_via_ssh()
       scp_to_node ${_CWD}/appsAway_getVolumesFileList.sh $APPSAWAY_ICUBHEADNODE_USERNAME $APPSAWAY_ICUBHEADNODE_ADDR $APPSAWAY_APP_PATH_NOT_CONSOLE      
       run_via_ssh $APPSAWAY_ICUBHEADNODE_USERNAME $APPSAWAY_ICUBHEADNODE_ADDR "export APPSAWAY_OPTIONS=${APPSAWAY_OPTIONS} ; export _YAML_VOLUMES_HOST=\"${_YAML_VOLUMES_HOST}\" ; export APPSAWAY_APP_PATH_NOT_CONSOLE=${APPSAWAY_APP_PATH_NOT_CONSOLE} ; ${_OS_HOME_DIR}/${APPSAWAY_CONSOLENODE_USERNAME}/${APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_getVolumesFileList.sh ; ${_DOCKER_COMPOSE_BIN_HEAD} -f ${file} pull; ${_DOCKER_COMPOSE_BIN_HEAD} -f ${file} up --detach"
     done
-    val1=$(( $val1 + 5 ))
-    echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE
-  fi
+  fi ) &
+  val1=$(( $val1 + 5 ))
+  echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE
   #sleep 3
-  if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
+  ( if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
     do
       log "running ${_DOCKER_COMPOSE_BIN_GUI} with file ${_OS_HOME_DIR}/${APPSAWAY_GUINODE_USERNAME}/${APPSAWAY_APP_PATH_NOT_CONSOLE}/${file} on host $APPSAWAY_GUINODE_ADDR"
@@ -322,8 +323,6 @@ run_hardware_steps_via_ssh()
       log "we are using the following variables: DISPLAY=${GUI_DISPLAY}; XAUTHORITY=${GUI_XAUTHORITY}"
       run_via_ssh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR "export APPSAWAY_OPTIONS=${APPSAWAY_OPTIONS} ; export ${GUI_DISPLAY} ; export XAUTHORITY=${GUI_XAUTHORITY}; export _YAML_VOLUMES_HOST=\"${_YAML_VOLUMES_HOST}\" ; export APPSAWAY_APP_PATH_NOT_CONSOLE=${APPSAWAY_APP_PATH_NOT_CONSOLE} ; ${_OS_HOME_DIR}/${APPSAWAY_GUINODE_USERNAME}/${APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_getVolumesFileList.sh ; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_GUI} -f ${file} pull; ${_DOCKER_COMPOSE_BIN_GUI} -f ${file} up --detach; fi"
     done
-    val1=$(( $val1 + 5 ))
-    echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE
   elif [ "$APPSAWAY_GUINODE_ADDR" == "" ] && [ "$APPSAWAY_CONSOLENODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
     do
@@ -334,9 +333,9 @@ run_hardware_steps_via_ssh()
       scp_to_node ${_CWD}/appsAway_getVolumesFileList.sh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR $APPSAWAY_APP_PATH_NOT_CONSOLE       
       run_via_ssh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR "export APPSAWAY_OPTIONS=${APPSAWAY_OPTIONS} ; export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth};  export _YAML_VOLUMES_HOST=\"${_YAML_VOLUMES_HOST}\" ; export APPSAWAY_APP_PATH_NOT_CONSOLE=${APPSAWAY_APP_PATH_NOT_CONSOLE} ; ${_OS_HOME_DIR}/${APPSAWAY_CONSOLENODE_USERNAME}/${APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_getVolumesFileList.sh ; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_CONSOLE} -f ${file} pull; ${_DOCKER_COMPOSE_BIN_CONSOLE} -f ${file} up --detach; fi"
     done
-    val1=$(( $val1 + 5 ))
-    echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE
-  fi
+  fi ) &
+  val1=$(( $val1 + 5 ))
+  echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE
 }
 
 stop_hardware_steps_via_ssh()
@@ -382,10 +381,11 @@ main()
   is_this_node_swarm_master
   val1=$(( 30 ))
   echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE
-  run_deploy
+  run_deploy &
   val1=$(( 70 ))
   echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE
   run_hardware_steps_via_ssh
+  wait
   val1=$(( 90 ))
   echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE
 #  stop_hardware_steps_via_ssh
