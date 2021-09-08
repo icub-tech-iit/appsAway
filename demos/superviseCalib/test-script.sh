@@ -34,11 +34,6 @@ function setupEnvironment {
             do
                 sed -i 's,image: '"${list_images[$j]}"'.*$,image: '"${list_images[$j]}"':'"${list_versions[$j]}"'_'"${list_tags[$j]}"',g' ${yml_files[$i]}
             done
-            # while read -r line || [ -n "$line" ]
-            # do
-              
-
-            # done < ${yml_files[$i]} 
         done
       
 
