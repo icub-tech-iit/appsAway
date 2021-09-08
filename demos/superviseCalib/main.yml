@@ -7,8 +7,8 @@ x-yarp-base: &yarp-base
     - YARP_ROBOT_NAME
     - APPSAWAY_CALIB_CONTEXT
     - CUSTOM_FILE
-    - EVENT_CAMERAS
-    - RESOLUTION
+    - CAMERA_TYPES
+    - RESOLUTIONS
     - MONO_CALIB
   volumes:
     - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
@@ -41,7 +41,7 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "yarp wait /viewer_template; if [ ${MONO_CALIB} = false ]; then if [ ${EVENT_CAMERAS} = true ]; then calibSupervisor --file calibrations_event_304x240.ini --eventCam true --percentageThresh 86.0; else if [ ${RESOLUTION} = "320x240" ]; then calibSupervisor; else if [ ${RESOLUTION} = "640x480" ]; then calibSupervisor --file calibrations_rgb_640x480.ini; else if [ ${RESOLUTION} = "1024x768" ]; then calibSupervisor --file calibrations_rgb_1024x768.ini; fi; fi; fi; fi; else if [ ${EVENT_CAMERAS} = true ]; then calibSupervisor --file calibrations_event_304x240.ini --eventCam true --stereo false --percentageThresh 86.0; else if [ ${RESOLUTION} = "320x240" ]; then calibSupervisor --stereo false; else if [ ${RESOLUTION} = "640x480" ]; then calibSupervisor --file calibrations_rgb_640x480.ini --stereo false; else if [ ${RESOLUTION} = "1024x768" ]; then calibSupervisor --file calibrations_rgb_1024x768.ini --stereo false; fi; fi; fi; fi; fi;"
+    command: sh -c "yarp wait /viewer_template; if [ ${MONO_CALIB} = false ]; then if [ ${CAMERA_TYPES} = "Event-driven" ]; then calibSupervisor --file calibrations_event_304x240.ini --eventCam true --percentageThresh 86.0; else if [ ${RESOLUTIONS} = "320x240" ]; then calibSupervisor; else if [ ${RESOLUTIONS} = "640x480" ]; then calibSupervisor --file calibrations_rgb_640x480.ini; else if [ ${RESOLUTIONS} = "1024x768" ]; then calibSupervisor --file calibrations_rgb_1024x768.ini; fi; fi; fi; fi; else if [ ${CAMERA_TYPES} = "Event-driven" ]; then calibSupervisor --file calibrations_event_304x240.ini --eventCam true --stereo false --percentageThresh 86.0; else if [ ${RESOLUTIONS} = "320x240" ]; then calibSupervisor --stereo false; else if [ ${RESOLUTIONS} = "640x480" ]; then calibSupervisor --file calibrations_rgb_640x480.ini --stereo false; else if [ ${RESOLUTIONS} = "1024x768" ]; then calibSupervisor --file calibrations_rgb_1024x768.ini --stereo false; fi; fi; fi; fi; fi;"
 
   yUpdateFile:
     <<: *yarp-base
@@ -71,7 +71,7 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "if [ ${EVENT_CAMERAS} = true ]; then yarp wait /vFramer/left/image:o; else yarp wait /icub/cam/left; fi; yarp wait /viewer/left ; if [ ${EVENT_CAMERAS} = true ]; then yarp connect /vFramer/left/image:o /viewer/left fast_tcp; else yarp connect /icub/cam/left /viewer/left fast_tcp; fi;"
+    command: sh -c "if [ ${CAMERA_TYPES} = "Event-driven" ]; then yarp wait /vFramer/left/image:o; else yarp wait /icub/cam/left; fi; yarp wait /viewer/left ; if [ ${CAMERA_TYPES} = "Event-driven" ]; then yarp connect /vFramer/left/image:o /viewer/left fast_tcp; else yarp connect /icub/cam/left /viewer/left fast_tcp; fi;"
 
   yConnectToRightRaw:
     <<: *yarp-base
@@ -80,7 +80,7 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "if [ ${EVENT_CAMERAS} = true ]; then yarp wait /vFramer/right/image:o; else yarp wait /icub/cam/right; fi; yarp wait /viewer/right ; if [ ${EVENT_CAMERAS} = true ]; then yarp connect /vFramer/right/image:o /viewer/right fast_tcp; else yarp connect /icub/cam/right /viewer/right fast_tcp; fi;"
+    command: sh -c "if [ ${CAMERA_TYPES} = "Event-driven" ]; then yarp wait /vFramer/right/image:o; else yarp wait /icub/cam/right; fi; yarp wait /viewer/right ; if [ ${CAMERA_TYPES} = "Event-driven" ]; then yarp connect /vFramer/right/image:o /viewer/right fast_tcp; else yarp connect /icub/cam/right /viewer/right fast_tcp; fi;"
 
   yConnectToLeftInImage:
     <<: *yarp-base
@@ -89,7 +89,7 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "if [ ${EVENT_CAMERAS} = true ]; then yarp wait /vFramer/left/image:o; else yarp wait /icub/cam/left; fi; yarp wait /calibSupervisor/imageLeft:i ; if [ ${EVENT_CAMERAS} = true ]; then yarp connect /vFramer/left/image:o /calibSupervisor/imageLeft:i fast_tcp; else yarp connect /icub/cam/left /calibSupervisor/imageLeft:i fast_tcp; fi;"
+    command: sh -c "if [ ${CAMERA_TYPES} = "Event-driven" ]; then yarp wait /vFramer/left/image:o; else yarp wait /icub/cam/left; fi; yarp wait /calibSupervisor/imageLeft:i ; if [ ${CAMERA_TYPES} = "Event-driven" ]; then yarp connect /vFramer/left/image:o /calibSupervisor/imageLeft:i fast_tcp; else yarp connect /icub/cam/left /calibSupervisor/imageLeft:i fast_tcp; fi;"
 
 
   yConnectToRightInImage:
@@ -99,7 +99,7 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "if [ ${EVENT_CAMERAS} = true ]; then yarp wait /vFramer/right/image:o; else yarp wait /icub/cam/right; fi; yarp wait /calibSupervisor/imageRight:i ; if [ ${EVENT_CAMERAS} = true ]; then yarp connect /vFramer/right/image:o; /calibSupervisor/imageRight:i fast_tcp; else yarp connect /icub/cam/right /calibSupervisor/imageRight:i fast_tcp; fi;"
+    command: sh -c "if [ ${CAMERA_TYPES} = "Event-driven" ]; then yarp wait /vFramer/right/image:o; else yarp wait /icub/cam/right; fi; yarp wait /calibSupervisor/imageRight:i ; if [ ${CAMERA_TYPES} = "Event-driven" ]; then yarp connect /vFramer/right/image:o; /calibSupervisor/imageRight:i fast_tcp; else yarp connect /icub/cam/right /calibSupervisor/imageRight:i fast_tcp; fi;"
 
   yConnectToLeftStereoCalib:
     <<: *yarp-base
@@ -144,7 +144,7 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "if [ ${EVENT_CAMERAS} = true ]; then yarp wait /vFramer/left/image:o; else yarp wait /icub/cam/left ; fi; yarp wait /camCalib/left/in; if [ ${EVENT_CAMERAS} = true ]; then yarp connect /vFramer/left/image:o /camCalib/left/in fast_tcp ; else yarp connect /icub/cam/left /camCalib/left/in fast_tcp ; fi;"
+    command: sh -c "if [ ${CAMERA_TYPES} = "Event-driven" ]; then yarp wait /vFramer/left/image:o; else yarp wait /icub/cam/left ; fi; yarp wait /camCalib/left/in; if [ ${CAMERA_TYPES} = "Event-driven" ]; then yarp connect /vFramer/left/image:o /camCalib/left/in fast_tcp ; else yarp connect /icub/cam/left /camCalib/left/in fast_tcp ; fi;"
   
   yConnectToRightInCamCalib:
     <<: *yarp-base
@@ -153,7 +153,7 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "if [ ${EVENT_CAMERAS} = true ]; then yarp wait /vFramer/right/image:o; else yarp wait /icub/cam/right ; fi; yarp wait /camCalib/right/in; if [ ${EVENT_CAMERAS} = true ]; then yarp connect /vFramer/right/image:o /camCalib/right/in fast_tcp ; else yarp connect /icub/cam/right /camCalib/right/in fast_tcp ; fi;"
+    command: sh -c "if [ ${CAMERA_TYPES} = "Event-driven" ]; then yarp wait /vFramer/right/image:o; else yarp wait /icub/cam/right ; fi; yarp wait /camCalib/right/in; if [ ${CAMERA_TYPES} = "Event-driven" ]; then yarp connect /vFramer/right/image:o /camCalib/right/in fast_tcp ; else yarp connect /icub/cam/right /camCalib/right/in fast_tcp ; fi;"
 
   yConnectToLeftOutCamCalib:
     <<: *yarp-base
@@ -186,7 +186,7 @@ services:
 
   #use network.peer ip address and port 8080 to see the containers status in browser
   visualizer:
-    image: dockersamples/visualizer:stable
+    image: localhost:5000/test
     ports:
       - "8080:8080"
     volumes:

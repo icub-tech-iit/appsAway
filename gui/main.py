@@ -549,6 +549,9 @@ class WidgetGallery(QDialog):
                   buttonOption.button.clear()
                   for new_item in opt_list:
                     buttonOption.button.addItem(new_item)
+                  buttonOption.button.setCurrentIndex(0)
+                  for button in self.button_list: # check the status of all buttons
+                    self.checkDependencies(button)
  
     
     @pyqtSlot()
