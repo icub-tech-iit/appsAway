@@ -55,5 +55,5 @@ services:
   #Opening we open the viewer to see the template during calibration
   yview_template:
     <<: *yarp-base
-    command: sh -c "yarp wait /calibSupervisor/template:o; yarpview --name /viewer_template --x 0 --y 650 --w 450 --h 450"
+    command: sh -c "yarp wait /icub/cam/left; yarp wait /icub/cam/right; yarpview --name /viewer_template --x 0 --y 650 --w 450 --h 450"
 
