@@ -140,6 +140,7 @@ init()
  if [ "$os" = "Darwin" ]
  then
   _ALL_LOCAL_IP_ADDRESSES=$(arp -a | awk -F'[()]' '{print $2}')
+# ' This brings color back to visual code :D
  else
   _ALL_LOCAL_IP_ADDRESSES=$(hostname --all-ip-address)
   _ALL_LOCAL_IP_ADDRESSES+=$(hostname --all-fqdns)
@@ -403,10 +404,10 @@ find_docker_images()
     else
       current_image=${APPSAWAY_IMAGES_LIST[$index]}:${APPSAWAY_TAGS_LIST[$index]}
     fi 
-    if (( ${pull_result[$index]} == 0 )); then
-      log "Pulling image $current_image, this might take a few minutes..."
-      ${_DOCKER_BIN} pull --quiet $current_image &> /dev/null || true &
-    fi
+#    if (( ${pull_result[$index]} == 0 )); then
+#      log "Pulling image $current_image, this might take a few minutes..."
+#      ${_DOCKER_BIN} pull --quiet $current_image &> /dev/null || true &
+#    fi
   done
   for index in "${!APPSAWAY_IMAGES_LIST[@]}"
   do
