@@ -20,7 +20,7 @@ services:
     <<: *yarp-head
     devices: 
       - "/dev/video0:/dev/video0"
-    command: sh -c "yarpdev --from camera/ServerGrabberDualDragon.ini --split true; "
+    command: sh -c "if [ ${CAMERA_CONF_FILE} = "Custom-file" ]; then yarpdev --from camera/${CAMERA_CUSTOM_CONF_FILE}; else yarpdev --from camera/${CAMERA_CONF_FILE}; fi;"
 
   yrobotinterface:
     <<: *yarp-head
