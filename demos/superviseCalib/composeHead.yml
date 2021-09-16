@@ -5,6 +5,8 @@ x-yarp-head: &yarp-head
   environment:
     - YARP_FORWARD_LOG_ENABLE=1
     - YARP_ROBOT_NAME
+    - CAMERA_CONF_FILE
+    - CAMERA_CUSTOM_CONF_FILE
   volumes:
     - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
     - "/dev:/dev"
