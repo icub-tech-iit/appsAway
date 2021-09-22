@@ -13,7 +13,7 @@ function createWindow(){
         webPreferences: {
             nodeIntegration: true, 
             contextIsolation: false,
-            devTools: false,
+            devTools: true,
             enableRemoteModule: true,
             preload: path.join(__dirname, 'preload.js')
         }
@@ -29,7 +29,7 @@ function createWindow(){
     // Load index.html
     mainWindow.loadFile('index.html')
     // open devtools
-    // mainWindow.webContents.openDevTools();
+    mainWindow.webContents.openDevTools();
 }
 
 app.whenReady().then(() => {

@@ -49,47 +49,36 @@ var changeActivityValue = (activityIndex, optionIndex, value) => {
 
 var checkActivites = (activities) => {
     if (!Array.isArray(activities)) return false;
-    if (activities.length < 1) return false;
+    console.log("passed check of is array")
+    if (activities.length < 1) return false; // There should be at least one activity
+    console.log("passed check of length > 1")
     for (let activity of activities) {
-        let options = activity.options
-        if (!Array.isArray(options) && activity.activity !== 'FONZIE') return false;
-        switch (activity.activity) {
-            case 'SPEAK':
-                options.forEach((option)=>{
-                    switch (option.label) {
-                        case 'Text:':
-                            if (typeof(option.value) !== "string") return false;
-                            break;
-                        case 'Wait until finish:':
-                            if (!OPTIONS.SPEAK[1].options.includes(option.value)) return false;
-                            break;
-                        default:
-                            return false;
-                    }
-                })
-                break;
-            case 'WAVE':
-            case 'HOME':
-            case 'VICTORY':
-                if (options.length !== 1) return false;
-                if (options[0].label !== 'Arm(s):') return false;
-                if (!OPTIONS.WAVE[0].options.includes(options[0].value)) return false;
-                break;
-            case 'EMOTION':
-                if (options.length !== 1) return false;
-                if (options[0].label !== 'Emotion:') return false;
-                if (!OPTIONS.EMOTION[0].options.includes(options[0].value)) return false;
-                break;
-            case 'FONZIE':
-                break;
-            case 'SLEEP':
-                if (options.length !== 1) return false;
-                if (options[0].label !== 'Time:') return false;
-                if (!/^[0-9]+(\.)?[0-9]*$/.test(options[0].value)) {console.log(options[0].value); return false};
-                //if (typeof(options[0].value !== 'number')) return false;
-                break;
-            default:
-                return false;
+        if (!OPTIONS.hasOwnProperty(activity.activity)) return false;
+        console.log(`activity ${activity.activity} passed check of being part of options`)
+        let possibleOptionValues = OPTIONS[activity.activity];
+        for (let optionTemplate of possibleOptionValues) {
+            let importedOption = activity.options.filter(option => option.label == optionTemplate.label)
+            if (importedOption.length !== 1) return false; // There should be exactly one option with the same label as the template
+            console.log(`activity ${activity.activity} correctly has 1 option of label ${optionTemplate.label}`)
+            importedOption = importedOption[0]
+            let optionType = optionTemplate.type;
+            switch (optionType) {
+                case "string":
+                    if (typeof importedOption.value !== "string") return false;
+                    break;
+                case "float":
+                    let floatRegex = new RegExp("^\\d*(\\.\\d+)?$")
+                    if (!floatRegex.test(importedOption.value)) return false;
+                    break;
+                case "select":
+                case "dropdown":
+                    if (!optionTemplate.options.some(optionValue => optionValue == importedOption.value)) return false;
+                    break;
+                default:
+                    console.log("you shouldn't see this")
+                    return false;
+            }
+            console.log(`activity ${activity.activity} passed all the checks`)
         }
     }
     return true;
