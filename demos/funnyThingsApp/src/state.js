@@ -53,8 +53,8 @@ var checkActivites = (activities) => {
     if (activities.length < 1) return false; // There should be at least one activity
     console.log("passed check of length > 1")
     for (let activity of activities) {
-        if (!OPTIONS.hasOwnProperty(activity.activity)) return false;
-        console.log(`activity ${activity.activity} passed check of being part of options`)
+        if (!ACTIONS.hasOwnProperty(activity.activity)) return false;
+        console.log(`activity ${activity.activity} passed check of being part of actions`)
         let possibleOptionValues = OPTIONS[activity.activity];
         for (let optionTemplate of possibleOptionValues) {
             let importedOption = activity.options.filter(option => option.label == optionTemplate.label)
