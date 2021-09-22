@@ -33,7 +33,7 @@ var removeActivity = (indexToRemove) => {
     if (indexToRemove < activitiesToPerform.length) {
         activitiesToPerform.splice(indexToRemove, 1);
     }
-} 
+}
 
 var repositionActivity = (indexToChange, newPosition) => {
     activitiesToPerform.splice(newPosition, 0, activitiesToPerform.splice(indexToChange, 1)[0])
@@ -67,7 +67,7 @@ var checkActivites = (activities) => {
                     if (typeof importedOption.value !== "string") return false;
                     break;
                 case "float":
-                    let floatRegex = new RegExp("^\\d*(\\.\\d+)?$")
+                    let floatRegex = new RegExp("^-?\\d*(\\.\\d+)?$")
                     if (!floatRegex.test(importedOption.value)) return false;
                     break;
                 case "select":

@@ -290,22 +290,22 @@ var OPTIONS = {
     ],
     GAZELOOK: [
         {
-            type: "string",
+            type: "float",
             label: "X:",
             default_value: "15.0"
         },
         {
-            type: "string",
+            type: "float",
             label: "Y:",
             default_value: "0.0"
         },
         {
-            type: "string",
+            type: "float",
             label: "Z:",
             default_value: "5.0"
         },
     ],
-    
+
 }
 
 //var ACTIONCOLORS = ["233d4d","fe7f2d","fcca46","a1c181","619b8a"]
