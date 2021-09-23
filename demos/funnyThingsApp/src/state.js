@@ -49,19 +49,15 @@ var changeActivityValue = (activityIndex, optionIndex, value) => {
 
 var checkActivites = (activities) => {
     if (!Array.isArray(activities)) return false;
-    console.log("passed check of is array")
     if (activities.length < 1) return false; // There should be at least one activity
-    console.log("passed check of length > 1")
     for (let activity of activities) {
         if (!ACTIONS.hasOwnProperty(activity.activity)) return false;
-        console.log(`activity ${activity.activity} passed check of being part of actions`)
         let possibleOptionValues = OPTIONS[activity.activity];
         if (Array.isArray(possibleOptionValues)) {
             for (let optionTemplate of possibleOptionValues) {
                 if (!Array.isArray(activity.options)) return false;
                 let importedOption = activity.options.filter(option => option.label == optionTemplate.label)
                 if (importedOption.length !== 1) return false; // There should be exactly one option with the same label as the template
-                console.log(`activity ${activity.activity} correctly has 1 option of label ${optionTemplate.label}`)
                 importedOption = importedOption[0]
                 let optionType = optionTemplate.type;
                 switch (optionType) {
@@ -77,10 +73,8 @@ var checkActivites = (activities) => {
                         if (!optionTemplate.options.some(optionValue => optionValue == importedOption.value)) return false;
                         break;
                     default:
-                        console.log("you shouldn't see this")
                         return false;
                 }
-                console.log(`activity ${activity.activity} passed all the checks`)
             }
         } else if(activity.hasOwnProperty("options")) {
             return false;
