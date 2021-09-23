@@ -5,9 +5,9 @@ const process = require('process');
 const path = require('path');
 const fs = require('fs');
 
+const { remote } = window.require('electron')
 const dialog = electron.remote.dialog;
 
-console.log(process.env);
 const scriptPath = process.env.ELECTRON_ENV === "development" ? path.join(__dirname, '../script') : path.join(process.resourcesPath, 'script');
 
 
@@ -37,11 +37,11 @@ const createActionDiv = (text, color) => {
 const addActivityDiv = (activity, modify_array = true) => {
     if (modify_array) {
         addActivity(activity);
-    }   
+    }
 
     let actionDiv = createActionDiv(actionBlockParameters[activity].text, actionBlockParameters[activity].color);
     actionDiv.setAttribute('draggable', true);
-    actionDiv.addEventListener("dragstart", moveAction); 
+    actionDiv.addEventListener("dragstart", moveAction);
 
     let runAction = createElement('img', {
         classes: ["run-action", "icon"],
@@ -73,7 +73,7 @@ const addActivityDiv = (activity, modify_array = true) => {
 
     actionDiv.appendChild(optionsDiv)
     actionDiv.appendChild(remove)
-    
+
     myActivitesPanel.appendChild(actionDiv);
 }
 
@@ -117,13 +117,13 @@ const moveAction = (event) => {
 
 document.addEventListener("drop", function(event) {
     let target = event.target
-    if (myActivitesPanel.contains(target) && myActivitesPanel != target) { 
+    if (myActivitesPanel.contains(target) && myActivitesPanel != target) {
         let dropTarget = findPanelItem(target)
         let indexOfDropTarget = findChildIndex(dropTarget, myActivitesPanel);
         let indexOfDraggedItem = findChildIndex(draggedItem, myActivitesPanel);
-        
+
         repositionActivity(indexOfDraggedItem, indexOfDropTarget)
-        
+
         myActivitesPanel.innerHTML = ''
 
         for (let activity of activitiesToPerform) {
@@ -201,7 +201,7 @@ const expandOrCloseOptions = (event, activity) => {
                     optionDiv.appendChild(input)
                     break;
                 case 'select':
-                    
+
                     optionTemplate.options.forEach((radioOption) => {
                         let radioDOMOptions = {
                             type: 'radio',
@@ -214,7 +214,7 @@ const expandOrCloseOptions = (event, activity) => {
                         }
                         let input = createElement('input', radioDOMOptions)
                         optionDiv.appendChild(input)
-                        
+
                         let inputLabel = createElement('span', {
                             text: radioOption
                         })
@@ -252,7 +252,7 @@ const expandOrCloseOptions = (event, activity) => {
                     optionDiv.appendChild(numberInput)
                     break
             }
-            
+
             optionsDiv.appendChild(optionDiv)
             })
     } else {
@@ -296,7 +296,7 @@ const generateBashAction = (activity) => {
             }
           })
         }
-  
+
         if (activity.activity == "WAVE"){
           let cmd = `hello_${activity.options[0].value.toLowerCase()}`
           bashActions.push(cmd);
@@ -407,7 +407,7 @@ const generateBashAction = (activity) => {
               }
             }
           }
-  
+
         if (activity.activity == "HOME"){
           let cmd = `home_${activity.options[0].value.toLowerCase()}`
           bashActions.push(cmd);
@@ -421,12 +421,12 @@ const generateBashAction = (activity) => {
             }
           }
         }
-  
+
         if (activity.activity == "VICTORY"){
           let arm = `victory_${activity.options[0].value.toLowerCase()}`
           bashActions.push(arm);
           if (activity.options[1].label == "Wait until finished:")
-          { 
+          {
             let wait_val = activity.options[1].value
             if (wait_val == "Yes")
             {
@@ -435,7 +435,7 @@ const generateBashAction = (activity) => {
             }
           }
         }
-        
+
         if (activity.activity == "EMOTION"){
           let emotion = activity.options[0].value.toLowerCase()
           bashActions.push(emotion);
@@ -453,13 +453,13 @@ const generateBashAction = (activity) => {
             }
           }
         }
-        if (activity.activity == "GAZETYPE"){  
+        if (activity.activity == "GAZETYPE"){
           let cmd = `gaze_${activity.options[0].value.toLowerCase()}`
           bashActions.push(cmd);
           console.log(cmd)
         }
 
-        if (activity.activity == "GAZELOOK"){  
+        if (activity.activity == "GAZELOOK"){
           let cmd = `gaze \"look ${activity.options[0].value.toLowerCase()} ${activity.options[1].value.toLowerCase()} ${activity.options[2].value.toLowerCase()}\"`
           bashActions.push(cmd);
           console.log(cmd)
@@ -503,12 +503,12 @@ if (activity.activity == "SPEAK"){
 
 const generateBashActionsArray = (activities) => {
     let bashActionsArray = [];
-    activities.forEach((activity) => {     
+    activities.forEach((activity) => {
           let bashAction = generateBashAction(activity)
           bashActionsArray = [...bashActionsArray, ...bashAction]
     });
     return bashActionsArray;
-} 
+}
 
 const runDemo = async() => {
     run = true;
@@ -572,7 +572,7 @@ const exportActivities = () => {
 }
 
 const importActivities = () => {
-    dialog.showOpenDialog({ 
+    dialog.showOpenDialog(remote.getCurrentWindow(),{
         properties: ['openFile'],
         buttonLabel: 'Load',
         filters: [
@@ -620,7 +620,7 @@ const importActivities = () => {
 }
 
 const saveTextFile = (textContent, title, defaultPath, buttonLabel, filterName, extensions) => {
-    dialog.showSaveDialog({
+    dialog.showSaveDialog(remote.getCurrentWindow(),{
         title,
         defaultPath,
         buttonLabel,
@@ -631,7 +631,7 @@ const saveTextFile = (textContent, title, defaultPath, buttonLabel, filterName, 
             }
         ]
     }).then(file => {
-        if (!file.canceled) {    
+        if (!file.canceled) {
             fs.writeFile(file.filePath.toString(), textContent, function (err) {
                 if (err) throw err;
                 console.log('Saved!')
@@ -653,16 +653,16 @@ const bashExporter = ()=>{
     fs.readFile(path.join(scriptPath, 'funnythings_template.sh'), 'utf8', (err, data) => {
         newFunnyThingScriptContent = data;
 
-        newFunnyThingScriptContent += "\n" 
-        newFunnyThingScriptContent += "runDemo() { \n" 
+        newFunnyThingScriptContent += "\n"
+        newFunnyThingScriptContent += "runDemo() { \n"
         actionsArray.forEach((action) => {
             newFunnyThingScriptContent += "  " + action + '\n'
         })
-        newFunnyThingScriptContent += "} " 
+        newFunnyThingScriptContent += "} "
         console.log(path.join(scriptPath, 'funnythings_main_template.sh'))
         fs.readFile(path.join(scriptPath, 'funnythings_main_template.sh'), 'utf8', (mainErr, mainData) => {
             newFunnyThingScriptContent += mainData;
-            
+
             saveTextFile(newFunnyThingScriptContent,
                 'Save your bash script',
                 '~/mydemoscript.sh',
@@ -670,6 +670,6 @@ const bashExporter = ()=>{
                 'Shell scripts',
                 ['sh']);
         })
-        
+
     })
 }
