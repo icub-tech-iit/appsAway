@@ -1,6 +1,6 @@
 version: "3.7"
 
-x-yarp-head: &yarp-head
+x-yarp-base: &yarp-base
   image: icubteamcode/superbuild-icubhead:master-unstable_binaries
   environment:
     - YARP_FORWARD_LOG_ENABLE=1
@@ -15,23 +15,3 @@ x-yarp-head: &yarp-head
 
 
 services:
-
-  yrobotinterface:
-    <<: *yarp-head
-    devices: 
-      - "/dev/bosch-i2c-imu:/dev/bosch-i2c-imu"
-    command: yarprobotinterface
-
-  iCubBlinker_0:
-    <<: *yarp-base
-    deploy:
-      placement:
-        constraints: [node.labels.type != head]
-    command: sh -c "yarp detect --write; iCubBlinker --autoStart"
-  yarpdev_1:
-    <<: *yarp-base
-    deploy:
-      placement:
-        constraints: [node.labels.type != head]
-    command: sh -c "yarp detect --write; yarpdev --device speech --lingware-context
-      speech --robot icub --default-language en-US --pitch 90 --speed 100"
