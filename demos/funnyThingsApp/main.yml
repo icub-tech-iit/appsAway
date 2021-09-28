@@ -65,12 +65,6 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "yarp detect --write; ctpService --robot icub --part torso"
-  ctpService_7:
-    <<: *yarp-base
-    deploy:
-      placement:
-        constraints: [node.labels.type != head]
     command: sh -c "yarp detect --write; ctpService --robot icub --part head"
   yconnect_0:
     <<: *yarp-base
