@@ -21,15 +21,15 @@ services:
     deploy:
       placement:
         constraints: [node.role == manager]
-      command: sh -c "yarp where | grep 'is available at ip' > /dev/null ; if [ !
-        $$? -eq 0 ]; then yarpserver --write; fi"
+    command: sh -c "yarp where | grep 'is available at ip' > /dev/null ; if [ !
+      $$? -eq 0 ]; then yarpserver --write; fi"
   iCubBlinker_0:
     <<: *yarp-base
     deploy:
       placement:
         constraints: [node.labels.type != head]
     command: sh -c "yarp detect --write; iCubBlinker --autoStart"
-  gaze.lua_1:
+  gazeLua_1:
     <<: *yarp-base
     deploy:
       placement:
