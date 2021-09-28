@@ -22,7 +22,7 @@ x-funny-things-base: &funny-things-base
 services:
   yFunnyThingsApp:
     <<: *funny-things-base
-    command: funnythings --appimage-extract-and-run --no-sandbox
+    command: funnythings --no-sandbox
 
   iSpeak_2:
     <<: *yarp-base
