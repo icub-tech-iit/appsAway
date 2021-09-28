@@ -27,11 +27,11 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c yarp detect --write; iCubBlinker --autoStart
+    command: sh -c "yarp detect --write; iCubBlinker --autoStart"
   yarpdev_1:
     <<: *yarp-base
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c yarp detect --write; yarpdev --device speech --lingware-context
-      speech --robot icub --default-language en-US --pitch 90 --speed 100
+    command: sh -c "yarp detect --write; yarpdev --device speech --lingware-context
+      speech --robot icub --default-language en-US --pitch 90 --speed 100"
