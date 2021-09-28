@@ -29,6 +29,6 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c yarp detect --write; iSpeak --package speech-dev
+    command: sh -c "yarp detect --write; iSpeak --package speech-dev"
 
   
