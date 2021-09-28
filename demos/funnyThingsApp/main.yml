@@ -1,0 +1,85 @@
+version: "3.7"
+x-yarp-base: &yarp-base
+
+  image: icubteamcode/funny-things:master-unstable_master_sources
+  environment:
+    - DISPLAY=${DISPLAY}
+    - QT_X11_NO_MITSHM=1
+    - XAUTHORITY=/root/.Xauthority
+    - YARP_FORWARD_LOG_ENABLE=1
+    - YARP_ROBOT_NAME
+    - YARP_CONF_PATH
+  volumes:
+    - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
+    - "${XAUTHORITY}:/root/.Xauthority:rw"
+    - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
+  network_mode: "host"
+  privileged: true
+
+services:
+  yserver:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+    command: sh -c "yarp where | grep 'is available at ip' > /dev/null ; if [ !
+      $$? -eq 0 ]; then yarpserver --write; fi"
+  ctpService_3:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c yarp detect --write; ctpService --robot icubSim --part head
+  ctpService_4:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c yarp detect --write; ctpService --robot icubSim --part left_arm
+  ctpService_5:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c yarp detect --write; ctpService --robot icubSim --part right_arm
+  ctpService_6:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c yarp detect --write; ctpService --robot icubSim --part torso
+  yconnect_0:
+    <<: *yarp-base
+    deploy:
+      restart_policy:
+        condition: on-failure
+    command: sh -c yarp detect --write; yarp wait /iCubBlinker/emotions/raw; yarp
+      wait /icubSim/face/raw/in; yarp connect /iCubBlinker/emotions/raw /icubSim/face/raw/in
+      tcp
+  yconnect_1:
+    <<: *yarp-base
+    deploy:
+      restart_policy:
+        condition: on-failure
+    command: sh -c yarp detect --write; yarp wait /iSpeak/speech-dev/rpc; yarp wait
+      /icubSim/speech:rpc; yarp connect /iSpeak/speech-dev/rpc /icubSim/speech:rpc tcp
+  yconnect_2:
+    <<: *yarp-base
+    deploy:
+      restart_policy:
+        condition: on-failure
+    command: sh -c yarp detect --write; yarp wait /iSpeak/emotions:o; yarp wait /icubSim/face/emotions/in;
+      yarp connect /iSpeak/emotions:o /icubSim/face/emotions/in tcp
+  visualizer:
+    image: dockersamples/visualizer:stable
+    ports:
+    - "8080:8080"
+    volumes:
+    - "/var/run/docker.sock:/var/run/docker.sock"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+networks:
+  hostnet:
+    external: true
+    name: host

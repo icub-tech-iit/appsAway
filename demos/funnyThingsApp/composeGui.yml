@@ -1,0 +1,34 @@
+version: "3.7"
+
+x-funny-things-base: &funny-things-base
+  image: icubteamcode/funny-things:master-unstable_master_binaries
+  environment:
+    - DISPLAY=${DISPLAY}
+    - XAUTHORITY=/root/.Xauthority
+    - YARP_FORWARD_LOG_ENABLE=1
+    - YARP_ROBOT_NAME
+    - FILE_INPUT
+    - LANGUAGE_SYNTHESIS_INPUT
+    - VOICE_NAME_INPUT
+  volumes:
+    - "/tmp/.X11-unix:/tmp/.X11-unix"
+    - "${XAUTHORITY}:/root/.Xauthority"
+    - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
+    - "${FILE_INPUT_PATH}:/root/authorization"
+    - "/dev:/dev"
+  network_mode: "host"
+  privileged: true
+
+services:
+  yFunnyThingsApp:
+    <<: *funny-things-base
+    command: funnythings --appimage-extract-and-run --no-sandbox
+
+  iSpeak_2:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c yarp detect --write; iSpeak --package speech-dev
+
+  
