@@ -28,57 +28,57 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "yarp detect --write; iCubBlinker --autoStart"
+    command: sh -c "iCubBlinker --autoStart"
   gazeLua_1:
     <<: *yarp-base
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "yarp detect --write; yarp wait /iKinGazeCtrl/angles:i; yarp wait
+    command: sh -c "yarp wait /iKinGazeCtrl/angles:i; yarp wait
       /iKinGazeCtrl/angles:o; gaze.lua --look-around"
   iSpeak_2:
     <<: *yarp-base
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "yarp detect --write; iSpeak"
+    command: sh -c "iSpeak"
   ctpService_3:
     <<: *yarp-base
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "yarp detect --write; ctpService --robot icub --part torso"
+    command: sh -c "ctpService --robot icub --part torso"
   ctpService_4:
     <<: *yarp-base
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "yarp detect --write; ctpService --robot icub --part left_arm"
+    command: sh -c "ctpService --robot icub --part left_arm"
   ctpService_5:
     <<: *yarp-base
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "yarp detect --write; ctpService --robot icub --part right_arm"
+    command: sh -c "ctpService --robot icub --part right_arm"
   ctpService_6:
     <<: *yarp-base
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "yarp detect --write; ctpService --robot icub --part head"
+    command: sh -c "ctpService --robot icub --part head"
   yconnect_0:
     <<: *yarp-base
     deploy:
       restart_policy:
         condition: on-failure
-    command: sh -c "yarp detect --write; yarp wait /iSpeak/speech-dev/rpc; yarp wait
+    command: sh -c "yarp wait /iSpeak/speech-dev/rpc; yarp wait
       /icub/speech:rpc; yarp connect /iSpeak/speech-dev/rpc /icub/speech:rpc tcp"
   yconnect_1:
     <<: *yarp-base
     deploy:
       restart_policy:
         condition: on-failure
-    command: sh -c "yarp detect --write; yarp wait /iCubBlinker/emotions/raw; yarp
+    command: sh -c "yarp wait /iCubBlinker/emotions/raw; yarp
       wait /icub/face/raw/in; yarp connect /iCubBlinker/emotions/raw /icub/face/raw/in
       tcp"
   yconnect_2:
@@ -86,21 +86,21 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
-    command: sh -c "yarp detect --write; yarp wait /gaze/tx; yarp wait /iKinGazeCtrl/angles:i;
+    command: sh -c "yarp wait /gaze/tx; yarp wait /iKinGazeCtrl/angles:i;
       yarp connect /gaze/tx /iKinGazeCtrl/angles:i tcp"
   yconnect_3:
     <<: *yarp-base
     deploy:
       restart_policy:
         condition: on-failure
-    command: sh -c "yarp detect --write; yarp wait /iKinGazeCtrl/angles:o; yarp wait
+    command: sh -c "yarp wait /iKinGazeCtrl/angles:o; yarp wait
       /gaze/rx; yarp connect /iKinGazeCtrl/angles:o /gaze/rx tcp"
   yconnect_4:
     <<: *yarp-base
     deploy:
       restart_policy:
         condition: on-failure
-    command: sh -c "yarp detect --write; yarp wait /iSpeak/speech-dev/rpc; yarp wait
+    command: sh -c "yarp wait /iSpeak/speech-dev/rpc; yarp wait
       /googleSynthesis/rpc; yarp connect /iSpeak/speech-dev/rpc /googleSynthesis/rpc
       tcp"
   yconnect_5:
@@ -108,7 +108,7 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
-    command: sh -c "yarp detect --write; yarp wait /iSpeak/emotions:o; yarp wait /icub/face/emotions/in;
+    command: sh -c "yarp wait /iSpeak/emotions:o; yarp wait /icub/face/emotions/in;
       yarp connect /iSpeak/emotions:o /icub/face/emotions/in tcp"
   visualizer:
     image: dockersamples/visualizer:stable
