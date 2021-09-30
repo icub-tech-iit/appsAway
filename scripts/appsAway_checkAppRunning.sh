@@ -220,10 +220,12 @@ merge_environment()
   sed -i 's/export APPSAWAY_CONSOLENODE_ADDR=localhost/export APPSAWAY_CONSOLENODE_ADDR='$(hostname -I | awk '{print $1}')'/g' appsAway_setEnvironment.local.sh
 
   resourcePath=$(echo "$(yarp resource --context cameraCalibration --from icubEyes.ini)" | awk -F'"' '{print $2}' | awk -F'icubEyes.ini' '{print $1}')
-  echo "export APPSAWAY_CALIB_CONTEXT=$resourcePath" >>appsAway_setEnvironment.local.sh
+  resourcePathClean="$(echo -e "${resourcePath}" | tr -d '[:space:]')"
+  echo "export APPSAWAY_CALIB_CONTEXT=$resourcePathClean" >>appsAway_setEnvironment.local.sh
 
   resourcePath=$(echo "$(yarp resource --context demoRedBall --from config.ini)" | awk -F'"' '{print $2}' | awk -F'config.ini' '{print $1}')
-  echo "export APPSAWAY_DEMOREDBALL_CONTEXT=$resourcePath" >>appsAway_setEnvironment.local.sh
+  resourcePathClean="$(echo -e "${resourcePath}" | tr -d '[:space:]')"
+  echo "export APPSAWAY_DEMOREDBALL_CONTEXT=$resourcePathClean" >>appsAway_setEnvironment.local.sh
 
 }
 
