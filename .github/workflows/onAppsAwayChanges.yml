@@ -28,10 +28,18 @@ jobs:
       - name: find demo name
         id: set_app_list
         run: |
-          parsed_list=($(echo '${{ steps.file_changes.outputs.files}}' | tr ',' '\n'))
+          changed_files=($(echo '${{ steps.file_changes.outputs.files}}' | tr ',' '\n' | tr -d '[' | tr -d ']'))
+          changed_dirs=""
+          for i in "${changed_files[@]}"
+          do 
+            changed_dir=$(echo $i | tr -d '"' | awk -F'/' '{print $1"/"$2}')
+            changed_dirs="$changed_dirs $changed_dir"
+          done
+          echo "Changed dirs: ${changed_dirs[@]}"
+          changed_dirs_unique=($(echo "${changed_dirs[@]}" | tr ' ' '\n' | sort -u | tr '\n' ' '))
           app_name_list=""
           iter_app_list=0
-          for i in "${parsed_list[@]}"
+          for i in "${changed_dirs_unique[@]}"
           do 
             if [ $(echo $i | awk '/demos/') ]
             then
