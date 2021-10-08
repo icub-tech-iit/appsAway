@@ -22,7 +22,7 @@ services:
     <<: *yarp-head
     devices: 
       - "/dev/video0:/dev/video0"
-    command: sh -c "if [ ${CAMERA_MANUALLY} = false ]; then cat /usr/local/share/ICUBcontrib/robots/${YARP_ROBOT_NAME}/camera/${CAMERA_CONF_FILE} && yarpdev --from camera/${CAMERA_CONF_FILE}; fi;"
+    command: sh -c "if [ ${CAMERA_MANUALLY} = false ]; then yarpdev --from camera/${CAMERA_CONF_FILE}; fi;"
 
   yrobotinterface:
     <<: *yarp-head
