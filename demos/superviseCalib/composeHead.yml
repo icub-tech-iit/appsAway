@@ -6,12 +6,10 @@ x-yarp-head: &yarp-head
     - YARP_FORWARD_LOG_ENABLE=1
     - YARP_ROBOT_NAME
     - CAMERA_CONF_FILE
-    - CAMERA_CUSTOM_CONF_PATH
     - CAMERA_MANUALLY
   volumes:
     - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
     - "/dev:/dev"
-    - "${CAMERA_CUSTOM_CONF_PATH:-/dev/null}:/usr/local/share/ICUBcontrib/robots/${YARP_ROBOT_NAME}/camera/customConfFile.ini:rw"
   ports:
     - "10000:10000"
   network_mode: "host"
@@ -24,7 +22,7 @@ services:
     <<: *yarp-head
     devices: 
       - "/dev/video0:/dev/video0"
-    command: sh -c "if [ ${CAMERA_MANUALLY} = false ]; then if [ ${CAMERA_CONF_FILE} = "Custom-file" ]; then yarpdev --from camera/customConfFile.ini; else yarpdev --from camera/${CAMERA_CONF_FILE}; fi; fi;"
+    command: sh -c "if [ ${CAMERA_MANUALLY} = false ]; then cat /usr/local/share/ICUBcontrib/robots/${YARP_ROBOT_NAME}/camera/${CAMERA_CONF_FILE} && yarpdev --from camera/${CAMERA_CONF_FILE}; fi;"
 
   yrobotinterface:
     <<: *yarp-head
