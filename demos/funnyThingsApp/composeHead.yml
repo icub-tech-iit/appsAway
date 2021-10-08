@@ -13,4 +13,7 @@ x-yarp-base: &yarp-base
   network_mode: "host"
   privileged: true
 
-
+services:
+  yFunnyThingsApp:
+    <<: *yarp-base
+    command: ls -la	
