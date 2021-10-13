@@ -565,7 +565,7 @@ const generateFullFilename = (filename) => {
 const exportActivities = () => {
     saveTextFile(JSON.stringify(activitiesToPerform, null, 2),
     'Save your activites',
-    '~/mydemo.funnythings',
+    path.join(process.env.HOME, 'mydemo.funnythings'),
     'Save',
     'Funny Things Demos',
     ['funnythings'])
@@ -575,6 +575,7 @@ const importActivities = () => {
     dialog.showOpenDialog(remote.getCurrentWindow(),{
         properties: ['openFile'],
         buttonLabel: 'Load',
+        defaultPath: process.env.HOME,
         filters: [
             {
                 name: 'Funny Things Demos',
@@ -665,7 +666,7 @@ const bashExporter = ()=>{
 
             saveTextFile(newFunnyThingScriptContent,
                 'Save your bash script',
-                '~/mydemoscript.sh',
+                path.join(process.env.HOME, 'mydemo.sh'),
                 'Save',
                 'Shell scripts',
                 ['sh']);
