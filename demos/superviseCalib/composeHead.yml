@@ -6,7 +6,7 @@ x-yarp-head: &yarp-head
     - YARP_FORWARD_LOG_ENABLE=1
     - YARP_ROBOT_NAME
     - CAMERA_CONF_FILE
-    - CAMERA_CUSTOM_CONF_FILE
+    - CAMERA_MANUALLY
   volumes:
     - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
     - "/dev:/dev"
@@ -22,7 +22,7 @@ services:
     <<: *yarp-head
     devices: 
       - "/dev/video0:/dev/video0"
-    command: sh -c "if [ ${CAMERA_CONF_FILE} = "Custom-file" ]; then yarpdev --from camera/${CAMERA_CUSTOM_CONF_FILE}; else yarpdev --from camera/${CAMERA_CONF_FILE}; fi;"
+    command: sh -c "if [ ${CAMERA_MANUALLY} = false ]; then yarpdev --from camera/${CAMERA_CONF_FILE}; fi;"
 
   yrobotinterface:
     <<: *yarp-head
