@@ -372,7 +372,7 @@ class WidgetGallery(QDialog):
 # fileInput       # "Google file"     # FILE_INPUT        # None                                                            # on      # False      #
 # toggleButton    # "Google Input"    # GOOGLE_INPUT      # true/false                                                      # on      # False      #
 # dropdownList    # "Language sel"    # LANG_INPUT        # en-US/it-IT                                                     # off     # False      #
-# pushButtom      # "Try your voice!" # AUDIO_INPUT       # ${HOME}/teamcode/appsAway/demos/synthesis/audioicon.png     # on      # False      #
+# pushButtom      # "Try your voice!" # AUDIO_INPUT       # ${HOME}/teamcode/appsAway/demos/demoName/gui/images/audioicon.png    # on      # False      #
 ####################################################################################################################################################
 
     def createBottomRightGroupBox(self):
