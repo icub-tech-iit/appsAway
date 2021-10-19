@@ -1,7 +1,7 @@
 #!/bin/bash -e
 #set -x
 # ##############################################################################
-# SCRIPT NAME: appsAway_setupClustersh
+# SCRIPT NAME: appsAway_changeNewFilesPermissions.sh
 #
 # DESCRIPTION: setup the docker cluster
 #
