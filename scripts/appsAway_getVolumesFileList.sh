@@ -43,10 +43,13 @@ _FILE_LIST_PATH="${HOME}/filesInVolumes.txt"
 
 get_volumes_file_list()
 {
+  echo "getting volumes"
   for volume in "${_YAML_VOLUMES_BEFORE_DEPLOYMENT[@]}"
   do   
+    echo $volume
     if [ -d $volume ]
     then
+      echo "checking volume ${volume}"
       cd $volume
       FILES_IN_VOLUME=$(find $volume)
       echo "$FILES_IN_VOLUME" >> $_FILE_LIST_PATH
@@ -56,13 +59,22 @@ get_volumes_file_list()
 
 create_file_to_save_files_list()
 {
-    if [ -f $_FILE_LIST_PATH ]
-    then
-        echo "" > $_FILE_LIST_PATH
-    else
-        touch $_FILE_LIST_PATH
-    fi
+  echo "creating file"
+  if [ -f $_FILE_LIST_PATH ]
+  then
+    echo "file exists"
+    echo "" > $_FILE_LIST_PATH
+  else
+    echo "file does not exist"
+    touch $_FILE_LIST_PATH
+  fi
 }
 
-create_file_to_save_files_list
-get_volumes_file_list
+main()
+{
+  _YAML_VOLUMES_BEFORE_DEPLOYMENT=($(echo "${_YAML_VOLUMES_BEFORE_DEPLOYMENT}"))
+  create_file_to_save_files_list
+  get_volumes_file_list
+}
+
+main

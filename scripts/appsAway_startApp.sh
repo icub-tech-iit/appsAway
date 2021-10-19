@@ -165,22 +165,26 @@ init()
  for file in ${APPSAWAY_DEPLOY_YAML_FILE_LIST}
  do
     get_shared_volumes ${APPSAWAY_APP_PATH}/${file}
+    echo "List of volumes: ${_YAML_VOLUMES_BEFORE_DEPLOYMENT}"
  done 
  if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
  for file in ${APPSAWAY_HEAD_YAML_FILE_LIST}
    do
       get_shared_volumes ${APPSAWAY_APP_PATH}/${file}
+      echo "List of volumes: ${_YAML_VOLUMES_BEFORE_DEPLOYMENT}"
    done
  fi
  if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
    for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
    do
       get_shared_volumes ${APPSAWAY_APP_PATH}/${file}
+      echo "List of volumes: ${_YAML_VOLUMES_BEFORE_DEPLOYMENT}"
    done
  elif [ "$APPSAWAY_GUINODE_ADDR" == "" ] && [ "$APPSAWAY_CONSOLENODE_ADDR" != "" ]; then
    for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
    do
-      get_shared_volumes ${APPSAWAY_APP_PATH}/${file} 
+      get_shared_volumes ${APPSAWAY_APP_PATH}/${file}
+      echo "List of volumes: ${_YAML_VOLUMES_BEFORE_DEPLOYMENT}" 
    done
  fi
  
@@ -289,7 +293,7 @@ run_hardware_steps_via_ssh()
     scp_to_node ${_CWD}/appsAway_containerPermissions.sh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR $_APPSAWAY_APP_PATH_NOT_CONSOLE
     scp_to_node ${_CWD}/appsAway_changeNewFilesPermissions.sh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR $_APPSAWAY_APP_PATH_NOT_CONSOLE 
     scp_to_node ${_CWD}/appsAway_getVolumesFileList.sh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR $_APPSAWAY_APP_PATH_NOT_CONSOLE       
-    run_via_ssh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR "export APPSAWAY_OPTIONS=${APPSAWAY_OPTIONS} ; export _YAML_VOLUMES_BEFORE_DEPLOYMENT=${_YAML_VOLUMES_BEFORE_DEPLOYMENT} ; ${_OS_HOME_DIR}/${APPSAWAY_CONSOLENODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_getVolumesFileList.sh"  
+    run_via_ssh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR "export APPSAWAY_OPTIONS=${APPSAWAY_OPTIONS} ; export _YAML_VOLUMES_BEFORE_DEPLOYMENT=\"${_YAML_VOLUMES_BEFORE_DEPLOYMENT}\" ; ${_OS_HOME_DIR}/${APPSAWAY_CONSOLENODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_getVolumesFileList.sh"  
  fi
  if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_HEAD_YAML_FILE_LIST}
@@ -299,7 +303,7 @@ run_hardware_steps_via_ssh()
       scp_to_node ${_CWD}/appsAway_containerPermissions.sh $APPSAWAY_ICUBHEADNODE_USERNAME $APPSAWAY_ICUBHEADNODE_ADDR $_APPSAWAY_APP_PATH_NOT_CONSOLE
       scp_to_node ${_CWD}/appsAway_changeNewFilesPermissions.sh $APPSAWAY_ICUBHEADNODE_USERNAME $APPSAWAY_ICUBHEADNODE_ADDR $_APPSAWAY_APP_PATH_NOT_CONSOLE      
       scp_to_node ${_CWD}/appsAway_getVolumesFileList.sh $APPSAWAY_ICUBHEADNODE_USERNAME $APPSAWAY_ICUBHEADNODE_ADDR $_APPSAWAY_APP_PATH_NOT_CONSOLE      
-      run_via_ssh $APPSAWAY_ICUBHEADNODE_USERNAME $APPSAWAY_ICUBHEADNODE_ADDR "export APPSAWAY_OPTIONS=${APPSAWAY_OPTIONS} ; export _YAML_VOLUMES_BEFORE_DEPLOYMENT=${_YAML_VOLUMES_BEFORE_DEPLOYMENT} ; ${_OS_HOME_DIR}/${APPSAWAY_CONSOLENODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_getVolumesFileList.sh ; ${_DOCKER_COMPOSE_BIN_HEAD} -f ${file} up --detach"
+      run_via_ssh $APPSAWAY_ICUBHEADNODE_USERNAME $APPSAWAY_ICUBHEADNODE_ADDR "export APPSAWAY_OPTIONS=${APPSAWAY_OPTIONS} ; export _YAML_VOLUMES_BEFORE_DEPLOYMENT=\"${_YAML_VOLUMES_BEFORE_DEPLOYMENT}\" ; ${_OS_HOME_DIR}/${APPSAWAY_CONSOLENODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_getVolumesFileList.sh ; ${_DOCKER_COMPOSE_BIN_HEAD} -f ${file} up --detach"
     done
     val1=$(( $val1 + 5 ))
     echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE
@@ -313,7 +317,7 @@ run_hardware_steps_via_ssh()
       scp_to_node ${_CWD}/appsAway_containerPermissions.sh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR $_APPSAWAY_APP_PATH_NOT_CONSOLE
       scp_to_node ${_CWD}/appsAway_changeNewFilesPermissions.sh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR $_APPSAWAY_APP_PATH_NOT_CONSOLE
       scp_to_node ${_CWD}/appsAway_getVolumesFileList.sh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR $_APPSAWAY_APP_PATH_NOT_CONSOLE
-      run_via_ssh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR "export APPSAWAY_OPTIONS=${APPSAWAY_OPTIONS} ; export ${GUI_DISPLAY} ; export XAUTHORITY=${myXauth}; export _YAML_VOLUMES_BEFORE_DEPLOYMENT=${_YAML_VOLUMES_BEFORE_DEPLOYMENT} ; ${_OS_HOME_DIR}/${APPSAWAY_CONSOLENODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_getVolumesFileList.sh ; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_GUI} -f ${file} up --detach; fi"
+      run_via_ssh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR "export APPSAWAY_OPTIONS=${APPSAWAY_OPTIONS} ; export ${GUI_DISPLAY} ; export XAUTHORITY=${myXauth}; export _YAML_VOLUMES_BEFORE_DEPLOYMENT=\"${_YAML_VOLUMES_BEFORE_DEPLOYMENT}\" ; ${_OS_HOME_DIR}/${APPSAWAY_CONSOLENODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_getVolumesFileList.sh ; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_GUI} -f ${file} up --detach; fi"
     done
     val1=$(( $val1 + 5 ))
     echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE
@@ -325,7 +329,7 @@ run_hardware_steps_via_ssh()
       scp_to_node ${_CWD}/appsAway_containerPermissions.sh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR $_APPSAWAY_APP_PATH_NOT_CONSOLE
       scp_to_node ${_CWD}/appsAway_changeNewFilesPermissions.sh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR $_APPSAWAY_APP_PATH_NOT_CONSOLE
       scp_to_node ${_CWD}/appsAway_getVolumesFileList.sh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR $_APPSAWAY_APP_PATH_NOT_CONSOLE       
-      run_via_ssh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR "export APPSAWAY_OPTIONS=${APPSAWAY_OPTIONS} ; export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth};  export _YAML_VOLUMES_BEFORE_DEPLOYMENT=${_YAML_VOLUMES_BEFORE_DEPLOYMENT} ; ${_OS_HOME_DIR}/${APPSAWAY_CONSOLENODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_getVolumesFileList.sh ; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_CONSOLE} -f ${file} up --detach; fi"
+      run_via_ssh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR "export APPSAWAY_OPTIONS=${APPSAWAY_OPTIONS} ; export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth};  export _YAML_VOLUMES_BEFORE_DEPLOYMENT=\"${_YAML_VOLUMES_BEFORE_DEPLOYMENT}\" ; ${_OS_HOME_DIR}/${APPSAWAY_CONSOLENODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_getVolumesFileList.sh ; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_CONSOLE} -f ${file} up --detach; fi"
     done
     val1=$(( $val1 + 5 ))
     echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE
@@ -397,8 +401,11 @@ get_shared_volumes()
           then
               if [[ $line == -* ]] # If line is a volume (ignore comments)
               then
-                volume_to_append=$(echo $line | awk -F':' '{print $1}' | tr -d '"' | tr -d ' ' ) # Get volume 
-                _YAML_VOLUMES_BEFORE_DEPLOYMENT="$_YAML_VOLUMES_BEFORE_DEPLOYMENT $volume_to_append"
+                if [[ $line == *:rw || $line == *:rw\" ]] # If volume includes the rw flag
+                then
+                  volume_to_append=$(echo $line | awk -F':' '{print $1}' | tr -d '"' | tr -d ' ' ) # Get volume 
+                  _YAML_VOLUMES_BEFORE_DEPLOYMENT="$_YAML_VOLUMES_BEFORE_DEPLOYMENT ${volume_to_append:1}"
+                fi
               fi
           else # If line is not volume nor comment, it's a continuation of the yml and we are done
               look_for_volumes=false
