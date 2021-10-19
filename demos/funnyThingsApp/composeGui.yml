@@ -12,7 +12,7 @@ x-yarp-base: &yarp-base
     - "${XAUTHORITY}:/root/.Xauthority"
     - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
     - "/dev:/dev"
-    - "${FILE_IMPORT_EXPORT_PATH}:/root:rw"
+    - "${FILE_IMPORT_EXPORT_PATH}:/root/shared-files:rw"
   network_mode: "host"
   privileged: true
 
