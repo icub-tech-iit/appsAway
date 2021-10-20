@@ -35,6 +35,7 @@ _SCP_PARAMS="-q -B"
 _SSH_BIN=$(which ssh || true)
 _SSH_PARAMS="-T"
 _DOCKER_BIN=$(which docker || true)
+_DOCKER_ENV_FILE=.env
 _DOCKER_COMPOSE_BIN_CONSOLE=$(which docker-compose || true)
 if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
   _DOCKER_COMPOSE_BIN_HEAD=$(ssh $APPSAWAY_ICUBHEADNODE_USERNAME@$APPSAWAY_ICUBHEADNODE_ADDR 'which docker-compose;')
@@ -154,6 +155,7 @@ init()
    exit_err "enviroment file ${_APPSAWAY_ENVFILE} does not exists"
  fi
  source ${_APPSAWAY_ENVFILE}
+ source ${APPSAWAY_APP_PATH}/${_DOCKER_ENV_FILE}
  for _deploy_file in ${APPSAWAY_DEPLOY_YAML_FILE_LIST}
  do
     if [ ! -f "../demos/${APPSAWAY_APP_NAME}/${_deploy_file}" ]; then
@@ -187,7 +189,7 @@ init()
       echo "List of volumes: ${_YAML_VOLUMES_BEFORE_DEPLOYMENT}" 
    done
  fi
- 
+ _YAML_VOLUMES_BEFORE_DEPLOYMENT=$(eval echo -e \"$_YAML_VOLUMES_BEFORE_DEPLOYMENT\")
  _SSH_CMD_PREFIX="cd ${APPSAWAY_APP_PATH} "
 }
 
@@ -205,7 +207,6 @@ run_via_ssh()
     ${_SSH_BIN} ${_SSH_PARAMS} $1@$2 "$_SSH_CMD_PREFIX_FOR_USER ; $3"
   fi
 }
-
 
 run_via_ssh_nowait()
 {
@@ -275,7 +276,7 @@ scp_to_node()
 run_hardware_steps_via_ssh()
 {
   log "running hardware-dependant steps to nodes"
-
+  echo "If the text after the colon is empty somethign is wrong: ${_YAML_VOLUMES_BEFORE_DEPLOYMENT}"
   mydisplay=$(getdisplay)
   if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
     GUI_DISPLAY=$(ssh $APPSAWAY_GUINODE_USERNAME@$APPSAWAY_GUINODE_ADDR "ps -u $(id -u) -o pid= | xargs -I PID -r cat /proc/PID/environ 2> /dev/null | tr '\0' '\n' | grep ^DISPLAY=: | sort -u")
@@ -288,7 +289,7 @@ run_hardware_steps_via_ssh()
   else
     myXauth="/run/user/$UID/gdm/Xauthority"
   fi
- 
+  
  if [ "$APPSAWAY_CONSOLENODE_ADDR" != "" ]; then
     scp_to_node ${_CWD}/appsAway_containerPermissions.sh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR $_APPSAWAY_APP_PATH_NOT_CONSOLE
     scp_to_node ${_CWD}/appsAway_changeNewFilesPermissions.sh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR $_APPSAWAY_APP_PATH_NOT_CONSOLE 
@@ -317,7 +318,7 @@ run_hardware_steps_via_ssh()
       scp_to_node ${_CWD}/appsAway_containerPermissions.sh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR $_APPSAWAY_APP_PATH_NOT_CONSOLE
       scp_to_node ${_CWD}/appsAway_changeNewFilesPermissions.sh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR $_APPSAWAY_APP_PATH_NOT_CONSOLE
       scp_to_node ${_CWD}/appsAway_getVolumesFileList.sh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR $_APPSAWAY_APP_PATH_NOT_CONSOLE
-      run_via_ssh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR "export APPSAWAY_OPTIONS=${APPSAWAY_OPTIONS} ; export ${GUI_DISPLAY} ; export XAUTHORITY=${myXauth}; export _YAML_VOLUMES_BEFORE_DEPLOYMENT=\"${_YAML_VOLUMES_BEFORE_DEPLOYMENT}\" ; ${_OS_HOME_DIR}/${APPSAWAY_CONSOLENODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_getVolumesFileList.sh ; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_GUI} -f ${file} up --detach; fi"
+      run_via_ssh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR "export APPSAWAY_OPTIONS=${APPSAWAY_OPTIONS} ; export ${GUI_DISPLAY} ; export XAUTHORITY=${myXauth}; export _YAML_VOLUMES_BEFORE_DEPLOYMENT=\"${_YAML_VOLUMES_BEFORE_DEPLOYMENT}\" ; ${_OS_HOME_DIR}/${APPSAWAY_GUINODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_getVolumesFileList.sh ; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_GUI} -f ${file} up --detach; fi"
     done
     val1=$(( $val1 + 5 ))
     echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE

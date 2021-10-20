@@ -39,6 +39,7 @@ _DOCKER_BIN=$(which docker || true)
 _DOCKER_PARAMS=""
 _HOSTNAME_LIST=""
 _CWD=$(pwd)
+_FILE_LIST_PATH="${HOME}/filesInVolumesAfter.txt"
 
 warn() 
 {
@@ -85,15 +86,41 @@ execute_script_inside_containers()
     do  
         if [[ ${container} != ${CONTAINER_TO_EXCLUDE} ]]
         then
-          docker exec -e _YAML_VOLUMES_LIST=${_YAML_VOLUMES_LIST} -e CURR_UID=${CURR_UID} -e CURR_GID=${CURR_GID} $container ./$1
+          docker exec -e _YAML_VOLUMES_AFTER_DEPLOYMENT=${_YAML_VOLUMES_AFTER_DEPLOYMENT} -e CURR_UID=${CURR_UID} -e CURR_GID=${CURR_GID} $container ./$1
         fi
     done
+}
+
+get_volumes_file_list()
+{
+  for volume in "${_YAML_VOLUMES_AFTER_DEPLOYMENT[@]}"
+  do   
+    if [ -d "${volume}" ]
+    then
+      cd $volume
+      FILES_IN_VOLUME=$(find "${volume}")
+      echo "$FILES_IN_VOLUME" >> $_FILE_LIST_PATH
+    fi
+  done
+}
+
+create_file_to_save_files_list()
+{
+  echo "creating file"
+  if [ -f $_FILE_LIST_PATH ]
+  then
+    echo "file exists"
+    echo "" > $_FILE_LIST_PATH
+  else
+    echo "file does not exist"
+    touch $_FILE_LIST_PATH
+  fi
 }
 
 main()
 {
   permission_file_path="permissions.sh"
-  if [ -z "$_YAML_VOLUMES_LIST" ]
+  if [ -z "$_YAML_VOLUMES_AFTER_DEPLOYMENT" ]
   then
     warn "No Volumes List variable found in environment"
     return
@@ -108,9 +135,13 @@ main()
     warn "No stack name variable found in environment"
     return
   fi
+
+  _YAML_VOLUMES_AFTER_DEPLOYMENT=($(echo "${_YAML_VOLUMES_AFTER_DEPLOYMENT}"))
+  create_file_to_save_files_list
+  get_volumes_file_list
   get_container_id_list
-  copy_script_into_containers $APPSAWAY_APP_PATH/appsAway_containerPermissions.sh $permission_file_path
-  execute_script_inside_containers $permission_file_path
+  #copy_script_into_containers $APPSAWAY_APP_PATH/appsAway_containerPermissions.sh $permission_file_path
+  #execute_script_inside_containers $permission_file_path
 }
 
 main $1

@@ -36,6 +36,8 @@ _SSH_BIN=$(which ssh || true)
 _SSH_PARAMS="-T"
 _DOCKER_BIN=$(which docker || true)
 _DOCKER_COMPOSE_BIN_CONSOLE=$(which docker-compose || true)
+_YAML_VOLUMES_AFTER_DEPLOYMENT
+
 if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
   _DOCKER_COMPOSE_BIN_HEAD=$(ssh $APPSAWAY_ICUBHEADNODE_USERNAME@$APPSAWAY_ICUBHEADNODE_ADDR 'which docker-compose;')
   echo "Docker compose head path: $_DOCKER_COMPOSE_BIN_HEAD"
@@ -86,11 +88,10 @@ get_shared_volumes()
           then
               if [[ $line == -* ]] # If line is a volume (ignore comments)
               then
-                volume=$(echo $line | sed 's/[^:]*://' | tr -d '"' | tr -d ' ' ) # Get volume 
-                if [[ $volume == *:rw || $volume == *:rw\" ]] # If the :rw ending was explicitely written, remove it
+                if [[ $line == *:rw || $line == *:rw\" ]] # If volume includes the rw flag
                 then
-                    volume_to_append=$(echo $volume | sed 's/:.*//')
-                    _YAML_VOLUMES_LIST="$_YAML_VOLUMES_LIST $volume_to_append"
+                  volume_to_append=$(echo $line | awk -F':' '{print $1}' | tr -d '"' | tr -d ' ' ) # Get volume 
+                  _YAML_VOLUMES_AFTER_DEPLOYMENT="$_YAML_VOLUMES_AFTER_DEPLOYMENT ${volume_to_append:1}"
                 fi
               fi
           else # If line is not volume nor comment, it's a continuation of the yml and we are done
@@ -103,7 +104,7 @@ get_shared_volumes()
           look_for_volumes=true             
       fi
   done < $file
-} 
+}
 
 usage ()
 {
@@ -267,30 +268,32 @@ stop_hardware_steps_via_ssh()
       get_shared_volumes ${APPSAWAY_APP_PATH}/${file}
     done
   fi
+
+  _YAML_VOLUMES_AFTER_DEPLOYMENT=$(eval echo -e \"$_YAML_VOLUMES_AFTER_DEPLOYMENT\")
   
   for file in ${APPSAWAY_DEPLOY_YAML_FILE_LIST}
   do
     log "stopping docker-compose with file ${file} on host $APPSAWAY_CONSOLENODE_ADDR with command ${stop_cmd}"
-    run_via_ssh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR "export APPSAWAY_STACK_NAME=${APPSAWAY_STACK_NAME}; export _YAML_VOLUMES_LIST=\"${_YAML_VOLUMES_LIST}\" ; export APPSAWAY_APP_PATH=${_OS_HOME_DIR}/${APPSAWAY_CONSOLENODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE} ; ls ${_OS_HOME_DIR}/${APPSAWAY_CONSOLENODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}; ${_OS_HOME_DIR}/${APPSAWAY_CONSOLENODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_changeNewFilesPermissions.sh ; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_CONSOLE} -f ${file} ${stop_cmd}; fi"
+    run_via_ssh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR "export APPSAWAY_STACK_NAME=${APPSAWAY_STACK_NAME}; export _YAML_VOLUMES_AFTER_DEPLOYMENT=\"${_YAML_VOLUMES_AFTER_DEPLOYMENT}\" ; export APPSAWAY_APP_PATH=${_OS_HOME_DIR}/${APPSAWAY_CONSOLENODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE} ; ls ${_OS_HOME_DIR}/${APPSAWAY_CONSOLENODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}; ${_OS_HOME_DIR}/${APPSAWAY_CONSOLENODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_changeNewFilesPermissions.sh ; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_CONSOLE} -f ${file} ${stop_cmd}; fi"
   done
   if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_HEAD_YAML_FILE_LIST}
     do
       log "stopping docker-compose with file ${file} on host $APPSAWAY_ICUBHEADNODE_ADDR with command ${stop_cmd}"
-      run_via_ssh $APPSAWAY_ICUBHEADNODE_USERNAME $APPSAWAY_ICUBHEADNODE_ADDR "export APPSAWAY_STACK_NAME=${APPSAWAY_STACK_NAME}; export _YAML_VOLUMES_LIST=\"${_YAML_VOLUMES_LIST}\" ; export APPSAWAY_APP_PATH=${_OS_HOME_DIR}/${APPSAWAY_ICUBHEADNODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE} ; ${_OS_HOME_DIR}/${APPSAWAY_ICUBHEADNODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_changeNewFilesPermissions.sh ; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_HEAD} -f ${file} ${stop_cmd}; fi"
+      run_via_ssh $APPSAWAY_ICUBHEADNODE_USERNAME $APPSAWAY_ICUBHEADNODE_ADDR "export APPSAWAY_STACK_NAME=${APPSAWAY_STACK_NAME}; export _YAML_VOLUMES_AFTER_DEPLOYMENTT=\"${_YAML_VOLUMES_AFTER_DEPLOYMENT}\" ; export APPSAWAY_APP_PATH=${_OS_HOME_DIR}/${APPSAWAY_ICUBHEADNODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE} ; ${_OS_HOME_DIR}/${APPSAWAY_ICUBHEADNODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_changeNewFilesPermissions.sh ; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_HEAD} -f ${file} ${stop_cmd}; fi"
     done
   fi
   if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
     do
       log "stopping docker-compose with file ${file} on host $APPSAWAY_GUINODE_ADDR with command ${stop_cmd}"
-      run_via_ssh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR "export APPSAWAY_STACK_NAME=${APPSAWAY_STACK_NAME}; export _YAML_VOLUMES_LIST=\"${_YAML_VOLUMES_LIST}\"; export APPSAWAY_APP_PATH=${_OS_HOME_DIR}/${APPSAWAY_GUINODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE} ; ${_OS_HOME_DIR}/${APPSAWAY_GUINODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_changeNewFilesPermissions.sh ; export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_GUI} -f ${file} ${stop_cmd}; fi"
+      run_via_ssh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR "export APPSAWAY_STACK_NAME=${APPSAWAY_STACK_NAME}; export _YAML_VOLUMES_AFTER_DEPLOYMENT=\"${_YAML_VOLUMES_AFTER_DEPLOYMENT}\"; export APPSAWAY_APP_PATH=${_OS_HOME_DIR}/${APPSAWAY_GUINODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE} ; ${_OS_HOME_DIR}/${APPSAWAY_GUINODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_changeNewFilesPermissions.sh ; export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_GUI} -f ${file} ${stop_cmd}; fi"
     done
   elif [ "$APPSAWAY_GUINODE_ADDR" == "" ] && [ "$APPSAWAY_CONSOLENODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
     do
       log "stopping docker-compose with file ${file} on host $APPSAWAY_CONSOLENODE_ADDR with command ${stop_cmd}"
-      run_via_ssh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR "export APPSAWAY_STACK_NAME=${APPSAWAY_STACK_NAME}; export _YAML_VOLUMES_LIST=\"${_YAML_VOLUMES_LIST}\"; export APPSAWAY_APP_PATH=${_OS_HOME_DIR}/${APPSAWAY_CONSOLENODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE} ; ${_OS_HOME_DIR}/${APPSAWAY_CONSOLENODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_changeNewFilesPermissions.sh ; export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_CONSOLE} -f ${file} ${stop_cmd}; fi"
+      run_via_ssh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR "export APPSAWAY_STACK_NAME=${APPSAWAY_STACK_NAME}; export _YAML_VOLUMES_AFTER_DEPLOYMENT=\"${_YAML_VOLUMES_AFTER_DEPLOYMENT}\"; export APPSAWAY_APP_PATH=${_OS_HOME_DIR}/${APPSAWAY_CONSOLENODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE} ; ${_OS_HOME_DIR}/${APPSAWAY_CONSOLENODE_USERNAME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_changeNewFilesPermissions.sh ; export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_CONSOLE} -f ${file} ${stop_cmd}; fi"
     done
   fi
 }
