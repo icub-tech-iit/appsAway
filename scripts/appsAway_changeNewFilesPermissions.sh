@@ -39,6 +39,7 @@ _DOCKER_BIN=$(which docker || true)
 _DOCKER_PARAMS=""
 _HOSTNAME_LIST=""
 _CWD=$(pwd)
+_ORIGINAL_FILE_LIST_PATH="${HOME}/filesInVolumes.txt"
 _FILE_LIST_PATH="${HOME}/filesInVolumesAfter.txt"
 
 warn() 
@@ -86,7 +87,7 @@ execute_script_inside_containers()
     do  
         if [[ ${container} != ${CONTAINER_TO_EXCLUDE} ]]
         then
-          docker exec -e _YAML_VOLUMES_AFTER_DEPLOYMENT=${_YAML_VOLUMES_AFTER_DEPLOYMENT} -e CURR_UID=${CURR_UID} -e CURR_GID=${CURR_GID} $container ./$1
+          docker exec -e _YAML_VOLUMES_CONTAINER=${_YAML_VOLUMES_CONTAINER} -e _FILES_CREATED_BY_DEPLOYMENT=${_FILES_CREATED_BY_DEPLOYMENT} -e CURR_UID=${CURR_UID} -e CURR_GID=${CURR_GID} $container ./$1
         fi
     done
 }
@@ -98,7 +99,7 @@ get_volumes_file_list()
     if [ -d "${volume}" ]
     then
       cd $volume
-      FILES_IN_VOLUME=$(find "${volume}")
+      FILES_IN_VOLUME=$(find)
       echo "$FILES_IN_VOLUME" >> $_FILE_LIST_PATH
     fi
   done
@@ -120,7 +121,12 @@ create_file_to_save_files_list()
 main()
 {
   permission_file_path="permissions.sh"
-  if [ -z "$_YAML_VOLUMES_AFTER_DEPLOYMENT" ]
+  if [ -z "$_YAML_VOLUMES_HOST" ]
+  then
+    warn "No Volumes List variable found in environment"
+    return
+  fi
+  if [ -z "$_YAML_VOLUMES_CONTAINER" ]
   then
     warn "No Volumes List variable found in environment"
     return
@@ -136,12 +142,14 @@ main()
     return
   fi
 
-  _YAML_VOLUMES_AFTER_DEPLOYMENT=($(echo "${_YAML_VOLUMES_AFTER_DEPLOYMENT}"))
+  _YAML_VOLUMES_HOST=($(echo "${_YAML_VOLUMES_HOST}"))
+  _YAML_VOLUMES_CONTAINER=($(echo "${_YAML_VOLUMES_CONTAINER}"))
   create_file_to_save_files_list
   get_volumes_file_list
+  _FILES_CREATED_BY_DEPLOYMENT=$(comm -23 $_FILE_LIST_PATH $_ORIGINAL_FILE_LIST_PATH)
   get_container_id_list
-  #copy_script_into_containers $APPSAWAY_APP_PATH/appsAway_containerPermissions.sh $permission_file_path
-  #execute_script_inside_containers $permission_file_path
+  copy_script_into_containers $APPSAWAY_APP_PATH/appsAway_containerPermissions.sh $permission_file_path
+  execute_script_inside_containers $permission_file_path
 }
 
 main $1

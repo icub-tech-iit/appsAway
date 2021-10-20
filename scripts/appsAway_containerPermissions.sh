@@ -45,37 +45,31 @@ warn()
   echo -e "${_YELLOW}$(date +%d-%m-%Y) - $(date +%H:%M:%S) WARNING : $1${_NC}"
 }
 
-get_files_list()
-{ 
-  FILES_TO_CHANGE=$()
-  cd /
-  for volume in "${_YAML_VOLUMES_LIST[@]}"
-  do 
-    if [ -d $volume ]
-    then
-      FILES_IN_VOLUME=$(find $volume)
-      IFS=$'\n' 
-      FILES_IN_VOLUME=($FILES_IN_VOLUME)
-      IFS=$SAVEIFS
-      FILES_TO_CHANGE=("${FILES_TO_CHANGE[@]}" "${FILES_IN_VOLUME[@]}")
-    fi
-  done
-  
-}
-
 change_permissions()
 {
-  for file in ${FILES_TO_CHANGE[@]}
+  for incomplete_file in ${_FILES_CREATED_BY_DEPLOYMENT[@]}
   do
-    chown ${CURR_UID}:${CURR_GID} $file
+    base_file_name=$(echo "$incomplete_file" | sed "s/.*\///")
+    for volume in ${_YAML_VOLUMES_CONTAINER[@]}
+    do
+      complete_file_name=$(find $volume | grep $base_file_name)
+      if [[ complete_file_name != "" ]]
+        chown ${CURR_UID}:${CURR_GID} $complete_file_name
+      fi
+    done
   done
 }
 
 main()
 {
-  if [ -z "$_YAML_VOLUMES_LIST" ]
+  if [ -z "$_YAML_VOLUMES_CONTAINER" ]
   then
     warn "No Volumes List variable found in environment"
+    return
+  fi
+  if [ -z "$_FILES_CREATED_BY_DEPLOYMENT" ]
+  then
+    warn "No list of files created by deployment"
     return
   fi
   if [ -z "$CURR_UID" ] || [ -z "$CURR_GID" ]
@@ -83,9 +77,8 @@ main()
     warn "No user ID variable found in environment"
     return
   fi
-  _YAML_VOLUMES_LIST=($(echo "${_YAML_VOLUMES_LIST}")) 
-  get_files_list
-  echo "The following files will have the permissions changed: ${FILES_TO_CHANGE[@]}"
+  _YAML_VOLUMES_CONTAINER=($(echo "${_YAML_VOLUMES_CONTAINER}")) 
+  echo "The following files will have the permissions changed: ${_FILES_CREATED_BY_DEPLOYMENT[@]}"
   change_permissions
 }
 
