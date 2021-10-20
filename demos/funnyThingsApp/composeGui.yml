@@ -41,7 +41,7 @@ x-yarp-speech: &yarp-speech
 services:
   yFunnyThingsApp:
     <<: *yarp-base
-    command: funnythings.AppImage --no-sandbox
+    command: funnyThingsApp.AppImage --no-sandbox
 
   yDemoGoogleSynthesis:
     <<: *yarp-speech
