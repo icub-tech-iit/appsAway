@@ -54,6 +54,7 @@ change_permissions()
     do
       complete_file_name=$(find $volume | grep $base_file_name)
       if [[ complete_file_name != "" ]]
+      then
         chown ${CURR_UID}:${CURR_GID} $complete_file_name
       fi
     done

@@ -314,7 +314,7 @@ stop_deploy()
   echo "registry flag: ${REGISTRY_UP_FLAG}"
   if [[ ${REGISTRY_UP_FLAG} == false ]]
   then
-    ${_DOCKER_BIN} service rm registry
+    ${_DOCKER_BIN} service rm registry  
   fi
 }
 

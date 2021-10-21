@@ -94,7 +94,7 @@ execute_script_inside_containers()
 
 get_volumes_file_list()
 {
-  for volume in "${_YAML_VOLUMES_AFTER_DEPLOYMENT[@]}"
+  for volume in "${_YAML_VOLUMES_HOST[@]}"
   do   
     if [ -d "${volume}" ]
     then
@@ -146,7 +146,7 @@ main()
   _YAML_VOLUMES_CONTAINER=($(echo "${_YAML_VOLUMES_CONTAINER}"))
   create_file_to_save_files_list
   get_volumes_file_list
-  _FILES_CREATED_BY_DEPLOYMENT=$(comm -23 $_FILE_LIST_PATH $_ORIGINAL_FILE_LIST_PATH)
+  _FILES_CREATED_BY_DEPLOYMENT=$(grep -vxfF $_FILE_LIST_PATH $_ORIGINAL_FILE_LIST_PATH)
   get_container_id_list
   copy_script_into_containers $APPSAWAY_APP_PATH/appsAway_containerPermissions.sh $permission_file_path
   execute_script_inside_containers $permission_file_path
