@@ -167,26 +167,22 @@ init()
  for file in ${APPSAWAY_DEPLOY_YAML_FILE_LIST}
  do
     get_shared_volumes ${APPSAWAY_APP_PATH}/${file}
-    echo "List of volumes: ${_YAML_VOLUMES_HOST}"
  done 
  if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
  for file in ${APPSAWAY_HEAD_YAML_FILE_LIST}
    do
       get_shared_volumes ${APPSAWAY_APP_PATH}/${file}
-      echo "List of volumes: ${_YAML_VOLUMES_HOST}"
    done
  fi
  if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
    for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
    do
       get_shared_volumes ${APPSAWAY_APP_PATH}/${file}
-      echo "List of volumes: ${_YAML_VOLUMES_HOST}"
    done
  elif [ "$APPSAWAY_GUINODE_ADDR" == "" ] && [ "$APPSAWAY_CONSOLENODE_ADDR" != "" ]; then
    for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
    do
       get_shared_volumes ${APPSAWAY_APP_PATH}/${file}
-      echo "List of volumes: ${_YAML_VOLUMES_HOST}" 
    done
  fi
  _YAML_VOLUMES_HOST=$(eval echo -e \"$_YAML_VOLUMES_HOST\")
@@ -276,7 +272,6 @@ scp_to_node()
 run_hardware_steps_via_ssh()
 {
   log "running hardware-dependant steps to nodes"
-  echo "If the text after the colon is empty somethign is wrong: ${_YAML_VOLUMES_HOST}"
   mydisplay=$(getdisplay)
   if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
     GUI_DISPLAY=$(ssh $APPSAWAY_GUINODE_USERNAME@$APPSAWAY_GUINODE_ADDR "ps -u $(id -u) -o pid= | xargs -I PID -r cat /proc/PID/environ 2> /dev/null | tr '\0' '\n' | grep ^DISPLAY=: | sort -u")

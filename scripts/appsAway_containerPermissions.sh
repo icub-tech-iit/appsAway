@@ -52,10 +52,13 @@ change_permissions()
     base_file_name=$(echo "$incomplete_file" | sed "s/.*\///")
     for volume in ${_YAML_VOLUMES_CONTAINER[@]}
     do
-      complete_file_name=$(find $volume | grep $base_file_name)
-      if [[ complete_file_name != "" ]]
+      if [ -d /$volume ]
       then
-        chown ${CURR_UID}:${CURR_GID} $complete_file_name
+        complete_file_name=$(find /$volume | grep $base_file_name)
+        if [[ complete_file_name != "" ]]
+        then
+          chown ${CURR_UID}:${CURR_GID} $complete_file_name
+        fi
       fi
     done
   done

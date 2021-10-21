@@ -39,6 +39,7 @@ _DOCKER_COMPOSE_BIN_CONSOLE=$(which docker-compose || true)
 _YAML_VOLUMES_HOST=""
 _YAML_VOLUMES_CONTAINER=""
 
+
 if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
   _DOCKER_COMPOSE_BIN_HEAD=$(ssh $APPSAWAY_ICUBHEADNODE_USERNAME@$APPSAWAY_ICUBHEADNODE_ADDR 'which docker-compose;')
   echo "Docker compose head path: $_DOCKER_COMPOSE_BIN_HEAD"
@@ -193,6 +194,7 @@ init()
     fi
  done
  _SSH_CMD_PREFIX="cd ${APPSAWAY_APP_PATH} "
+ source $_APPSAWAY_ENVFILE
 }
 
 fini()

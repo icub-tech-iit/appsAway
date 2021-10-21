@@ -56,13 +56,10 @@ get_volumes_file_list()
 
 create_file_to_save_files_list()
 {
-  echo "creating file"
   if [ -f $_FILE_LIST_PATH ]
   then
-    echo "file exists"
     echo "" > $_FILE_LIST_PATH
   else
-    echo "file does not exist"
     touch $_FILE_LIST_PATH
   fi
 }
