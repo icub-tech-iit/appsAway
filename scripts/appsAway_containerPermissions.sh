@@ -40,6 +40,10 @@ _DOCKER_PARAMS=""
 _HOSTNAME_LIST=""
 _CWD=$(pwd)
 
+log() {
+  echo -e "${_BLUE}$(date +%d-%m-%Y) - $(date +%H:%M:%S) : $1${_NC}"
+}
+
 warn() 
 {
   echo -e "${_YELLOW}$(date +%d-%m-%Y) - $(date +%H:%M:%S) WARNING : $1${_NC}"
@@ -73,7 +77,7 @@ main()
   fi
   if [ -z "$_FILES_CREATED_BY_DEPLOYMENT" ]
   then
-    warn "No list of files created by deployment"
+    log "No list of files created by deployment"
     return
   fi
   if [ -z "$CURR_UID" ] || [ -z "$CURR_GID" ]

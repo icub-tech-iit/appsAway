@@ -18,7 +18,6 @@ _SCRIPT_TEMPLATE_VERSION="1.1.0" #
 # ##############################################################################
 # Defaults
 # local variable name starts with "_"
-_APPSAWAY_ENV_FILE="appsAway_setEnvironment.local.sh"
 _YARP_CONFIG_FILES_PATH="config_yarp"
 _YARP_NAMESPACE="/root"
 _DOCKER_ENV_FILE=".env"
@@ -39,7 +38,7 @@ _DOCKER_BIN=$(which docker || true)
 _DOCKER_PARAMS=""
 _HOSTNAME_LIST=""
 _CWD=$(pwd)
-_FILE_LIST_PATH="${HOME}/filesInVolumes.txt"
+_FILE_LIST_BEFORE_DEPLOYMENT=""
 
 get_volumes_file_list()
 {
@@ -48,27 +47,24 @@ get_volumes_file_list()
     if [ -d "${volume}" ]
     then
       cd $volume
-      FILES_IN_VOLUME=$(find)
-      echo "$FILES_IN_VOLUME" >> $_FILE_LIST_PATH
+      FILES_IN_VOLUME=$(find | tr '\n' '*' | sed 's/.\///g') # * works as a separator for each filename (newlines and spaces are not valid when exporting)
+      FILES_IN_VOLUME=${FILES_IN_VOLUME:2:-1} # Remove extra characters coming from find command
+      _FILE_LIST_BEFORE_DEPLOYMENT="$_FILE_LIST_BEFORE_DEPLOYMENT ${FILES_IN_VOLUME}"    
     fi
   done
+  _FILE_LIST_BEFORE_DEPLOYMENT=${_FILE_LIST_BEFORE_DEPLOYMENT:1}
 }
 
-create_file_to_save_files_list()
+save_list_to_env_file()
 {
-  if [ -f $_FILE_LIST_PATH ]
-  then
-    echo "" > $_FILE_LIST_PATH
-  else
-    touch $_FILE_LIST_PATH
-  fi
+  echo "_FILE_LIST_BEFORE_DEPLOYMENT=\"${_FILE_LIST_BEFORE_DEPLOYMENT}\"" >> ${HOME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}/${_DOCKER_ENV_FILE}
 }
 
 main()
 {
   _YAML_VOLUMES_HOST=($(echo "${_YAML_VOLUMES_HOST}"))  
-  create_file_to_save_files_list
   get_volumes_file_list
+  save_list_to_env_file
 }
 
 main

@@ -39,8 +39,8 @@ _DOCKER_BIN=$(which docker || true)
 _DOCKER_PARAMS=""
 _HOSTNAME_LIST=""
 _CWD=$(pwd)
-_ORIGINAL_FILE_LIST_PATH="${HOME}/filesInVolumes.txt"
-_FILE_LIST_PATH="${HOME}/filesInVolumesAfter.txt"
+source ${HOME}/${_APPSAWAY_APP_PATH_NOT_CONSOLE}/${_DOCKER_ENV_FILE}
+_FILE_LIST_AFTER_DEPLOYMENT=""
 
 warn() 
 {
@@ -99,23 +99,12 @@ get_volumes_file_list()
     if [ -d "${volume}" ]
     then
       cd $volume
-      FILES_IN_VOLUME=$(find)
-      echo "$FILES_IN_VOLUME" >> $_FILE_LIST_PATH
+      FILES_IN_VOLUME=$(find | tr '\n' '*' | sed 's/.\///g') # * works as a separator for each filename (newlines and spaces are not valid when exporting)
+      FILES_IN_VOLUME=${FILES_IN_VOLUME:2:-1} # Remove extra characters coming from find command
+      _FILE_LIST_AFTER_DEPLOYMENT="$_FILE_LIST_AFTER_DEPLOYMENT ${FILES_IN_VOLUME}"    
     fi
   done
-}
-
-create_file_to_save_files_list()
-{
-  echo "creating file"
-  if [ -f $_FILE_LIST_PATH ]
-  then
-    echo "file exists"
-    echo "" > $_FILE_LIST_PATH
-  else
-    echo "file does not exist"
-    touch $_FILE_LIST_PATH
-  fi
+  _FILE_LIST_AFTER_DEPLOYMENT=${_FILE_LIST_AFTER_DEPLOYMENT:1}
 }
 
 main()
@@ -144,9 +133,8 @@ main()
 
   _YAML_VOLUMES_HOST=($(echo "${_YAML_VOLUMES_HOST}"))
   _YAML_VOLUMES_CONTAINER=($(echo "${_YAML_VOLUMES_CONTAINER}"))
-  create_file_to_save_files_list
   get_volumes_file_list
-  _FILES_CREATED_BY_DEPLOYMENT=$(grep -vxfF $_FILE_LIST_PATH $_ORIGINAL_FILE_LIST_PATH)
+  _FILES_CREATED_BY_DEPLOYMENT=$(comm -23 <(echo $_FILE_LIST_AFTER_DEPLOYMENT | tr '*' '\n' | sort) <(echo $_FILE_LIST_BEFORE_DEPLOYMENT | tr '*' '\n' | sort))
   get_container_id_list
   copy_script_into_containers $APPSAWAY_APP_PATH/appsAway_containerPermissions.sh $permission_file_path
   execute_script_inside_containers $permission_file_path
