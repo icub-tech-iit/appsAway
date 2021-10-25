@@ -40,8 +40,6 @@ _YARP_BIN=$(which yarp || true)
 _DOCKER_PARAMS=""
 _HOSTNAME_LIST=""
 _CWD=$(pwd)
-OS_HOME_DIR="/home"
-APPSAWAY_APP_PATH_NOT_CONSOLE="iCubApps/${APPSAWAY_APP_NAME}"
 
 print_defs ()
 {
