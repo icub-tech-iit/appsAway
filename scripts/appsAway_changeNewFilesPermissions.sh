@@ -130,7 +130,6 @@ main()
     warn "No stack name variable found in environment"
     return
   fi
-
   _YAML_VOLUMES_HOST=($(echo "${_YAML_VOLUMES_HOST}"))
   _YAML_VOLUMES_CONTAINER=($(echo "${_YAML_VOLUMES_CONTAINER}"))
   get_volumes_file_list

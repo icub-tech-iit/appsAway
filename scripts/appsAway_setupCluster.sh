@@ -40,6 +40,12 @@ _YARP_BIN=$(which yarp || true)
 _DOCKER_PARAMS=""
 _HOSTNAME_LIST=""
 _CWD=$(pwd)
+if [ "$os" = "Darwin" ]
+then
+  _OS_HOME_DIR=/Users
+else
+  _OS_HOME_DIR=/home
+fi
 
 print_defs ()
 {
@@ -128,7 +134,6 @@ init()
  os=`uname -s`
  if [ "$os" = "Darwin" ]
  then
-  OS_HOME_DIR="/Users"
   _ALL_LOCAL_IP_ADDRESSES=$(arp -a | awk -F'[()]' '{print $2}')
  else
   _ALL_LOCAL_IP_ADDRESSES=$(hostname --all-ip-address)
@@ -241,7 +246,7 @@ copy_yaml_files()
     fi
   done
   if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
-    head_path=${OS_HOME_DIR}/${APPSAWAY_ICUBHEADNODE_USERNAME}/${APPSAWAY_APP_PATH_NOT_CONSOLE}
+    head_path=${_OS_HOME_DIR}/${APPSAWAY_ICUBHEADNODE_USERNAME}/${APPSAWAY_APP_PATH_NOT_CONSOLE}
     log "creating path ${head_path} on node with IP ${APPSAWAY_ICUBHEADNODE_ADDR}"
     ${_SSH_BIN} ${_SSH_PARAMS} ${APPSAWAY_ICUBHEADNODE_USERNAME}@${APPSAWAY_ICUBHEADNODE_ADDR} "mkdir -p ${head_path}"
     for file in ${APPSAWAY_HEAD_YAML_FILE_LIST}
@@ -254,7 +259,7 @@ copy_yaml_files()
   fi
 
   if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
-    gui_path=${OS_HOME_DIR}/${APPSAWAY_GUINODE_USERNAME}/${APPSAWAY_APP_PATH_NOT_CONSOLE}
+    gui_path=${_OS_HOME_DIR}/${APPSAWAY_GUINODE_USERNAME}/${APPSAWAY_APP_PATH_NOT_CONSOLE}
     log "creating path ${gui_path} on node with IP $APPSAWAY_GUINODE_ADDR"
     ${_SSH_BIN} ${_SSH_PARAMS} ${APPSAWAY_GUINODE_USERNAME}@${APPSAWAY_GUINODE_ADDR} "mkdir -p ${gui_path}"
     for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
@@ -302,7 +307,7 @@ scp_to_node()
   username_to_receive=$2
   ip_to_receive=$3
   path_to_receive=$4
-  full_path_to_receive=${OS_HOME_DIR}/${username_to_receive}/${path_to_receive}
+  full_path_to_receive=${_OS_HOME_DIR}/${username_to_receive}/${path_to_receive}
   ${_SCP_BIN} ${_SCP_PARAMS_DIR} ${file_to_send} ${username_to_receive}@${ip_to_receive}:${full_path_to_receive}/
 }
 
