@@ -1,7 +1,7 @@
 version: "3.7"
 
 x-yarp-base: &yarp-base
-  image: icubteamcode/supervise-calib:master_master-unstable_sources
+  image: icubteamcode/supervise-calib:v2021.08.1-stable_master_sources
   environment:
     - DISPLAY=${DISPLAY}
     - XAUTHORITY=/root/.Xauthority

@@ -1,7 +1,7 @@
 version: "3.7"
 
 x-yarp-head: &yarp-head
-  image: icubteamcode/superbuild-icubhead:master_master-unstable_sources
+  image: icubteamcode/superbuild-icubhead:v2021.08.1-stable_master_sources
   environment:
     - YARP_FORWARD_LOG_ENABLE=1
     - YARP_ROBOT_NAME

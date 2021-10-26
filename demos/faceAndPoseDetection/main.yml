@@ -1,7 +1,7 @@
 version: "3.7"
 
 x-yarp-demo: &yarp-demo
-  image: icubteamcode/human-sensing:master-stable_master_sources
+  image: icubteamcode/human-sensing:v2021.08.1-stable_master_sources
   environment:
     - DISPLAY=${DISPLAY}
     - QT_X11_NO_MITSHM=1
