@@ -46,21 +46,6 @@ else
   _OS_HOME_DIR=/home
 fi
 
-
-if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
-  _DOCKER_COMPOSE_BIN_HEAD=$(ssh $APPSAWAY_ICUBHEADNODE_USERNAME@$APPSAWAY_ICUBHEADNODE_ADDR 'which docker-compose;')
-  echo "Docker compose head path: $_DOCKER_COMPOSE_BIN_HEAD"
-  if [ "${_DOCKER_COMPOSE_BIN_HEAD}" == "" ]; then
-   exit_err "docker-compose binary not found in the head node"
-  fi
-fi
-if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
-  _DOCKER_COMPOSE_BIN_GUI=$(ssh $APPSAWAY_GUINODE_USERNAME@$APPSAWAY_GUINODE_ADDR 'which docker-compose;')
-  echo "Docker compose gui path: $_DOCKER_COMPOSE_BIN_GUI" 
-  if [ "${_DOCKER_COMPOSE_BIN_GUI}" == "" ]; then
-   exit_err "docker-compose binary not found in the gui node" 
-  fi
-fi
 _DOCKER_PARAMS=""
 _SSH_CMD_PREFIX=""
 
@@ -191,6 +176,22 @@ init()
  fi
  source ${_APPSAWAY_ENVFILE}
  source ${HOME}/${APPSAWAY_APP_PATH_NOT_CONSOLE}/${_DOCKER_ENV_FILE}
+
+ if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
+  _DOCKER_COMPOSE_BIN_HEAD=$(ssh $APPSAWAY_ICUBHEADNODE_USERNAME@$APPSAWAY_ICUBHEADNODE_ADDR 'which docker-compose;')
+  echo "Docker compose head path: $_DOCKER_COMPOSE_BIN_HEAD"
+  if [ "${_DOCKER_COMPOSE_BIN_HEAD}" == "" ]; then
+   exit_err "docker-compose binary not found in the head node"
+  fi
+ fi
+ if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
+  _DOCKER_COMPOSE_BIN_GUI=$(ssh $APPSAWAY_GUINODE_USERNAME@$APPSAWAY_GUINODE_ADDR 'which docker-compose;')
+  echo "Docker compose gui path: $_DOCKER_COMPOSE_BIN_GUI" 
+  if [ "${_DOCKER_COMPOSE_BIN_GUI}" == "" ]; then
+   exit_err "docker-compose binary not found in the gui node" 
+  fi
+ fi
+
  for _deploy_file in ${APPSAWAY_DEPLOY_YAML_FILE_LIST}
  do
     if [ ! -f "../demos/${APPSAWAY_APP_NAME}/${_deploy_file}" ]; then

@@ -53,10 +53,9 @@ get_container_id_list()
 
   IFS=$'\n' 
   CONTAINER_ID_LIST_all=($CONTAINER_LS_OUTPUT)
-  CONTAINER_TO_EXCLUDE=($(docker ps --filter "name=${APPSAWAY_STACK_NAME}_visualizer" --format "table {{.ID}}"))
+  CONTAINER_TO_EXCLUDE=($(docker ps --quiet --filter "name=${APPSAWAY_STACK_NAME}_visualizer" --filter "name=registry"))
   IFS=$SAVEIFS
   CONTAINER_ID_LIST=("${CONTAINER_ID_LIST_all[@]:1}")
-  CONTAINER_TO_EXCLUDE=${CONTAINER_TO_EXCLUDE[1]} 
 }
 
 copy_script_into_containers()
@@ -64,7 +63,7 @@ copy_script_into_containers()
     source_path=$1
     for container in ${CONTAINER_ID_LIST[@]}
     do
-        if [[ ${container} != ${CONTAINER_TO_EXCLUDE} ]]
+        if [[ ! "${CONTAINER_TO_EXCLUDE[*]}" =~ "${container}" ]]
         then
           container_work_dir=$(docker exec $container pwd)
           if [[ $container_work_dir != "/" ]]
@@ -85,7 +84,7 @@ execute_script_inside_containers()
     CURR_GID=$(id -g)
     for container in ${CONTAINER_ID_LIST[@]}
     do  
-        if [[ ${container} != ${CONTAINER_TO_EXCLUDE} ]]
+        if [[ ! "${CONTAINER_TO_EXCLUDE[*]}" =~ "${container}" ]]
         then
           docker exec -e _YAML_VOLUMES_CONTAINER=${_YAML_VOLUMES_CONTAINER} -e _FILES_CREATED_BY_DEPLOYMENT=${_FILES_CREATED_BY_DEPLOYMENT} -e CURR_UID=${CURR_UID} -e CURR_GID=${CURR_GID} $container ./$1
         fi
