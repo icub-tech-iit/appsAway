@@ -1,7 +1,7 @@
 version: "3.7"
 
 x-yarp-base: &yarp-base
-  image: icubteamcode/grasp-the-ball-gazebo:devel_master-unstable_sources
+  image: icubteamcode/grasp-the-ball-gazebo:master_sources
   environment:
     - DISPLAY=${DISPLAY}
     - QT_X11_NO_MITSHM=1
