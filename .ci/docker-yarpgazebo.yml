@@ -5,7 +5,7 @@ x-yarp-base: &yarp-base
   network_mode: bridge
   volumes: 
     - "${GITHUB_WORKSPACE}/.ci/:/outcome"
-    - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
+    - "/tmp/.X11-unix:/tmp/.X11-unix"
   environment:
     - DISPLAY=${DISPLAY}
     - QT_X11_NO_MITSHM=1
@@ -23,4 +23,4 @@ services:
         - yarp-server      
       command: gazebo
       
-#    - "${XAUTHORITY}:/root/.Xauthority:rw"
+#    - "${XAUTHORITY}:/root/.Xauthority"
