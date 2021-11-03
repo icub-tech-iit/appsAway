@@ -1,0 +1,15 @@
+version: "3.7"
+
+services:
+    myregistry:
+        image: "registry:2"
+        networks:
+            - hostnet
+        expose:
+            - "5000"
+            
+networks:
+    hostnet:
+        external: true
+        name: host
+

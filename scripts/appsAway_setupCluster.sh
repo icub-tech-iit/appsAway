@@ -349,8 +349,9 @@ find_docker_images()
   then     
     REGISTRY_UP_FLAG=false
     echo "Creating the local registry"
-    ${_DOCKER_BIN} service create --constraint node.role==manager --name registry \
-    --publish published=5000,target=5000 --replicas 1 registry:2 
+    ${_DOCKER_BIN} stack deploy -c appsAway_registryLaunch.yml ${APPSAWAY_STACK_NAME}
+  #  ${_DOCKER_BIN} service create --constraint node.role==manager --name registry \
+  #  --publish published=5000,target=5000 --replicas 1 registry:2 
   else
     return=$(${_DOCKER_BIN} service ls | grep "*:5000->5000/tcp")
     if [[ $return != "" ]]
