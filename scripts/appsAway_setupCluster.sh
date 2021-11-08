@@ -40,6 +40,8 @@ _YARP_BIN=$(which yarp || true)
 _DOCKER_PARAMS=""
 _HOSTNAME_LIST=""
 _CWD=$(pwd)
+_DOCKER_COMPOSE_BIN_CONSOLE=$(which docker-compose || true)
+
 if [ "$os" = "Darwin" ]
 then
   _OS_HOME_DIR=/Users
@@ -126,6 +128,9 @@ init()
  fi
  if [ "${_DOCKER_BIN}" == "" ]; then
    exit_err "docker binary not found"
+ fi
+ if [ "${_DOCKER_COMPOSE_BIN_CONSOLE}" == "" ]; then
+   exit_err "docker-compose binary not found in the console node"
  fi
  if [ ! -f "${_APPSAWAY_ENV_FILE}" ]; then
    exit_err "enviroment file ${_APPSAWAY_ENV_FILE} does not exists"
@@ -344,21 +349,15 @@ find_docker_images()
   APPSAWAY_VERSIONS_LIST=($APPSAWAY_VERSIONS)
   APPSAWAY_TAGS_LIST=($APPSAWAY_TAGS)
   REGISTRY_UP_FLAG=true
-  registry_up=$(${_DOCKER_BIN} service ls | grep "*:5000->5000/tcp" | tr -d ' ') 
+  registry_up=$(${_DOCKER_BIN} container ls | grep "*:5000->5000/tcp" | tr -d ' ') 
   if [ "$registry_up" == "" ]
   then     
     REGISTRY_UP_FLAG=false
     echo "Creating the local registry"
-    ${_DOCKER_BIN} stack deploy -c appsAway_registryLaunch.yml ${APPSAWAY_STACK_NAME}
-  #  ${_DOCKER_BIN} service create --constraint node.role==manager --name registry \
-  #  --publish published=5000,target=5000 --replicas 1 registry:2 
+    ${_DOCKER_COMPOSE_BIN_CONSOLE} -f appsAway_registryLaunch.yml pull
+    ${_DOCKER_COMPOSE_BIN_CONSOLE} -f appsAway_registryLaunch.yml up --detach
   else
-    return=$(${_DOCKER_BIN} service ls | grep "*:5000->5000/tcp")
-    if [[ $return != "" ]]
-    then
-      return_list=($return)
-      ${_DOCKER_BIN} service update ${return_list[0]}
-    fi
+    log "A local registry is already running"
   fi
   
   echo "Registry_up_flag: $REGISTRY_UP_FLAG"

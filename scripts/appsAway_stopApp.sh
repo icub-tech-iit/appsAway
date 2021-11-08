@@ -318,11 +318,6 @@ stop_deploy()
   #do
     ${_DOCKER_BIN} ${_DOCKER_PARAMS} stack rm ${APPSAWAY_STACK_NAME}
   #done
-  echo "registry flag: ${REGISTRY_UP_FLAG}"
-  if [[ ${REGISTRY_UP_FLAG} == false ]]
-  then
-    ${_DOCKER_BIN} service rm registry  
-  fi
 }
 
 
