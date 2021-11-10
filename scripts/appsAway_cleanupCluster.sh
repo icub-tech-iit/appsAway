@@ -119,13 +119,13 @@ fini()
 
 clean_up_registry()
 {
-    echo "Cleanup registry created by this deployment."
+    log "Cleaning up registry created by this deployment..."
     if [[ ${REGISTRY_UP_FLAG} == false ]]
     then
         log "Removing registry service"
         ${_DOCKER_COMPOSE_BIN_CONSOLE} -f appsAway_registryLaunch.yml down
     else 
-        echo "No registry has been created by this deployment. No need to remove it."
+        log "No registry has been created by this deployment. No need to remove it."
     fi
 }
 
