@@ -349,8 +349,6 @@ find_docker_images()
   APPSAWAY_VERSIONS_LIST=($APPSAWAY_VERSIONS)
   APPSAWAY_TAGS_LIST=($APPSAWAY_TAGS)
   
-  check_registry
-
   pull_result=()
   for index in "${!APPSAWAY_IMAGES_LIST[@]}"
   do
@@ -420,43 +418,6 @@ find_docker_images()
   source ${HOME}/teamcode/appsAway/scripts/appsAway_setEnvironment.local.sh
 }
 
-check_registry() 
-{
-  REGISTRY_UP_FLAG=true
-  container_id_list=($(${_DOCKER_BIN} container ls --format "table {{.ID}}"))
-  container_id_list=(${container_id_list[@]:2})
-  if [ ${#container_id_list[@]} == 0 ]
-  then
-    REGISTRY_UP_FLAG=false
-  else
-    for id in ${container_id_list[@]}
-    do
-      port_content=$(${_DOCKER_BIN} inspect $id | grep 5000)
-      if [ "$port_content" == "" ]
-      then
-        REGISTRY_UP_FLAG=false
-      else
-        exit_err "A container is already running on port 5000"
-      fi
-    done
-  fi 
-
-  if [ $REGISTRY_UP_FLAG == false ]
-  then
-    log "No registry running on port 5000"
-    create_registry
-  fi
-  
-  echo "Registry_up_flag: $REGISTRY_UP_FLAG"
-  echo "export REGISTRY_UP_FLAG=$REGISTRY_UP_FLAG" >> ${HOME}/teamcode/appsAway/scripts/${_APPSAWAY_ENV_FILE}
-}
-
-create_registry()
-{
-  log "Creating the local registry"
-  ${_DOCKER_COMPOSE_BIN_CONSOLE} -f appsAway_registryLaunch.yml pull
-  ${_DOCKER_COMPOSE_BIN_CONSOLE} -f appsAway_registryLaunch.yml up --detach
-}
 
 main()
 { 
