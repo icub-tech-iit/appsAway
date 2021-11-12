@@ -1,0 +1,4 @@
+//pattacini
+//
+//&<h3>Field changed in robot manager</h3><br><ul><li>ID: <ins>11</ins><ul><li>name: iCub<del>Ly</del><b>Dij</b>on01</li><li>city: <del>Ly</del><b>21000 Dij</b>on, France</li><li>lat: 4<del>5</del><b>7</b>.<b>32204</b>7<del>65196</del></li><li>long: <del>4</del><b>5</b>.<b>0414</b>8<del>35893</del></li><li>institution_name: <b>IN</b>S<del>tem</del><b>ERM</b> <del>cell</del><b>U1093</b> <del>a</del><b>Cognitio</b>n<del>d</del><b>,</b> <del>Bra</del><b>Act</b>i<b>o</b>n <del>R</del>e<b>t Pla</b>s<del>ear</del><b>ti</b>c<del>h</del><b>ité</b> <del>I</del><b>Se</b>ns<b>omo</b>t<b>r</b>i<del>tut</del><b>c</b>e<del> (SBRI)</del>, <del>Ly</del><b>Dij</b>on</li></ul></li></ul>
+db.robots.update ({id: 11},{$set: { name: "iCubDijon01", city: "21000 Dijon, France", lat: "47.322047", long: "5.04148", institution_name: "INSERM U1093 Cognition, Action et Plasticité Sensomotrice, Dijon"}});
