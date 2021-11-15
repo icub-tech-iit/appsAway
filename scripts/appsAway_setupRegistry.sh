@@ -132,7 +132,7 @@ check_registry()
   else
     for id in ${container_id_list[@]}
     do
-      port_content="$(${_DOCKER_BIN} inspect $id | grep "5000")"
+      port_content="$(${_DOCKER_BIN} inspect $id | grep "5000/tcp")"
       if [ "$port_content" == "" ]
       then
         REGISTRY_UP_FLAG=false
