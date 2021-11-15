@@ -48,8 +48,11 @@ get_volumes_file_list()
     then
       cd $volume
       FILES_IN_VOLUME=$(find | tr '\n' '*' | sed 's/.\///g') # * works as a separator for each filename (newlines and spaces are not valid when exporting)
-      FILES_IN_VOLUME=${FILES_IN_VOLUME:2:-1} # Remove extra characters coming from find command
-      _FILE_LIST_BEFORE_DEPLOYMENT="$_FILE_LIST_BEFORE_DEPLOYMENT ${FILES_IN_VOLUME}"    
+      if [[ $FILES_IN_VOLUME != "" ]]
+      then
+        FILES_IN_VOLUME=${FILES_IN_VOLUME:2:-1} # Remove extra characters coming from find command
+        _FILE_LIST_BEFORE_DEPLOYMENT="$_FILE_LIST_BEFORE_DEPLOYMENT ${FILES_IN_VOLUME}" 
+      fi   
     fi
   done
   _FILE_LIST_BEFORE_DEPLOYMENT=${_FILE_LIST_BEFORE_DEPLOYMENT:1}
