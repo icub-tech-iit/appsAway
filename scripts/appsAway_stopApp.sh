@@ -18,7 +18,7 @@ _SCRIPT_TEMPLATE_VERSION="1.1.0" #
 # ##############################################################################
 # Defaults
 # local variable name starts with "_"
-_APPSAWAY_ENVFILE="appsAway_setEnvironment.local.sh"
+_APPSAWAY_ENV_FILE="appsAway_setEnvironment.local.sh"
 _SCRIPT2RUN_FILE_NAME="worker.sh.APPSAWAY"
 _EXIT_FILE_NAME="worker.exit.APPSAWAY"
 _RUNNER_SCRIPT_FILE_NAME="appsAway_scriptRunner.sh"
@@ -54,7 +54,7 @@ print_defs ()
   echo "Default parameters are"
   echo " _SCRIPT_TEMPLATE_VERSION is $_SCRIPT_TEMPLATE_VERSION"
   echo " _SCRIPT_VERSION is $_SCRIPT_VERSION"
-  echo " _APPSAWAY_ENVFILE is $_APPSAWAY_ENVFILE"
+  echo " _APPSAWAY_ENV_FILE is $_APPSAWAY_ENV_FILE"
   echo " _SCP_BIN is $_SCP_BIN"
   echo " _SCP_PARAMS is $_SCP_PARAMS"
   echo " _SSH_BIN is $_SSH_BIN"
@@ -171,10 +171,10 @@ init()
  if [ "${_DOCKER_BIN}" == "" ]; then
    exit_err "docker binary not found"
  fi
- if [ ! -f "${_APPSAWAY_ENVFILE}" ]; then
-   exit_err "enviroment file ${_APPSAWAY_ENVFILE} does not exist"
+ if [ ! -f "${_APPSAWAY_ENV_FILE}" ]; then
+   exit_err "enviroment file ${_APPSAWAY_ENV_FILE} does not exist"
  fi
- source ${_APPSAWAY_ENVFILE}
+ source ${_APPSAWAY_ENV_FILE}
  source ${HOME}/${APPSAWAY_APP_PATH_NOT_CONSOLE}/${_DOCKER_ENV_FILE}
 
  if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then

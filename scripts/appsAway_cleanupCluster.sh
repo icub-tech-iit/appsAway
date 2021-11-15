@@ -26,14 +26,14 @@ _YELLOW='\033[1;33m'
 _PURPLE='\033[1;35m'
 _LGRAY='\033[0;37m'
 _DOCKER_COMPOSE_BIN_CONSOLE=$(which docker-compose || true)
-_APPSAWAY_ENVFILE="appsAway_setEnvironment.local.sh"
+_APPSAWAY_ENV_FILE="appsAway_setEnvironment.local.sh"
 # ##############################################################################
 print_defs ()
 {
   echo "Default parameters are"
   echo " _SCRIPT_TEMPLATE_VERSION is $_SCRIPT_TEMPLATE_VERSION"
   echo " _SCRIPT_VERSION is $_SCRIPT_VERSION"
-  echo " _APPSAWAY_ENVFILE is $_APPSAWAY_ENVFILE"
+  echo " _APPSAWAY_ENV_FILE is $_APPSAWAY_ENV_FILE"
   echo " _DOCKER_ENV_FILE is $_DOCKER_ENV_FILE"
   echo " _YARP_CONFIG_FILES_PATH is $_YARP_CONFIG_FILES_PATH"
   echo " _YARP_NAMESPACE is $_YARP_NAMESPACE"
@@ -105,10 +105,10 @@ init()
  if [ "${_DOCKER_COMPOSE_BIN_CONSOLE}" == "" ]; then
    exit_err "docker-compose binary not found in the console node"
  fi
- if [ ! -f "${_APPSAWAY_ENVFILE}" ]; then
-   exit_err "enviroment file ${_APPSAWAY_ENVFILE} does not exist"
+ if [ ! -f "${_APPSAWAY_ENV_FILE}" ]; then
+   exit_err "enviroment file ${_APPSAWAY_ENV_FILE} does not exist"
  fi
- source ${_APPSAWAY_ENVFILE} 
+ source ${_APPSAWAY_ENV_FILE} 
  log "$0 STARTED"
 }
 
