@@ -311,8 +311,8 @@ stop_hardware_steps_via_ssh()
 stop_deploy()
 {
 
-  log "executing docker stack deploy"
-  export $(cat .env)
+  log "executing docker stack stop"
+  #export $(cat .env)
   #cd $APPSAWAY_APP_PATH
   #for _file2deploy in ${APPSAWAY_DEPLOY_YAML_FILE_LIST}
   #do
