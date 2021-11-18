@@ -162,7 +162,7 @@ run_via_ssh()
   fi
 }
 
-docker_remove_volumes(){
+clean_up_volumes(){
 ssh -T $1@$2<<EOF
 
 
@@ -192,13 +192,9 @@ stop_deploy()
   ${_DOCKER_BIN} ${_DOCKER_PARAMS} stack rm ${APPSAWAY_STACK_NAME}
 }
 
-docker_clean_up_stack() 
-{
-  for file in ${APPSAWAY_DEPLOY_YAML_FILE_LIST}
-  do
-    log "stopping docker-compose with file ${file} on host $APPSAWAY_CONSOLENODE_ADDR with command ${stop_cmd}"
-    run_via_ssh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR "if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_CONSOLE} -f ${file} ${stop_cmd}; fi" &
-  done
+clean_up_stack() 
+{ 
+  stop_deploy
   if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_HEAD_YAML_FILE_LIST}
     do
@@ -224,14 +220,23 @@ docker_clean_up_stack()
   nodes_username_list=(${APPSAWAY_NODES_USERNAME_LIST})
   for index in "${!nodes_addr_list[@]}"
   do
-    log "Removing all the stopped containers in node ${nodes_addr_list[$index]}..."
+    log "Removing hanging containers in node ${nodes_addr_list[$index]}..."
     run_via_ssh ${nodes_username_list[$index]} ${nodes_addr_list[$index]} "docker container prune --force" &
   done
   wait
   for index in "${!nodes_addr_list[@]}"
   do
     log "Removing all volumes not referenced by any containers (i.e. dangling volumes) in node ${nodes_addr_list[$index]}..."
-    docker_remove_volumes ${nodes_username_list[$index]} ${nodes_addr_list[$index]}
+    clean_up_volumes ${nodes_username_list[$index]} ${nodes_addr_list[$index]}
+  done
+}
+
+clean_up_swarm()
+{
+  nodes_addr_list=(${APPSAWAY_NODES_ADDR_LIST})
+  nodes_username_list=(${APPSAWAY_NODES_USERNAME_LIST})
+  for index in "${!nodes_addr_list[@]}"
+  do
     if [ ${nodes_addr_list[$index]} != "$APPSAWAY_CONSOLENODE_ADDR" ]; then
       log "Leaving the swarm in node ${nodes_addr_list[$index]}..."
       run_via_ssh ${nodes_username_list[$index]} ${nodes_addr_list[$index]} "docker swarm leave --force |& grep -v Error" 
@@ -243,14 +248,36 @@ docker_clean_up_stack()
 
 main()
 { 
-  clean_up_registry
   source appsAway_setEnvironment.local.sh
-  stop_deploy
-  docker_clean_up_stack
+  echo "PARAMETER before: $1"
+  if [[ -n "$1" ]] ; then
+    echo "PARAMETER: $1"
+    if [[ "$1" == *"registry"* ]] ; then
+      clean_up_registry
+    fi
+    if [[ "$1" == *"swarm"* ]] ; then
+      clean_up_swarm
+    fi
+    if [[ "$1" == *"volumes"* ]] ; then
+      for index in "${!nodes_addr_list[@]}"
+      do
+        log "Removing all volumes not referenced by any containers (i.e. dangling volumes) in node ${nodes_addr_list[$index]}..."
+        clean_up_volumes ${nodes_username_list[$index]} ${nodes_addr_list[$index]}
+      done
+    fi
+    if [[ "$1" == *"stack"* ]] ; then
+      clean_up_stack
+    fi
+  else
+    log "About to cleanup the cluster..."
+    clean_up_registry 
+    clean_up_stack 
+    clean_up_swarm
+  fi
 }
 
 parse_opt "$@"
 init
-main
+main "$1"
 fini
 exit 0
