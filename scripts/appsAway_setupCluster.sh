@@ -349,9 +349,9 @@ find_docker_images()
   APPSAWAY_IMAGES_LIST=($APPSAWAY_IMAGES)
   APPSAWAY_VERSIONS_LIST=($APPSAWAY_VERSIONS)
   APPSAWAY_TAGS_LIST=($APPSAWAY_TAGS)
+  APPSAWAY_MANIFEST_FOUND_LIST=($APPSAWAY_MANIFEST_FOUND)
+  APPSAWAY_NODES_NAME=($APPSAWAY_NODES_NAME_LIST)
 
-  _REQUIRES_REGISTRY=false
-  pull_result=()
   for index in "${!APPSAWAY_IMAGES_LIST[@]}"
   do
     if [[ ${APPSAWAY_VERSIONS_LIST[$index]} != "n/a" ]]
@@ -360,64 +360,8 @@ find_docker_images()
     else
       current_image=${APPSAWAY_IMAGES_LIST[$index]}:${APPSAWAY_TAGS_LIST[$index]}
     fi
-    log "Checking if image $current_image exists on DockerHub..."
-    manifest_found=$( ${_DOCKER_BIN} manifest inspect $current_image 2> /dev/null || true )
-    if [[ $manifest_found == "" ]]; then
-      log "Manifest not found"
-      pull_result+=(1)
-      _REQUIRES_REGISTRY=true
-    else
-      log "Manifest found"
-      pull_result+=(0)
-    fi
-  done
-
-  REGISTRY_UP_FLAG=true
-
-  if $_REQUIRES_REGISTRY 
-  then
-    registry_up=$(${_DOCKER_BIN} service ls | grep "*:5000->5000/tcp" | tr -d ' ') 
-    if [ "$registry_up" == "" ]
-    then     
-      REGISTRY_UP_FLAG=false
-      echo "Creating the local registry"
-      ${_DOCKER_BIN} service create --constraint node.role==manager --name registry \
-      --publish published=5000,target=5000 --replicas 1 registry:2 
-    else
-      return=$(${_DOCKER_BIN} service ls | grep "*:5000->5000/tcp")
-      if [[ $return != "" ]]
-      then
-        return_list=($return)
-        ${_DOCKER_BIN} service update ${return_list[0]}
-      fi
-    fi
-  fi
-  
-  echo "Registry_up_flag: $REGISTRY_UP_FLAG"
-  echo "export REGISTRY_UP_FLAG=$REGISTRY_UP_FLAG" >> ${HOME}/teamcode/appsAway/scripts/${_APPSAWAY_ENV_FILE}
-
-  for index in "${!APPSAWAY_IMAGES_LIST[@]}"
-  do
-   if [[ ${APPSAWAY_VERSIONS_LIST[$index]} != "n/a" ]]
-    then
-      current_image=${APPSAWAY_IMAGES_LIST[$index]}:${APPSAWAY_VERSIONS_LIST[$index]}_${APPSAWAY_TAGS_LIST[$index]}
-    else
-      current_image=${APPSAWAY_IMAGES_LIST[$index]}:${APPSAWAY_TAGS_LIST[$index]}
-    fi 
-#    if (( ${pull_result[$index]} == 0 )); then
-#      log "Pulling image $current_image, this might take a few minutes..."
-#      ${_DOCKER_BIN} pull --quiet $current_image &> /dev/null || true &
-#    fi
-  done
-  for index in "${!APPSAWAY_IMAGES_LIST[@]}"
-  do
-    if [[ ${APPSAWAY_VERSIONS_LIST[$index]} != "n/a" ]]
-    then
-      current_image=${APPSAWAY_IMAGES_LIST[$index]}:${APPSAWAY_VERSIONS_LIST[$index]}_${APPSAWAY_TAGS_LIST[$index]}
-    else
-      current_image=${APPSAWAY_IMAGES_LIST[$index]}:${APPSAWAY_TAGS_LIST[$index]}
-    fi
-    if (( ${pull_result[$index]} == 1 )); then
+#    if (( ${APPSAWAY_MANIFEST_FOUND_LIST[$index]} == 0 && ${#APPSAWAY_NODES_NAME[@]} > 1 )); then
+    if (( ${APPSAWAY_MANIFEST_FOUND_LIST[$index]} == 0); then
       IMAGE_FOUND_LOCALLY=$(${_DOCKER_BIN} images --format "{{.Repository}}:{{.Tag}}" | grep $current_image || true) 
       if [[ $IMAGE_FOUND_LOCALLY != "" ]]  
       then
