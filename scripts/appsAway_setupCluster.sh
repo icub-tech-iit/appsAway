@@ -361,15 +361,21 @@ find_docker_images()
       current_image=${APPSAWAY_IMAGES_LIST[$index]}:${APPSAWAY_TAGS_LIST[$index]}
     fi
 #    if (( ${APPSAWAY_MANIFEST_FOUND_LIST[$index]} == 0 && ${#APPSAWAY_NODES_NAME[@]} > 1 )); then
-    if (( ${APPSAWAY_MANIFEST_FOUND_LIST[$index]} == 0); then
+    if (( ${APPSAWAY_MANIFEST_FOUND_LIST[$index]} == 0 )); then
       IMAGE_FOUND_LOCALLY=$(${_DOCKER_BIN} images --format "{{.Repository}}:{{.Tag}}" | grep $current_image || true) 
       if [[ $IMAGE_FOUND_LOCALLY != "" ]]  
       then
         log "Image found locally"
-        ${_DOCKER_BIN} tag $current_image ${APPSAWAY_CONSOLENODE_ADDR}:5000/$current_image
-        log "Pushing $current_image into the local registry, this might take a few minutes..."
-        ${_DOCKER_BIN} push ${APPSAWAY_CONSOLENODE_ADDR}:5000/$current_image &> /dev/null &
-        APPSAWAY_REGISTRY_IMAGES="$APPSAWAY_REGISTRY_IMAGES ${APPSAWAY_CONSOLENODE_ADDR}:5000/${APPSAWAY_IMAGES_LIST[$index]}" 
+        if [[ ${#APPSAWAY_NODES_NAME[@]} > 1 ]]
+        then
+          ${_DOCKER_BIN} tag $current_image ${APPSAWAY_CONSOLENODE_ADDR}:5000/$current_image
+          log "Pushing $current_image into the local registry, this might take a few minutes..."
+          ${_DOCKER_BIN} push ${APPSAWAY_CONSOLENODE_ADDR}:5000/$current_image &> /dev/null &
+          APPSAWAY_REGISTRY_IMAGES="$APPSAWAY_REGISTRY_IMAGES ${APPSAWAY_CONSOLENODE_ADDR}:5000/${APPSAWAY_IMAGES_LIST[$index]}" 
+        else
+          log "Skipping registry push since there is only one node in the cluster"
+          APPSAWAY_REGISTRY_IMAGES="$APPSAWAY_REGISTRY_IMAGES ${APPSAWAY_IMAGES_LIST[$index]}" 
+        fi
       else
         log "Image not found locally"
         exit_err "Image $current_image was not found on DockerHub nor locally. Please be sure that the name is correct."
