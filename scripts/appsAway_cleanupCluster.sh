@@ -162,6 +162,15 @@ run_via_ssh()
   fi
 }
 
+run_via_ssh_no_folder()
+{
+  if [ "$4" != "" ]; then
+    ${_SSH_BIN} ${_SSH_PARAMS} $1@$2 " $3 > $4 2>&1"
+  else
+    ${_SSH_BIN} ${_SSH_PARAMS} $1@$2 " $3"
+  fi
+}
+
 clean_up_volumes(){
 ssh -T $1@$2<<EOF
 
@@ -189,7 +198,7 @@ clean_up_registry()
 stop_deploy()
 {
   log "executing docker stack stop"
-  ${_DOCKER_BIN} ${_DOCKER_PARAMS} stack rm ${APPSAWAY_STACK_NAME}
+  ${_DOCKER_BIN} ${_DOCKER_PARAMS} stack rm ${APPSAWAY_STACK_NAME} || true
 }
 
 clean_up_stack() 
@@ -221,7 +230,7 @@ clean_up_stack()
   for index in "${!nodes_addr_list[@]}"
   do
     log "Removing hanging containers in node ${nodes_addr_list[$index]}..."
-    run_via_ssh ${nodes_username_list[$index]} ${nodes_addr_list[$index]} "docker container prune --force" &
+    run_via_ssh_no_folder ${nodes_username_list[$index]} ${nodes_addr_list[$index]} "docker container prune --force" &
   done
   wait
   for index in "${!nodes_addr_list[@]}"
@@ -239,24 +248,21 @@ clean_up_swarm()
   do
     if [ ${nodes_addr_list[$index]} != "$APPSAWAY_CONSOLENODE_ADDR" ]; then
       log "Leaving the swarm in node ${nodes_addr_list[$index]}..."
-      run_via_ssh ${nodes_username_list[$index]} ${nodes_addr_list[$index]} "docker swarm leave --force |& grep -v Error" 
+      run_via_ssh_no_folder ${nodes_username_list[$index]} ${nodes_addr_list[$index]} "docker swarm leave --force |& grep -v Error" || true
     fi
   done
   log "Killing the swarm..."
-  docker swarm leave --force |& grep -v Error
+  docker swarm leave --force |& grep -v Error || true
 }
 
 main()
 { 
-  source appsAway_setEnvironment.local.sh
-  echo "PARAMETER before: $1"
   if [[ -n "$1" ]] ; then
-    echo "PARAMETER: $1"
     if [[ "$1" == *"registry"* ]] ; then
       clean_up_registry
     fi
-    if [[ "$1" == *"swarm"* ]] ; then
-      clean_up_swarm
+    if [[ "$1" == *"stack"* ]] ; then
+      clean_up_stack
     fi
     if [[ "$1" == *"volumes"* ]] ; then
       for index in "${!nodes_addr_list[@]}"
@@ -265,8 +271,8 @@ main()
         clean_up_volumes ${nodes_username_list[$index]} ${nodes_addr_list[$index]}
       done
     fi
-    if [[ "$1" == *"stack"* ]] ; then
-      clean_up_stack
+    if [[ "$1" == *"swarm"* ]] ; then
+      clean_up_swarm
     fi
   else
     log "About to cleanup the cluster..."
