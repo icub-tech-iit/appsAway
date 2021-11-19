@@ -278,13 +278,15 @@ run_hardware_steps_via_ssh()
   log "running hardware-dependant steps to nodes"
   mydisplay=$(getdisplay)
   if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
-    GUI_DISPLAY=$(ssh $APPSAWAY_GUINODE_USERNAME@$APPSAWAY_GUINODE_ADDR "ps -u $(id -u) -o pid= | xargs -I PID -r cat /proc/PID/environ 2> /dev/null | tr '\0' '\n' | grep ^DISPLAY=: | sort -u")
+    GUI_DISPLAY=$(ssh $APPSAWAY_GUINODE_USERNAME@$APPSAWAY_GUINODE_ADDR "ps -a -u $(id -u) -o pid= | xargs -I PID -r cat /proc/PID/environ 2> /dev/null | tr '\0' '\n' | grep ^DISPLAY=: | sort -u")
+    GUI_UID=$(ssh $APPSAWAY_GUINODE_USERNAME@$APPSAWAY_GUINODE_ADDR "printenv | grep XDG_RUNTIME_DIR" | awk -F"/run/user/" '{print $2}')
+    GUI_XAUTHORITY="/run/user/$GUI_UID/gdm/Xauthority"
   fi
   myXauth="" 
   os=`uname -s`
   if [ "$os" = "Darwin" ]
   then
-     myXauth=${XAUTHORITY}
+    myXauth=${XAUTHORITY}
   else
     myXauth="/run/user/$UID/gdm/Xauthority"
   fi
@@ -317,7 +319,8 @@ run_hardware_steps_via_ssh()
       scp_to_node ${_CWD}/appsAway_containerPermissions.sh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR $APPSAWAY_APP_PATH_NOT_CONSOLE
       scp_to_node ${_CWD}/appsAway_changeNewFilesPermissions.sh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR $APPSAWAY_APP_PATH_NOT_CONSOLE
       scp_to_node ${_CWD}/appsAway_getVolumesFileList.sh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR $APPSAWAY_APP_PATH_NOT_CONSOLE
-      run_via_ssh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR "export APPSAWAY_OPTIONS=${APPSAWAY_OPTIONS} ; export ${GUI_DISPLAY} ; export XAUTHORITY=${myXauth}; export _YAML_VOLUMES_HOST=\"${_YAML_VOLUMES_HOST}\" ; export APPSAWAY_APP_PATH_NOT_CONSOLE=${APPSAWAY_APP_PATH_NOT_CONSOLE} ; ${_OS_HOME_DIR}/${APPSAWAY_GUINODE_USERNAME}/${APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_getVolumesFileList.sh ; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_GUI} -f ${file} pull; ${_DOCKER_COMPOSE_BIN_GUI} -f ${file} up --detach; fi"
+      log "we are using the following variables: DISPLAY=${GUI_DISPLAY}; XAUTHORITY=${GUI_XAUTHORITY}"
+      run_via_ssh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR "export APPSAWAY_OPTIONS=${APPSAWAY_OPTIONS} ; export ${GUI_DISPLAY} ; export XAUTHORITY=${GUI_XAUTHORITY}; export _YAML_VOLUMES_HOST=\"${_YAML_VOLUMES_HOST}\" ; export APPSAWAY_APP_PATH_NOT_CONSOLE=${APPSAWAY_APP_PATH_NOT_CONSOLE} ; ${_OS_HOME_DIR}/${APPSAWAY_GUINODE_USERNAME}/${APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_getVolumesFileList.sh ; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_GUI} -f ${file} pull; ${_DOCKER_COMPOSE_BIN_GUI} -f ${file} up --detach; fi"
     done
     val1=$(( $val1 + 5 ))
     echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE
