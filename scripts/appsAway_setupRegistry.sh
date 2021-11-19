@@ -143,9 +143,45 @@ check_registry()
         exit_err "A container is already running on port 5000"
       fi
     done
-  fi 
+  fi   
+  
+  APPSAWAY_IMAGES_LIST=($APPSAWAY_IMAGES)
+  APPSAWAY_VERSIONS_LIST=($APPSAWAY_VERSIONS)
+  APPSAWAY_TAGS_LIST=($APPSAWAY_TAGS)
+  APPSAWAY_NODES_NAME=($APPSAWAY_NODES_NAME_LIST)
 
-  if [[ ${REGISTRY_UP_FLAG} == false ]]
+  REQUIRES_REGISTRY=false
+  MANIFEST_FOUND=false
+  APPSAWAY_MANIFEST_FOUND=()
+  for index in "${!APPSAWAY_IMAGES_LIST[@]}"
+  do
+    if [[ ${APPSAWAY_VERSIONS_LIST[$index]} != "n/a" ]]
+    then
+      current_image=${APPSAWAY_IMAGES_LIST[$index]}:${APPSAWAY_VERSIONS_LIST[$index]}_${APPSAWAY_TAGS_LIST[$index]}
+    else
+      current_image=${APPSAWAY_IMAGES_LIST[$index]}:${APPSAWAY_TAGS_LIST[$index]}
+    fi
+    log "Checking if image $current_image exists on DockerHub..."
+    manifest_found=$( ${_DOCKER_BIN} manifest inspect $current_image 2> /dev/null || true )
+    if [[ $manifest_found == "" ]]; then
+      log "Manifest not found"
+      APPSAWAY_MANIFEST_FOUND+=(0)
+    else
+      log "Manifest found"
+      MANIFEST_FOUND=true
+      APPSAWAY_MANIFEST_FOUND+=(1)
+    fi
+  done  
+ 
+  echo "manifest found: ${MANIFEST_FOUND}"
+  echo "nodes name list size: ${#APPSAWAY_NODES_NAME[@]}"
+  if [[ ${MANIFEST_FOUND} == false && ${#APPSAWAY_NODES_NAME[@]} > 1 ]]
+  then
+    echo "requires registry true"
+    REQUIRES_REGISTRY=true
+  fi
+
+  if [[ ${REGISTRY_UP_FLAG} == false  && ${REQUIRES_REGISTRY} == true ]]
   then
     log "No registry running on port 5000"
     create_registry
@@ -153,6 +189,9 @@ check_registry()
   
   echo "Registry_up_flag: $REGISTRY_UP_FLAG"
   echo "export REGISTRY_UP_FLAG="$REGISTRY_UP_FLAG >> ${HOME}/teamcode/appsAway/scripts/${_APPSAWAY_ENV_FILE}
+  echo "Manifest found list: ${APPSAWAY_MANIFEST_FOUND[@]}"
+  echo "export APPSAWAY_MANIFEST_FOUND="\"${APPSAWAY_MANIFEST_FOUND[@]}\" >> ${HOME}/teamcode/appsAway/scripts/${_APPSAWAY_ENV_FILE}
+  
 }
 
 create_registry()
