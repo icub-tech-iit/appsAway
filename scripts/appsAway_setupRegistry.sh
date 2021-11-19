@@ -123,6 +123,7 @@ fini()
 check_registry() 
 { 
   REGISTRY_UP_FLAG=true
+  REGISTRY_CREATED=false
   container_id_list=($(${_DOCKER_BIN} container ls --format "table {{.ID}}"))
   container_id_list=(${container_id_list[@]:2})
   port_content=""
@@ -151,7 +152,7 @@ check_registry()
   APPSAWAY_NODES_NAME=($APPSAWAY_NODES_NAME_LIST)
 
   REQUIRES_REGISTRY=false
-  MANIFEST_FOUND=false
+  IS_THERE_REMOTE_IMAGE=false
   APPSAWAY_MANIFEST_FOUND=()
   for index in "${!APPSAWAY_IMAGES_LIST[@]}"
   do
@@ -164,18 +165,20 @@ check_registry()
     log "Checking if image $current_image exists on DockerHub..."
     manifest_found=$( ${_DOCKER_BIN} manifest inspect $current_image 2> /dev/null || true )
     if [[ $manifest_found == "" ]]; then
+      # local image
       log "Manifest not found"
       APPSAWAY_MANIFEST_FOUND+=(0)
     else
+      # remote image
       log "Manifest found"
-      MANIFEST_FOUND=true
+      IS_THERE_REMOTE_IMAGE=true
       APPSAWAY_MANIFEST_FOUND+=(1)
     fi
   done  
  
-  echo "manifest found: ${MANIFEST_FOUND}"
+  echo "manifest found: ${IS_THERE_REMOTE_IMAGE}"
   echo "nodes name list size: ${#APPSAWAY_NODES_NAME[@]}"
-  if [[ ${MANIFEST_FOUND} == false && ${#APPSAWAY_NODES_NAME[@]} > 1 ]]
+  if [[ ${IS_THERE_REMOTE_IMAGE} == false && ${#APPSAWAY_NODES_NAME[@]} > 1 ]]
   then
     echo "requires registry true"
     REQUIRES_REGISTRY=true
@@ -185,10 +188,18 @@ check_registry()
   then
     log "No registry running on port 5000"
     create_registry
+    REGISTRY_CREATED=true
+  fi
+
+  MUST_PULL=false
+  if [[ ${REGISTRY_CREATED} == true || ${IS_THERE_REMOTE_IMAGE} == true ]]
+  then
+    MUST_PULL=true
   fi
   
   echo "Registry_up_flag: $REGISTRY_UP_FLAG"
   echo "export REGISTRY_UP_FLAG="$REGISTRY_UP_FLAG >> ${HOME}/teamcode/appsAway/scripts/${_APPSAWAY_ENV_FILE}
+  echo "export MUST_PULL_IMAGES="$MUST_PULL >> ${HOME}/teamcode/appsAway/scripts/${_APPSAWAY_ENV_FILE}
   echo "Manifest found list: ${APPSAWAY_MANIFEST_FOUND[@]}"
   echo "export APPSAWAY_MANIFEST_FOUND="\"${APPSAWAY_MANIFEST_FOUND[@]}\" >> ${HOME}/teamcode/appsAway/scripts/${_APPSAWAY_ENV_FILE}
   
