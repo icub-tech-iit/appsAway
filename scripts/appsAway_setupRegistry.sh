@@ -121,7 +121,7 @@ fini()
 
 
 check_registry() 
-{
+{ 
   REGISTRY_UP_FLAG=true
   container_id_list=($(${_DOCKER_BIN} container ls --format "table {{.ID}}"))
   container_id_list=(${container_id_list[@]:2})
@@ -132,11 +132,14 @@ check_registry()
   else
     for id in ${container_id_list[@]}
     do
-      port_content="$(${_DOCKER_BIN} inspect $id | grep "5000/tcp")"
+      port_content=$(echo "$(${_DOCKER_BIN} inspect $id | grep "5000/tcp")")
+
       if [ "$port_content" == "" ]
       then
         REGISTRY_UP_FLAG=false
       else
+        REGISTRY_UP_FLAG=true      
+        echo "export REGISTRY_UP_FLAG="$REGISTRY_UP_FLAG >> ${HOME}/teamcode/appsAway/scripts/${_APPSAWAY_ENV_FILE}
         exit_err "A container is already running on port 5000"
       fi
     done
