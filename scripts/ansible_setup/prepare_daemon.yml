@@ -1,4 +1,4 @@
-- name: Prepare local registry
+- name: Prepare Daemon 
   hosts: nodes
   become: yes
   tasks:      
@@ -27,24 +27,8 @@
         warn: no
       when: ansible_distribution != 'MacOSX'
 
-    - name: Adding local registry
+    - name: Adding entries to daemon.json
       shell: |
-        _registry={{ ansible_console_host }}:5000
-        _has_insecure_registry=$( cat /etc/docker/daemon.json | grep "insecure-registries" )
-        if [$_has_insecure_registry != ""]
-        then
-          _has_registry=$(cat /etc/docker/daemon.json | grep $_registry )
-          if [$_has_registry == ""]
-          then
-            jq --arg registry "$_registry" '."insecure-registries"[."insecure-registries"| length] |= . + $registry' /etc/docker/daemon.json > daemon_new.txt
-            mv daemon_new.txt /etc/docker/daemon.json
-            echo "edited registries"
-           fi
-        else
-          jq --arg registry $_registry '. += {"insecure-registries": [$registry] }' /etc/docker/daemon.json > daemon_new.txt
-          mv daemon_new.txt /etc/docker/daemon.json
-          echo "added registries"
-        fi
         jq '. + {"max-concurrent-uploads": 50}' /etc/docker/daemon.json > daemon_new.txt
         jq '. + {"max-concurrent-downloads": 50}' /etc/docker/daemon.json > daemon_new.txt
         mv daemon_new.txt /etc/docker/daemon.json
