@@ -82,9 +82,3 @@
 #      args:
 #        warn: no
 #      when: ansible_distribution != 'MacOSX'
-
-#    - name: Restart docker daemon after cuda configuration
-#      shell: sudo systemctl restart docker
-#      args:
-#        warn: no
-#      when: ansible_distribution != 'MacOSX'
