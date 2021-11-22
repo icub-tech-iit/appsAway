@@ -75,7 +75,11 @@
       when: ansible_distribution != 'MacOSX'
 
     - name: Make docker run without sudo
-      shell: gpasswd -a {{ ansible_ssh_user }} docker
+      shell: |
+          if [ ! $(getent group docker) ]; then
+            groupadd docker
+          fi
+          gpasswd -a {{ ansible_ssh_user }} docker
       ignore_errors: no
       when: ansible_distribution != 'MacOSX'
       
@@ -84,16 +88,6 @@
       args:
         warn: no
       when: ansible_distribution != 'MacOSX'
-      
-#    - name: Start docker
-#      shell: sudo systemctl start docker
-#      retries: 3
-#      delay: 30
-#      register: result
-#      until: result.rc == 0
-#      args:
-#        warn: no
-#      when: ansible_distribution != 'MacOSX'
 
     - name: Finishing up with needed packages 
       apt: 
