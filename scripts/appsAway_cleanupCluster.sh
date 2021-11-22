@@ -152,6 +152,21 @@ fini()
   log "$0 ENDED "
 }
 
+check_params()
+{
+  if [[ -n "$1" ]] ; then
+      if [[ "$1" != *"registry"* && "$1" != *"stack"* && "$1" != *"volumes"* && "$1" != *"swarm"* && "$1" != *"all"* ]] ; then
+        echo -e "Wrong argument, please select the cleaning mode: registry - stack - volumes - swarm - all"
+        echo 'e.g.: ./appsAway_cleanupCluster.sh registry volumes'
+        exit
+      fi
+  else
+      echo 'Please select the cleaning mode: registry - stack - volumes - swarm - all'
+      echo 'e.g.: ./appsAway_cleanupCluster.sh registry volumes'
+      exit
+  fi
+}
+
 run_via_ssh()
 {
   _SSH_CMD_PREFIX_FOR_USER="cd ${_OS_HOME_DIR}/$1/${APPSAWAY_APP_PATH_NOT_CONSOLE}"
@@ -257,24 +272,25 @@ clean_up_swarm()
 
 main()
 { 
-  if [[ -n "$1" ]] ; then
-    if [[ "$1" == *"registry"* ]] ; then
-      clean_up_registry
-    fi
-    if [[ "$1" == *"stack"* ]] ; then
-      clean_up_stack
-    fi
-    if [[ "$1" == *"volumes"* ]] ; then
-      for index in "${!nodes_addr_list[@]}"
-      do
-        log "Removing all volumes not referenced by any containers (i.e. dangling volumes) in node ${nodes_addr_list[$index]}..."
-        clean_up_volumes ${nodes_username_list[$index]} ${nodes_addr_list[$index]}
-      done
-    fi
-    if [[ "$1" == *"swarm"* ]] ; then
-      clean_up_swarm
-    fi
-  else
+  nodes_addr_list=(${APPSAWAY_NODES_ADDR_LIST})
+  nodes_username_list=(${APPSAWAY_NODES_USERNAME_LIST})
+  if [[ "$@" == *"registry"* ]] ; then
+    clean_up_registry
+  fi
+  if [[ "$@" == *"stack"* ]] ; then
+    clean_up_stack
+  fi
+  if [[ "$@" == *"volumes"* ]] ; then
+    for index in "${!nodes_addr_list[@]}"
+    do
+      log "Removing all volumes not referenced by any containers (i.e. dangling volumes) in node ${nodes_addr_list[$index]}..."
+      clean_up_volumes ${nodes_username_list[$index]} ${nodes_addr_list[$index]}
+    done
+  fi
+  if [[ "$@" == *"swarm"* ]] ; then
+    clean_up_swarm
+  fi
+  if [[ "$@" == *"all"* ]] ; then
     log "About to cleanup the cluster..."
     clean_up_registry 
     clean_up_stack 
@@ -283,7 +299,8 @@ main()
 }
 
 parse_opt "$@"
+check_params "$@"
 init
-main "$1"
+main "$@"
 fini
 exit 0
