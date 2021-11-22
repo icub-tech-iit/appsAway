@@ -85,15 +85,15 @@
         warn: no
       when: ansible_distribution != 'MacOSX'
       
-    - name: Start docker
-      shell: sudo systemctl start docker
-      retries: 3
-      delay: 30
-      register: result
-      until: result.rc == 0
-      args:
-        warn: no
-      when: ansible_distribution != 'MacOSX'
+#    - name: Start docker
+#      shell: sudo systemctl start docker
+#      retries: 3
+#      delay: 30
+#      register: result
+#      until: result.rc == 0
+#      args:
+#        warn: no
+#      when: ansible_distribution != 'MacOSX'
 
     - name: Finishing up with needed packages 
       apt: 
