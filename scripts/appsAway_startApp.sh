@@ -309,7 +309,7 @@ run_hardware_steps_via_ssh()
       # We only need to pull if there is a registry to pull from
       if [[ ${MUST_PULL_IMAGES} == true ]]
       then
-        _DOCKER_PULL="${_DOCKER_COMPOSE_BIN_HEAD} -f ${file} pull 2> dev/null"
+        _DOCKER_PULL="${_DOCKER_COMPOSE_BIN_HEAD} -f ${file} pull"
       else
         _DOCKER_PULL="true"
       fi     
@@ -327,8 +327,15 @@ run_hardware_steps_via_ssh()
       scp_to_node ${_CWD}/appsAway_containerPermissions.sh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR $APPSAWAY_APP_PATH_NOT_CONSOLE
       scp_to_node ${_CWD}/appsAway_changeNewFilesPermissions.sh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR $APPSAWAY_APP_PATH_NOT_CONSOLE
       scp_to_node ${_CWD}/appsAway_getVolumesFileList.sh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR $APPSAWAY_APP_PATH_NOT_CONSOLE
-      log "we are using the following variables: DISPLAY=${GUI_DISPLAY}; XAUTHORITY=${GUI_XAUTHORITY}"
-      run_via_ssh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR "export APPSAWAY_OPTIONS=${APPSAWAY_OPTIONS} ; export ${GUI_DISPLAY} ; export XAUTHORITY=${GUI_XAUTHORITY}; export _YAML_VOLUMES_HOST=\"${_YAML_VOLUMES_HOST}\" ; export APPSAWAY_APP_PATH_NOT_CONSOLE=${APPSAWAY_APP_PATH_NOT_CONSOLE} ; ${_OS_HOME_DIR}/${APPSAWAY_GUINODE_USERNAME}/${APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_getVolumesFileList.sh ; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_GUI} -f ${file} pull; ${_DOCKER_COMPOSE_BIN_GUI} -f ${file} up --detach; fi"
+      log "we are using the following variables: DISPLAY=${GUI_DISPLAY}; XAUTHORITY=${GUI_XAUTHORITY}"     
+      # We only need to pull if there is a registry to pull from
+      if [[ ${MUST_PULL_IMAGES} == true ]]
+      then
+        _DOCKER_PULL="${_DOCKER_COMPOSE_BIN_GUI} -f ${file} pull"
+      else
+        _DOCKER_PULL="true"
+      fi  
+      run_via_ssh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR "export APPSAWAY_OPTIONS=${APPSAWAY_OPTIONS} ; export ${GUI_DISPLAY} ; export XAUTHORITY=${GUI_XAUTHORITY}; export _YAML_VOLUMES_HOST=\"${_YAML_VOLUMES_HOST}\" ; export APPSAWAY_APP_PATH_NOT_CONSOLE=${APPSAWAY_APP_PATH_NOT_CONSOLE} ; ${_OS_HOME_DIR}/${APPSAWAY_GUINODE_USERNAME}/${APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_getVolumesFileList.sh ; if [ -f '$file' ]; then ${_DOCKER_PULL}; ${_DOCKER_COMPOSE_BIN_GUI} -f ${file} up --detach; fi"
     done
   elif [ "$APPSAWAY_GUINODE_ADDR" == "" ] && [ "$APPSAWAY_CONSOLENODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
@@ -341,7 +348,7 @@ run_hardware_steps_via_ssh()
       # We only need to pull if there is a registry to pull from
       if [[ ${MUST_PULL_IMAGES} == true ]]
       then
-        _DOCKER_PULL="${_DOCKER_COMPOSE_BIN_CONSOLE} -f ${file} pull 2> dev/null"
+        _DOCKER_PULL="${_DOCKER_COMPOSE_BIN_CONSOLE} -f ${file} pull"
       else
         _DOCKER_PULL="true"
       fi  
