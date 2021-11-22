@@ -17,6 +17,14 @@ prepare_compose:
 prepare_cuda:
 	ansible-playbook -i hosts_cuda.ini -e @passwords.enc --vault-password-file vault_password_file.txt prepare_cuda.yml 
 
+.PHONY: restart_docker
+restart_docker:
+	ansible-playbook -i hosts.ini -e @passwords.enc --vault-password-file vault_password_file.txt restart_docker.yml 
+
+.PHONY: prepare_daemon
+prepare_daemon:
+	ansible-playbook -i hosts.ini -e @passwords.enc --vault-password-file vault_password_file.txt prepare_daemon.yml 
+
 .PHONY: cluster
 cluster:
 	ansible-playbook -K playbook.yml
