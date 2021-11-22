@@ -134,7 +134,6 @@ check_registry()
     for id in ${container_id_list[@]}
     do
       port_content=$(echo "$(${_DOCKER_BIN} inspect $id | grep "5000/tcp")")
-
       if [ "$port_content" == "" ]
       then
         REGISTRY_UP_FLAG=false
@@ -153,6 +152,7 @@ check_registry()
 
   REQUIRES_REGISTRY=false
   IS_THERE_REMOTE_IMAGE=false
+  IS_THERE_LOCAL_IMAGE=false
   APPSAWAY_MANIFEST_FOUND=()
   for index in "${!APPSAWAY_IMAGES_LIST[@]}"
   do
@@ -167,6 +167,7 @@ check_registry()
     if [[ $manifest_found == "" ]]; then
       # local image
       log "Manifest not found"
+      IS_THERE_LOCAL_IMAGE=true
       APPSAWAY_MANIFEST_FOUND+=(0)
     else
       # remote image
@@ -176,9 +177,9 @@ check_registry()
     fi
   done  
  
-  echo "manifest found: ${IS_THERE_REMOTE_IMAGE}"
+  # echo "manifest found: ${IS_THERE_REMOTE_IMAGE}"
   echo "nodes name list size: ${#APPSAWAY_NODES_NAME[@]}"
-  if [[ ${IS_THERE_REMOTE_IMAGE} == false && ${#APPSAWAY_NODES_NAME[@]} > 1 ]]
+  if [[ ${IS_THERE_LOCAL_IMAGE} == true && ${#APPSAWAY_NODES_NAME[@]} > 1 ]]
   then
     echo "requires registry true"
     REQUIRES_REGISTRY=true
