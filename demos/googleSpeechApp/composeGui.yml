@@ -13,6 +13,7 @@ x-yarp-base: &yarp-base
     - GOOGLE_SYNTHESIS_INPUT
     - LANGUAGE_SYNTHESIS_INPUT
     - VOICE_NAME_INPUT
+    - XDG_RUNTIME_DIR
   volumes:
     - "/tmp/.X11-unix:/tmp/.X11-unix"
     - "${XAUTHORITY}:/root/.Xauthority"
