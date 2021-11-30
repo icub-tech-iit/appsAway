@@ -565,7 +565,7 @@ class WidgetGallery(QDialog):
     def playAudio(self):
       def play():
         sel_voice=[el.button.currentText() for el in list(filter(lambda x: x.varName == 'VOICE_NAME_INPUT', self.button_list)) ] #to avoid another for loop on all the buttons, we do a filter 
-        sel_lang=[el.button.currentText() for el in list(filter(lambda x: x.varName == 'LANGUAGE_SYNTHESIS_INPUT', self.button_list)) ] #here we have the selected voice
+        sel_lang=[el.button.currentText() for el in list(filter(lambda x: x.varName == 'LANGUAGE_SYNTHESIS_INPUT' or x.varName == 'LANGUAGE_INPUT', self.button_list)) ] #here we have the selected voice
         
         rc = subprocess.call(["play", os.path.join('..','gui','target','appGUI','Archive','language '+ sel_lang[0] + '_' + sel_voice[0] + '.mp3')])
 
