@@ -20,7 +20,6 @@ _SCRIPT_TEMPLATE_VERSION="1.1.0" #
 # local variable name starts with "_"
 _APPSAWAY_ENV_FILE="appsAway_setEnvironment.local.sh"
 _YARP_CONFIG_FILES_PATH="config_yarp"
-_YARP_NAMESPACE="/root"
 _DOCKER_ENV_FILE=".env"
 _NC='\033[0m' # No Color
 _RED='\033[0;31m'
@@ -42,6 +41,8 @@ _HOSTNAME_LIST=""
 _CWD=$(pwd)
 _DOCKER_COMPOSE_BIN_CONSOLE=$(which docker-compose || true)
 
+_YARPSERVER_DEFAULT_PORT="10000"
+_YARPSERVER_DEFAULT_NAMESPACE="root"
 if [ "$os" = "Darwin" ]
 then
   _OS_HOME_DIR=/Users
@@ -57,7 +58,8 @@ print_defs ()
   echo " _APPSAWAY_ENV_FILE is $_APPSAWAY_ENV_FILE"
   echo " _DOCKER_ENV_FILE is $_DOCKER_ENV_FILE"
   echo " _YARP_CONFIG_FILES_PATH is $_YARP_CONFIG_FILES_PATH"
-  echo " _YARP_NAMESPACE is $_YARP_NAMESPACE"
+  echo " _YARPSERVER_DEFAULT_PORT is $_YARPSERVER_DEFAULT_PORT"
+  echo " _YARPSERVER_DEFAULT_NAMESPACE is $_YARPSERVER_DEFAULT_NAMESPACE"
   echo " _SSH_BIN is $_SSH_BIN"
   echo " _SSH_PARAMS is $_SSH_PARAMS"
   echo " _DOCKER_BIN is $_DOCKER_BIN"
@@ -174,34 +176,111 @@ create_yarp_config_files()
   else
     mkdir -p ${APPSAWAY_APP_PATH}/${_YARP_CONFIG_FILES_PATH}
   fi
-  if [ "${_YARP_BIN}" != "" ] 
+
+
+
+
+  #######################################################START
+ # if [ "${_YARP_BIN}" != "" ] 
+ # then
+ #   log "Checking if YARP server is running..."
+ #   _YARP_IP_FOUND=$( $_YARP_BIN where | echo "$( sed -nr 's/.*is available at ip (.*) port.*/\1/p' )" )
+ #   _YARP_PORT_FOUND=$( $_YARP_BIN where | echo "$( sed -nr 's/.*at ip '"$_YARP_IP_FOUND"' port (.*).*/\1/p' )" )
+ #   _YARP_NAMESPACE_FOUND=$( $_YARP_BIN where | echo "$( sed -nr 's/.*Name server \/(.*) is available.*/\1/p' )" )
+ #   if [ "$_YARP_IP_FOUND" != "" ]
+ #   then
+ #     log "A yarp server was found with ip $_YARP_IP_FOUND port $_YARP_PORT_FOUND with namespace /$_YARP_NAMESPACE_FOUND"
+ #     _YARP_IP_CONF=$_YARP_IP_FOUND
+ #     _YARP_PORT_CONF=$_YARP_PORT_FOUND
+ #     _YARP_NAMESPACE_CONF=$_YARP_NAMESPACE_FOUND
+ #   else
+ #     _YARP_IP_CONF=$APPSAWAY_CONSOLENODE_ADDR
+ #     _YARP_PORT_CONF=$_YARPSERVER_DEFAULT_PORT
+ #     _YARP_NAMESPACE_CONF=$( $_YARP_BIN namespace | echo "$( sed -nr 's/.*YARP namespace: \/(.*).*/\1/p' )" )
+ #     log "server not found, it will be launched with the following settings: ${APPSAWAY_CONSOLENODE_ADDR} ${_YARPSERVER_DEFAULT_PORT} ${_YARP_NAMESPACE_CONF}"
+
+ #     # _YARP_IP_USER contains the yarp server IP address configured in console machine
+ #     _YARP_IP_USER=$( $_YARP_BIN where | echo "$( sed -nr 's/.*Looking for name server on (.*), port.*/\1/p' )" )
+ #     _YARP_PORT_USER=$( $_YARP_BIN where | echo "$( sed -nr 's/.*Looking for name server on '"$_YARP_IP_FOUND"', port number (.*).*/\1/p' )" )
+ #     if [ "$_YARP_IP_USER" == "" ] 
+ #     then
+ #       #in this case the user using a custom namespace without setting the _<usernamespace>.conf file.
+ #       exit_err "Missing the file _$_YARP_NAMESPACE_FOUND.conf "
+ #     else
+ #       if [ "$_YARP_IP_USER" != "$APPSAWAY_CONSOLENODE_ADDR" ] || [ "$_YARP_PORT_USER" != "$_YARPSERVER_DEFAULT_PORT" ] 
+ #       then
+ #          warn "Yarp server IP address/port in configuration file of this machine mismatches with IP Address/port used in the deployment. Yarp server will run on ${_YARP_IP_CONF} $_YARPSERVER_DEFAULT_PORT"
+ #       fi
+ #     fi
+ #   fi
+ # else
+ #   log "yarp binary not found, using default settings for yarp server"
+ #   _YARP_IP_CONF=$APPSAWAY_CONSOLENODE_ADDR
+ #   _YARP_PORT_CONF=$_YARPSERVER_DEFAULT_PORT
+ #   _YARP_NAMESPACE_CONF="$_YARPSERVER_DEFAULT_NAMESPACE"
+ # fi
+#################################################### END
+
+
+
+  log "Preparing yarp server configuration ..."
+  if [ "${_YARP_BIN}" == "" ] 
   then
+    #if yarp is not installed we use default configuartion : ip of console, port 10000 and namespace /root
+    _YARP_IP_CONF=$APPSAWAY_CONSOLENODE_ADDR
+    _YARP_PORT_CONF=$_YARPSERVER_DEFAULT_PORT
+    _YARP_NAMESPACE_CONF="$_YARPSERVER_DEFAULT_NAMESPACE"
+    log "yarp binary not found, using default settings for yarp server: ${_YARP_IP_CONF} ${_YARP_PORT_CONF} /${_YARP_NAMESPACE_CONF}"
+  else
+    #if yarp is installed we check if a yarp server is already running. In that case we want to use it and not deploy new one and each container should have the configuration to be able to communicate with the running server
     log "Checking if YARP server is running..."
     _YARP_IP_FOUND=$( $_YARP_BIN where | echo "$( sed -nr 's/.*is available at ip (.*) port.*/\1/p' )" )
-    _YARP_PORT_FOUND=$( $_YARP_BIN where | echo "$( sed -nr 's/.*at ip '"$_YARP_IP_FOUND"' port (.*).*/\1/p' )" )
-    _YARP_NAMESPACE_FOUND=$( $_YARP_BIN where | echo "$( sed -nr 's/.*Name server \/(.*) is available.*/\1/p' )" )
     if [ "$_YARP_IP_FOUND" != "" ]
-    then
-      log "A yarp server was found with ip $_YARP_IP_FOUND port $_YARP_PORT_FOUND with namespace /$_YARP_NAMESPACE_FOUND"
+    then 
+      # a yarp server is already running 
       _YARP_IP_CONF=$_YARP_IP_FOUND
-      _YARP_PORT_CONF=$_YARP_PORT_FOUND
-      _YARP_NAMESPACE_CONF=$_YARP_NAMESPACE_FOUND
+      _YARP_PORT_CONF=$( $_YARP_BIN where | echo "$( sed -nr 's/.*at ip '"$_YARP_IP_FOUND"' port (.*).*/\1/p' )" )
+      _YARP_NAMESPACE_CONF=$( $_YARP_BIN where | echo "$( sed -nr 's/.*Name server \/(.*) is available.*/\1/p' )" )
+      log "A yarp server was found with ip $_YARP_IP_CONF port $_YARP_PORT_CONF with namespace /$_YARP_NAMESPACE_CONF"
     else
-      log "server not found, using default settings for yarp server"
+      # we deploy a yarp server on the same namespace of console, but with console ip address and on port 10000
+      _YARP_NAMESPACE_CONF=$( $_YARP_BIN namespace | echo "$( sed -nr 's/.*YARP namespace: \/(.*).*/\1/p' )" )
       _YARP_IP_CONF=$APPSAWAY_CONSOLENODE_ADDR
-      _YARP_PORT_CONF=10000
-      _YARP_NAMESPACE_CONF=yarp
+      _YARP_PORT_CONF=$_YARPSERVER_DEFAULT_PORT
+
+      #check if the the configured yarp server address (_YARP_IP_USER) is the same of console address. If not we advise the user
+      _YARP_IP_USER=$( $_YARP_BIN where | echo "$( sed -nr 's/.*Looking for name server on (.*), port.*/\1/p' )" )
+      if [ "$_YARP_IP_USER" != "$APPSAWAY_CONSOLENODE_ADDR" ] 
+      then
+        warn "Yarp server IP address in configuration file of this machine is missing or mismatches with IP Address used in the deployment. Yarp server will run on ${APPSAWAY_CONSOLENODE_ADDR} $_YARPSERVER_DEFAULT_PORT"
+      fi
     fi
-  else
-    log "yarp binary not found, using default settings for yarp server"
-    _YARP_IP_CONF=$APPSAWAY_CONSOLENODE_ADDR
-    _YARP_PORT_CONF=10000
-    _YARP_NAMESPACE_CONF=yarp # I changed this from /root to /yarp, to match the old filename
   fi
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   log "creating YARP config files in path ${APPSAWAY_APP_PATH}/${_YARP_CONFIG_FILES_PATH} with namespace /$_YARP_NAMESPACE_CONF, ip $_YARP_IP_CONF in port $_YARP_PORT_CONF"
-  echo "/$_YARP_NAMESPACE_CONF" > ${APPSAWAY_APP_PATH}/${_YARP_CONFIG_FILES_PATH}/yarp_namespace.conf
-  echo "$_YARP_IP_CONF $_YARP_PORT_CONF yarp" > ${APPSAWAY_APP_PATH}/${_YARP_CONFIG_FILES_PATH}/_$_YARP_NAMESPACE_CONF.conf
   
+  if [ "${_YARP_NAMESPACE_CONF}" == "$_YARPSERVER_DEFAULT_NAMESPACE" ]
+  then 
+    echo "$_YARP_IP_CONF $_YARP_PORT_CONF yarp" > ${APPSAWAY_APP_PATH}/${_YARP_CONFIG_FILES_PATH}/yarp.conf
+  else
+    echo "$_YARP_IP_CONF $_YARP_PORT_CONF yarp" > ${APPSAWAY_APP_PATH}/${_YARP_CONFIG_FILES_PATH}/_${_YARP_NAMESPACE_CONF}.conf
+    echo "/$_YARP_NAMESPACE_CONF" > ${APPSAWAY_APP_PATH}/${_YARP_CONFIG_FILES_PATH}/yarp_namespace.conf
+  fi
   #echo "/$_YARP_NAMESPACE" > ${APPSAWAY_APP_PATH}/${_YARP_CONFIG_FILES_PATH}/yarp_namespace.conf
   #echo "$APPSAWAY_CONSOLENODE_ADDR 10000 yarp" > ${APPSAWAY_APP_PATH}/${_YARP_CONFIG_FILES_PATH}/_$_YARP_NAMESPACE_CONF.conf
 }
