@@ -24,10 +24,10 @@ services:
         constraints: [node.role == manager]
       restart_policy:
         condition: on-failure
-    command: sh -c "yarp where | grep 'is available at ip' > /dev/null ; if [ ! $$? -eq 0 ]; then yarpserver --write; fi"
+    command: sh -c "yarp where | grep 'is available at ip' > /dev/null ; if [ ! $$? -eq 0 ]; then yarpserver --read; fi"
 
 
-    #command: sh -c "_YARP_GOT=$$( yarp where | grep 'is available at ip' > /dev/null ); echo '${_YARP_GOT}'; if [ -z '${_YARP_GOT}' ]; then yarpserver --write; fi"
+    #command: sh -c "_YARP_GOT=$$( yarp where | grep 'is available at ip' > /dev/null ); echo '${_YARP_GOT}'; if [ -z '${_YARP_GOT}' ]; then yarpserver --read; fi"
 #------------------------------------------------------------------------------------------------
   yDemoGoogleVisionAI:
     <<: *yarp-base

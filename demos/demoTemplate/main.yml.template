@@ -28,7 +28,7 @@ services:
     deploy:
       placement:
         constraints: [node.role == manager]
-    command: yarpserver --write
+    command: yarpserver --read
 
 
 #################################### ADD YOUR SERVICES HERE #####################################
