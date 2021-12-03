@@ -29,7 +29,7 @@ services:
       deploy:
         placement:
           constraints: [node.role == manager]
-      command: sh -c "yarp wait /root; yarpdev --device frameGrabber_nws_yarp --period 0.5 --width 640 --height 480"
+      command: sh -c "if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; yarpdev --device frameGrabber_nws_yarp --period 0.5 --width 640 --height 480"
        #use network.peer ip address and port 8080 to see the containers status in browser (http://localhost:8080/)
     visualizer:
       image: dockersamples/visualizer:stable
