@@ -15,7 +15,7 @@ x-yarp-base: &yarp-base
 services:
     yarp-server:
       <<: *yarp-base
-      command: sh -c "yarp where | grep 'is available at ip' > /dev/null ; if [ ! $$? -eq 0 ]; then yarpserver --write; fi"
+      command: sh -c "yarp where | grep 'is available at ip' > /dev/null ; if [ ! $$? -eq 0 ]; then yarpserver --read; fi"
 
     yarp-gazebo:
       <<: *yarp-base

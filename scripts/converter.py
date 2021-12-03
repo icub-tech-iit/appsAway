@@ -41,7 +41,7 @@ service_str = """
               constraints: [node.role == manager]
             restart_policy:
               condition: on-failure
-          command: sh -c "yarp where | grep 'is available at ip' > /dev/null ; if [ ! $$? -eq 0 ]; then yarpserver --write; fi"
+          command: sh -c "yarp where | grep 'is available at ip' > /dev/null ; if [ ! $$? -eq 0 ]; then yarpserver --read; fi"
 """
 
 for m in modulelist:
