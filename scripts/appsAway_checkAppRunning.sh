@@ -6,6 +6,7 @@ source ./appsAway_setEnvironment.temp.sh
 _APPSAWAY_ENV_FILE="appsAway_setEnvironment.local.sh"
 _YARP_CONFIG_FILES_PATH="config_yarp"
 _YARP_NAMESPACE="/root"
+_YARP_BIN=$(which yarp || true)
 _NC='\033[0m' # No Color
 _RED='\033[0;31m'
 _GREEN='\033[0;32m'
@@ -219,13 +220,18 @@ merge_environment()
   log "replacing localhost with its ip..."
   sed -i 's/export APPSAWAY_CONSOLENODE_ADDR=localhost/export APPSAWAY_CONSOLENODE_ADDR='$(hostname -I | awk '{print $1}')'/g' appsAway_setEnvironment.local.sh
 
-  resourcePath=$(echo "$(yarp resource --context cameraCalibration --from icubEyes.ini)" | awk -F'"' '{print $2}' | awk -F'icubEyes.ini' '{print $1}')
-  resourcePathClean="$(echo -e "${resourcePath}" | tr -d '[:space:]')"
-  echo "export APPSAWAY_CALIB_CONTEXT=$resourcePathClean" >>appsAway_setEnvironment.local.sh
+  if [ "${_YARP_BIN}" != "" ] 
+  then
+    resourcePath=$(echo "$(yarp resource --context cameraCalibration --from icubEyes.ini)" | awk -F'"' '{print $2}' | awk -F'icubEyes.ini' '{print $1}')
+    resourcePathClean="$(echo -e "${resourcePath}" | tr -d '[:space:]')"
+    echo "export APPSAWAY_CALIB_CONTEXT=$resourcePathClean" >>appsAway_setEnvironment.local.sh
 
-  resourcePath=$(echo "$(yarp resource --context demoRedBall --from config.ini)" | awk -F'"' '{print $2}' | awk -F'config.ini' '{print $1}')
-  resourcePathClean="$(echo -e "${resourcePath}" | tr -d '[:space:]')"
-  echo "export APPSAWAY_DEMOREDBALL_CONTEXT=$resourcePathClean" >>appsAway_setEnvironment.local.sh
+    resourcePath=$(echo "$(yarp resource --context demoRedBall --from config.ini)" | awk -F'"' '{print $2}' | awk -F'config.ini' '{print $1}')
+    resourcePathClean="$(echo -e "${resourcePath}" | tr -d '[:space:]')"
+    echo "export APPSAWAY_DEMOREDBALL_CONTEXT=$resourcePathClean" >>appsAway_setEnvironment.local.sh
+  else
+    log "yarp binary not found, cameraCalibration and demoRedBall contexts will not be set"
+  fi
 
 }
 
