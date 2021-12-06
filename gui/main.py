@@ -237,7 +237,7 @@ class WidgetGallery(QDialog):
         self.image = "" #'src/main/images/redball.jpg'
 
         self.rc = None #inits the subprocess
-        self.ansible = subprocess.Popen(['true'])
+        #self.ansible = subprocess.Popen(['true'])
 
         self.button_list = []
 
@@ -341,7 +341,7 @@ class WidgetGallery(QDialog):
 #           stdout=subprocess.PIPE, 
  #          stderr=subprocess.STDOUT)
         
-        stdout,stderr = out.communicate()
+        #stdout,stderr = out.communicate()
 
         if b"true" in stdout:
           self.pushUpdateButton.setEnabled(True)
@@ -652,16 +652,20 @@ class WidgetGallery(QDialog):
         self.pushStopButton.setEnabled(True)
 
     def checkForUpdates(self):
-        if self.ansible.poll() == None:
-          return
-        self.timer.start(300000)
+        #if self.ansible.poll() == None:
+        #  return
+        #self.timer.start(300000)
         with open(os.path.join(self.scripts_dir, 'mypipe'), 'w') as f:
-          f.write("./appsAway_checkUpdates.sh")
+          f.write("./appsAway_checkUpdates.sh > mypipe")
         #out = subprocess.Popen(['./appsAway_checkUpdates.sh'], 
         #   stdout=subprocess.PIPE, 
         #   stderr=subprocess.STDOUT)
-        
-        stdout,stderr = out.communicate()
+        while True:
+          with open(os.path.join(self.scripts_dir, 'mypipe'), 'r') as f:
+            stdout = f.read()
+            if stdout:
+              break
+        #stdout,stderr = out.communicate()
 
         if b"true" in stdout:
           self.pushUpdateButton.setEnabled(True)
@@ -672,7 +676,7 @@ class WidgetGallery(QDialog):
 
     def startUpdate(self):
         # first we pause the timer
-        self.timer.start(1000)
+        #self.timer.start(1000)
         self.pushUpdateButton.setEnabled(False)
         self.pushUpdateButton.setText("Installing....")
         # then we change working directory
