@@ -243,6 +243,7 @@ class WidgetGallery(QDialog):
 
         #self.gui_dir = os.getcwd()
         self.gui_dir = os.path.join(os.getcwd(),"conf")
+        self.scripts_dir = os.path.join(os.environ.get('HOME'),"teamcode","appsAway","scripts")
 
         # read from .ini file here
         self.button_name_list = []
@@ -334,9 +335,11 @@ class WidgetGallery(QDialog):
         
         self.pushUpdateButton.setDefault(True)    
 
-        out = subprocess.Popen(['./appsAway_checkUpdates.sh'], 
-           stdout=subprocess.PIPE, 
-           stderr=subprocess.STDOUT)
+        with open(os.path.join(self.scripts_dir, 'mypipe'), 'w') as f:
+            f.write('./appsAway_checkUpdates.sh')
+#        out = subprocess.Popen(['./appsAway_checkUpdates.sh'], 
+#           stdout=subprocess.PIPE, 
+ #          stderr=subprocess.STDOUT)
         
         stdout,stderr = out.communicate()
 
@@ -642,6 +645,8 @@ class WidgetGallery(QDialog):
         self.startApplication()
         os.chdir(os.path.join(os.environ.get('HOME'),"teamcode","appsAway","scripts"))
         rc = subprocess.call("./appsAway_setEnvironment.local.sh")
+        #with open(os.path.join(self.scripts_dir, 'mypipe'), 'w') as f:
+        #  f.write("./appsAway_setEnvironment.local.sh")
             
     def stopProgressBar(self):
         self.pushStopButton.setEnabled(True)
@@ -650,9 +655,11 @@ class WidgetGallery(QDialog):
         if self.ansible.poll() == None:
           return
         self.timer.start(300000)
-        out = subprocess.Popen(['./appsAway_checkUpdates.sh'], 
-           stdout=subprocess.PIPE, 
-           stderr=subprocess.STDOUT)
+        with open(os.path.join(self.scripts_dir, 'mypipe'), 'w') as f:
+          f.write("./appsAway_checkUpdates.sh")
+        #out = subprocess.Popen(['./appsAway_checkUpdates.sh'], 
+        #   stdout=subprocess.PIPE, 
+        #   stderr=subprocess.STDOUT)
         
         stdout,stderr = out.communicate()
 
@@ -670,11 +677,14 @@ class WidgetGallery(QDialog):
         self.pushUpdateButton.setText("Installing....")
         # then we change working directory
         #os.chdir("ansible_setup") 
-        os.chdir(os.path.join(os.environ.get('HOME'),"teamcode","appsAway","scripts","ansible_setup"))
-        rc = subprocess.call("./setup_hosts_ini.sh")
-        self.ansible = subprocess.Popen(['make', 'prepare'])
+        with open(os.path.join(self.scripts_dir, 'mypipe'), 'w') as f:
+          f.write("cd ansible_setup && ./setup_hosts_ini.sh && make prepare_all && cd ..")
+
+        #os.chdir(os.path.join(os.environ.get('HOME'),"teamcode","appsAway","scripts","ansible_setup"))
+        #rc = subprocess.call("./setup_hosts_ini.sh")
+        #self.ansible = subprocess.Popen(['make', 'prepare'])
         #os.chdir("..") 
-        os.chdir(os.path.join(os.environ.get('HOME'),"teamcode","appsAway","scripts"))
+        #os.chdir(os.path.join(os.environ.get('HOME'),"teamcode","appsAway","scripts"))
 
     def startApplication(self):
         print("starting application")
@@ -713,7 +723,11 @@ class WidgetGallery(QDialog):
             elif buttonOption.button == None and not buttonOption.inputBox.isEnabled:
               os.environ[buttonOption.varName] = ""
         self.setupEnvironment()
-        rc = subprocess.Popen("./appsAway_startApp.sh", shell=True)
+
+        with open(os.path.join(self.scripts_dir, 'mypipe'), 'w') as f:
+          f.write("./appsAway_startApp.sh")
+
+        #rc = subprocess.Popen("./appsAway_startApp.sh", shell=True)
         #self.rc = subprocess.Popen("./appsAway_startApp.sh", stdout=subprocess.PIPE, shell=True)
     
     def stopApplication(self):
@@ -736,7 +750,10 @@ class WidgetGallery(QDialog):
             buttonOption.inputBox.setEnabled(True)
           self.checkDependencies(buttonOption)      
 
-        rc = subprocess.call("./appsAway_stopApp.sh")
+        with open(os.path.join(self.scripts_dir, 'mypipe'), 'w') as f:
+          f.write("./appsAway_stopApp.sh")
+
+        #rc = subprocess.call("./appsAway_stopApp.sh")
 
     def setupEnvironment(self):
         # os.chdir(os.path.join(os.environ.get('HOME'), "teamcode","appsAway","demos", os.environ.get('APPSAWAY_APP_NAME')))
@@ -847,8 +864,10 @@ class WidgetGallery(QDialog):
 
         os.chdir(os.path.join(os.environ.get('HOME'), "teamcode","appsAway","scripts"))
           
+        with open(os.path.join(self.scripts_dir, 'mypipe'), 'w') as f:
+          f.write("./appsAway_copyFiles.sh")
         # now we copy all the files to their respective machines
-        rc = subprocess.call("./appsAway_copyFiles.sh")
+        #rc = subprocess.call("./appsAway_copyFiles.sh")
 
     # overload the closing function to close the watchdog
     def exec_(self):
