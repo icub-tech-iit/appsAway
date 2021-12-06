@@ -241,7 +241,8 @@ class WidgetGallery(QDialog):
 
         self.button_list = []
 
-        self.gui_dir = os.getcwd()
+        #self.gui_dir = os.getcwd()
+        self.gui_dir = os.path.join(os.getcwd(),"conf")
 
         # read from .ini file here
         self.button_name_list = []
