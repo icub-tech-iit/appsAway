@@ -336,12 +336,18 @@ class WidgetGallery(QDialog):
         self.pushUpdateButton.setDefault(True)    
 
         with open(os.path.join(self.scripts_dir, 'mypipe'), 'w') as f:
-            f.write('./appsAway_checkUpdates.sh')
+            f.write('./appsAway_checkUpdates.sh > mypipe')
 #        out = subprocess.Popen(['./appsAway_checkUpdates.sh'], 
 #           stdout=subprocess.PIPE, 
  #          stderr=subprocess.STDOUT)
         
         #stdout,stderr = out.communicate()
+
+        while True:
+          with open(os.path.join(self.scripts_dir, 'mypipe'), 'r') as f:
+            stdout = f.read()
+            if stdout:
+              break
 
         if b"true" in stdout:
           self.pushUpdateButton.setEnabled(True)
