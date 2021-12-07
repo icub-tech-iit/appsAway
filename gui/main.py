@@ -336,7 +336,7 @@ class WidgetGallery(QDialog):
         self.pushUpdateButton.setDefault(True)    
 
         with open(os.path.join(self.scripts_dir, 'mypipe'), 'w') as f:
-            f.write('./appsAway_checkUpdates.sh > mypipe')
+            f.write('./appsAway_checkUpdates.sh > mypipe_to_gui')
 #        out = subprocess.Popen(['./appsAway_checkUpdates.sh'], 
 #           stdout=subprocess.PIPE, 
  #          stderr=subprocess.STDOUT)
@@ -344,15 +344,15 @@ class WidgetGallery(QDialog):
         #stdout,stderr = out.communicate()
 
         while True:
-          with open(os.path.join(self.scripts_dir, 'mypipe'), 'r') as f:
+          with open(os.path.join(self.scripts_dir, 'mypipe_to_gui'), 'r') as f:
             stdout = f.read()
             if stdout:
               break
 
-        if b"true" in stdout:
+        if "true" in stdout:
           self.pushUpdateButton.setEnabled(True)
           self.pushUpdateButton.setText("Update Available")
-        elif b"false" in stdout:
+        elif "false" in stdout:
           self.pushUpdateButton.setEnabled(False)
           self.pushUpdateButton.setText("Everything is Up to Date!")
 
@@ -577,7 +577,7 @@ class WidgetGallery(QDialog):
         sel_voice=[el.button.currentText() for el in list(filter(lambda x: x.varName == 'VOICE_NAME_INPUT', self.button_list)) ] #to avoid another for loop on all the buttons, we do a filter 
         sel_lang=[el.button.currentText() for el in list(filter(lambda x: x.varName == 'LANGUAGE_SYNTHESIS_INPUT' or x.varName == 'LANGUAGE_INPUT', self.button_list)) ] #here we have the selected voice
         
-        rc = subprocess.call(["play", os.path.join('..','gui','target','appGUI','Archive','language '+ sel_lang[0] + '_' + sel_voice[0] + '.mp3')])
+        rc = subprocess.call(["play", os.path.join('root','iCubApps','Archive','language '+ sel_lang[0] + '_' + sel_voice[0] + '.mp3')])
 
       return play
 
@@ -662,21 +662,21 @@ class WidgetGallery(QDialog):
         #  return
         #self.timer.start(300000)
         with open(os.path.join(self.scripts_dir, 'mypipe'), 'w') as f:
-          f.write("./appsAway_checkUpdates.sh > mypipe")
+          f.write("./appsAway_checkUpdates.sh > mypipe_to_gui")
         #out = subprocess.Popen(['./appsAway_checkUpdates.sh'], 
         #   stdout=subprocess.PIPE, 
         #   stderr=subprocess.STDOUT)
         while True:
-          with open(os.path.join(self.scripts_dir, 'mypipe'), 'r') as f:
+          with open(os.path.join(self.scripts_dir, 'mypipe_to_gui'), 'r') as f:
             stdout = f.read()
             if stdout:
               break
         #stdout,stderr = out.communicate()
 
-        if b"true" in stdout:
+        if "true" in stdout:
           self.pushUpdateButton.setEnabled(True)
           self.pushUpdateButton.setText("Update Available")
-        elif b"false" in stdout:
+        elif "false" in stdout:
           self.pushUpdateButton.setEnabled(False)
           self.pushUpdateButton.setText("Everything is Up to Date!")
 
@@ -843,9 +843,9 @@ class WidgetGallery(QDialog):
         #   main_file.close()
 
         # env file is located in iCubApps folder, so we need APPSAWAY_APP_PATH
-        os.chdir(os.environ.get('APPSAWAY_APP_PATH'))
+        #os.chdir(os.environ.get('APPSAWAY_APP_PATH'))
 
-        env_file = open(".env", "r")
+        env_file = open(os.path.join("/root/iCubApps/",".env"), "r")
         env_list = env_file.read().split('\n')
         env_file.close()
 
@@ -866,16 +866,37 @@ class WidgetGallery(QDialog):
           if not_found_path and os.environ.get(button.varName + "_PATH") != None:
             env_list.insert(len(env_list), button.varName + "_PATH=" + os.environ.get(button.varName + "_PATH"))
 
-
-        env_file = open(".env", "w")
+        string_to_print = "echo \""
         for line in env_list:
-          env_file.write(line + '\n')
-        env_file.close()
+          string_to_print = string_to_print + line + '\n'
+        string_to_print = string_to_print + "\" > ${APPSAWAY_APP_PATH}/.env && echo \"done creating .env\" > mypipe_to_gui"
 
-        os.chdir(os.path.join(os.environ.get('HOME'), "teamcode","appsAway","scripts"))
+        with open(os.path.join(self.scripts_dir, 'mypipe'), 'w') as f:
+          f.write(string_to_print)
+
+        while True:
+          with open(os.path.join(self.scripts_dir, 'mypipe_to_gui'), 'r') as f:
+            stdout = f.read()
+            print(stdout)
+            if stdout:
+              break
+
+        #env_file = open(".env", "w")
+        #for line in env_list:
+        #  env_file.write(line + '\n')
+        #env_file.close()
+
+        #os.chdir(os.path.join(os.environ.get('HOME'), "teamcode","appsAway","scripts"))
           
         with open(os.path.join(self.scripts_dir, 'mypipe'), 'w') as f:
-          f.write("./appsAway_copyFiles.sh")
+          f.write("./appsAway_copyFiles.sh && echo \"done copy files\" > mypipe_to_gui")
+
+        while True:
+          with open(os.path.join(self.scripts_dir, 'mypipe_to_gui'), 'r') as f:
+            stdout = f.read()
+            print(stdout)
+            if stdout:
+              break
         # now we copy all the files to their respective machines
         #rc = subprocess.call("./appsAway_copyFiles.sh")
 
@@ -891,4 +912,9 @@ if __name__ == '__main__':
     appctxt = ApplicationContext()
     gallery = WidgetGallery()
     gallery.show()
-    sys.exit(appctxt.app.exec_())
+    ret_stat = appctxt.app.exec_()
+    with open(os.path.join(os.environ.get('HOME'),"teamcode","appsAway","scripts", 'mypipe'), 'w') as f:
+      f.write("break")
+    sys.exit(ret_stat)
+
+#self.scripts_dir = os.path.join(os.environ.get('HOME'),"teamcode","appsAway","scripts")
