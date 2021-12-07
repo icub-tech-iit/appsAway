@@ -210,22 +210,7 @@ create_yarp_config_files()
       fi
     fi
   fi
-      
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  
   log "creating YARP config files in path ${APPSAWAY_APP_PATH}/${_YARP_CONFIG_FILES_PATH} with namespace /$_YARP_NAMESPACE_CONF, ip $_YARP_IP_CONF in port $_YARP_PORT_CONF"
   
   if [ "${_YARP_NAMESPACE_CONF}" == "$_YARPSERVER_DEFAULT_NAMESPACE" ]
