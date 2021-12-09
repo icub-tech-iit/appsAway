@@ -246,6 +246,22 @@ run_deploy()
     echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE
     ${_DOCKER_BIN} ${_DOCKER_PARAMS} stack deploy -c ${_file2deploy} ${APPSAWAY_STACK_NAME}
   done
+  
+  #docker stack deploy does not wait the image to be pulled
+  #we check the list of services and wait for "Preparing" state to finish (this guarantees that the image has been pulled)
+  while read -r SERVICE_ID; do
+    service_name=$(${_DOCKER_BIN} service ps --format "{{.Name}}" $SERVICE_ID)
+    image_name=$(${_DOCKER_BIN} service ps --format "{{.Image}}" $SERVICE_ID)
+    count=0
+    while [[ $(${_DOCKER_BIN} service ps --format "{{.CurrentState}}" $SERVICE_ID) == *"Preparing"* ]]
+    do
+      if [ $(expr $count % 5000) == "0" ]
+      then
+        log "waiting for $service_name to pull $image_name"
+      fi
+      count=$(( count + 1 ))
+    done
+  done < <(${_DOCKER_BIN} service ls --format "{{.ID}}")
 }
 
 getdisplay()
