@@ -116,10 +116,12 @@ class OptionButton():
         elif button_type == ButtonType.FILE_INPUT:
             inputButton = QLineEdit(widget_gallery)
             inputButton.setPlaceholderText(var_name)
-            button = QPushButton(button_text)
+            # commented this line for now, since the "choose file" option doesn't work from inside container
+            #button = QPushButton(button_text)
             if initial_setting == "off":
               inputButton.setEnabled(False)
-              button.setEnabled(False)
+              # commented this line for now, since the "choose file" option doesn't work from inside container
+              #button.setEnabled(False)
 
         elif button_type == ButtonType.TOGGLE_BUTTON:
             inputButton = None
@@ -430,7 +432,8 @@ class WidgetGallery(QDialog):
           if buttonOption.varType == 'fileInput':
             #layout.addWidget(buttonOption.button)
             #layout.addWidget(buttonOption.inputBox)
-            buttonOption.button.clicked.connect(self.openFile(buttonOption))
+            # commented this line for now, since the "choose file" option doesn't work from inside container
+            #buttonOption.button.clicked.connect(self.openFile(buttonOption))
             buttonOption.inputBox.textChanged.connect(self.checkToggleState(buttonOption))
 
           if buttonOption.varType == 'toggleButton':
