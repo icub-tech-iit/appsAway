@@ -108,31 +108,31 @@ merge_environment()
     log "an app was detected running in this setup, merging cluster definitions..."
     #an app is already running, so we need to merge the environment
     echo '#! /bin/bash' >appsAway_setEnvironment.local.sh
-    cat appsAway_setEnvironment.temp.sh | grep "ROBOT_NAME=" >>appsAway_setEnvironment.local.sh
-    cat appsAway_setEnvironment.temp.sh | grep "APPSAWAY_APP_NAME=" >>appsAway_setEnvironment.local.sh
-    cat appsAway_setEnvironment.temp.sh | grep "APPSAWAY_USER_NAME=" >>appsAway_setEnvironment.local.sh
-    cat appsAway_setEnvironment.temp.sh | grep "APPSAWAY_APP_PATH=" >>appsAway_setEnvironment.local.sh
-    cat appsAway_setEnvironment.temp.sh | grep "APPSAWAY_CONSOLENODE_ADDR=" >>appsAway_setEnvironment.local.sh
-    cat appsAway_setEnvironment.temp.sh | grep "APPSAWAY_CONSOLENODE_USERNAME=" >>appsAway_setEnvironment.local.sh
+    cat appsAway_setEnvironment.temp.sh | grep "ROBOT_NAME=" >>appsAway_setEnvironment.local.sh || true
+    cat appsAway_setEnvironment.temp.sh | grep "APPSAWAY_APP_NAME=" >>appsAway_setEnvironment.local.sh || true
+    cat appsAway_setEnvironment.temp.sh | grep "APPSAWAY_USER_NAME=" >>appsAway_setEnvironment.local.sh || true
+    cat appsAway_setEnvironment.temp.sh | grep "APPSAWAY_APP_PATH=" >>appsAway_setEnvironment.local.sh || true
+    cat appsAway_setEnvironment.temp.sh | grep "APPSAWAY_CONSOLENODE_ADDR=" >>appsAway_setEnvironment.local.sh || true
+    cat appsAway_setEnvironment.temp.sh | grep "APPSAWAY_CONSOLENODE_USERNAME=" >>appsAway_setEnvironment.local.sh || true
     #################################################################################
     # first we check if the GUI machine is already defined in the local environment #
     #################################################################################
-    echo "checking for GUI"
+    #echo "checking for GUI"
     _GUI_EXISTS=$( echo "$( cat temp_local_env.sh | grep -c "APPSAWAY_GUINODE_ADDR=" )" )
-    echo $_GUI_EXISTS
+    #echo $_GUI_EXISTS
     if (( $_GUI_EXISTS > 0 ))
     then
       # if it was already defined, we keep this and discard the new
-      cat temp_local_env.sh | grep "APPSAWAY_GUINODE_ADDR=" >>appsAway_setEnvironment.local.sh
-      cat temp_local_env.sh | grep "APPSAWAY_GUINODE_USERNAME=" >>appsAway_setEnvironment.local.sh
+      cat temp_local_env.sh | grep "APPSAWAY_GUINODE_ADDR=" >>appsAway_setEnvironment.local.sh || true
+      cat temp_local_env.sh | grep "APPSAWAY_GUINODE_USERNAME=" >>appsAway_setEnvironment.local.sh || true
     else
       # if it was not defined, we check if it is defined in the new environment (temp)
       _GUI_EXISTS=$( echo "$( cat appsAway_setEnvironment.temp.sh | grep -c "APPSAWAY_GUINODE_ADDR=" )" )
       if (( $_GUI_EXISTS > 0 ))
       then
         # if it is defined in the new environment, and not in the old, we use the new definition
-        cat appsAway_setEnvironment.temp.sh | grep "APPSAWAY_GUINODE_ADDR=" >>appsAway_setEnvironment.local.sh
-        cat appsAway_setEnvironment.temp.sh | grep "APPSAWAY_GUINODE_USERNAME=" >>appsAway_setEnvironment.local.sh
+        cat appsAway_setEnvironment.temp.sh | grep "APPSAWAY_GUINODE_ADDR=" >>appsAway_setEnvironment.local.sh || true
+        cat appsAway_setEnvironment.temp.sh | grep "APPSAWAY_GUINODE_USERNAME=" >>appsAway_setEnvironment.local.sh || true
       fi
     fi
     #################################################################################
@@ -142,16 +142,16 @@ merge_environment()
     if (( $_HEAD_EXISTS > 0 ))
     then
       # if it was already defined, we keep this and discard the new
-      cat temp_local_env.sh | grep "APPSAWAY_ICUBHEADNODE_ADDR=" >>appsAway_setEnvironment.local.sh
-      cat temp_local_env.sh | grep "APPSAWAY_ICUBHEADNODE_USERNAME=" >>appsAway_setEnvironment.local.sh
+      cat temp_local_env.sh | grep "APPSAWAY_ICUBHEADNODE_ADDR=" >>appsAway_setEnvironment.local.sh || true
+      cat temp_local_env.sh | grep "APPSAWAY_ICUBHEADNODE_USERNAME=" >>appsAway_setEnvironment.local.sh || true
     else
       # if it was not defined, we check if it is defined in the new environment (temp)
       _HEAD_EXISTS=$( echo "$( cat appsAway_setEnvironment.temp.sh | grep -c "APPSAWAY_ICUBHEADNODE_ADDR=" )" )
       if (( $_HEAD_EXISTS > 0 ))
       then
         # if it is defined in the new environment, and not in the old, we use the new definition
-        cat appsAway_setEnvironment.temp.sh | grep "APPSAWAY_ICUBHEADNODE_ADDR=" >>appsAway_setEnvironment.local.sh
-        cat appsAway_setEnvironment.temp.sh | grep "APPSAWAY_ICUBHEADNODE_USERNAME=" >>appsAway_setEnvironment.local.sh
+        cat appsAway_setEnvironment.temp.sh | grep "APPSAWAY_ICUBHEADNODE_ADDR=" >>appsAway_setEnvironment.local.sh || true
+        cat appsAway_setEnvironment.temp.sh | grep "APPSAWAY_ICUBHEADNODE_USERNAME=" >>appsAway_setEnvironment.local.sh || true
       fi
     fi
     ###############################################################################
@@ -171,22 +171,22 @@ merge_environment()
     for image_index in "${!_IMAGE_LIST_NEW[@]}"
     do
       _IMAGE_PRESENT=false
-      echo "new image: ${_IMAGE_LIST_NEW[$image_index]}"
+      #echo "new image: ${_IMAGE_LIST_NEW[$image_index]}"
       # we do chained loops because we want to test the exact image names
       for image_local in ${!_IMAGE_LIST_LOCAL[@]}
       do
-        echo "local image: ${_IMAGE_LIST_LOCAL[$image_local]}"
+        #echo "local image: ${_IMAGE_LIST_LOCAL[$image_local]}"
         if [[ "${_IMAGE_LIST_LOCAL[$image_local]}" == "${_IMAGE_LIST_NEW[$image_index]}" ]]
         then
           # if it is present, we set the flag to true
-          echo "checking image ${_IMAGE_LIST_NEW[$image_index]}"
+          #echo "checking image ${_IMAGE_LIST_NEW[$image_index]}"
           _IMAGE_PRESENT=true
         fi
       done
-      echo "status: $_IMAGE_PRESENT"
+      #echo "status: $_IMAGE_PRESENT"
       if [[ $_IMAGE_PRESENT == "false" ]]
       then
-        echo "was not present"
+        #echo "Image was not present"
         _IMAGE_LIST_LOCAL+=(${_IMAGE_LIST_NEW[$image_index]})
         _VERSIONS_LIST_LOCAL+=(${_VERSIONS_LIST_NEW[$image_index]})
         _YARP_VERSIONS_LIST_LOCAL+=(${_YARP_VERSIONS_LIST_NEW[$image_index]})
@@ -201,15 +201,15 @@ merge_environment()
     echo "export APPSAWAY_ICUB_FIRMWARE=\"${_ICUB_FIRMWARE_LIST_LOCAL[@]}\"" >>appsAway_setEnvironment.local.sh
     echo "export APPSAWAY_TAGS=\"${_TAGS_LIST_LOCAL[@]}\"" >>appsAway_setEnvironment.local.sh
 
-    cat appsAway_setEnvironment.temp.sh | grep "APPSAWAY_DEPLOY_YAML_FILE_LIST=" >>appsAway_setEnvironment.local.sh
-    cat appsAway_setEnvironment.temp.sh | grep "APPSAWAY_GUI_YAML_FILE_LIST=" >>appsAway_setEnvironment.local.sh
-    cat appsAway_setEnvironment.temp.sh | grep "APPSAWAY_HEAD_YAML_FILE_LIST=" >>appsAway_setEnvironment.local.sh
+    cat appsAway_setEnvironment.temp.sh | grep "APPSAWAY_DEPLOY_YAML_FILE_LIST=" >>appsAway_setEnvironment.local.sh || true
+    cat appsAway_setEnvironment.temp.sh | grep "APPSAWAY_GUI_YAML_FILE_LIST=" >>appsAway_setEnvironment.local.sh || true
+    cat appsAway_setEnvironment.temp.sh | grep "APPSAWAY_HEAD_YAML_FILE_LIST=" >>appsAway_setEnvironment.local.sh || true
 
     # if a stack is already created, we want to add to the old stack, not create a new
-    cat temp_local_env.sh | grep "APPSAWAY_STACK_NAME=" >>appsAway_setEnvironment.local.sh
+    cat temp_local_env.sh | grep "APPSAWAY_STACK_NAME=" >>appsAway_setEnvironment.local.sh || true
 
-    cat appsAway_setEnvironment.temp.sh | grep "APPSAWAY_NODES_ADDR_LIST=" >>appsAway_setEnvironment.local.sh
-    cat appsAway_setEnvironment.temp.sh | grep "APPSAWAY_NODES_USERNAME_LIST=" >>appsAway_setEnvironment.local.sh
+    cat appsAway_setEnvironment.temp.sh | grep "APPSAWAY_NODES_ADDR_LIST=" >>appsAway_setEnvironment.local.sh || true
+    cat appsAway_setEnvironment.temp.sh | grep "APPSAWAY_NODES_USERNAME_LIST=" >>appsAway_setEnvironment.local.sh || true
   else
     log "no app detected running on the system, initializing..."
     # if there is no app running, we just overwrite the local environment file
