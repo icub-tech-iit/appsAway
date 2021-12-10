@@ -118,6 +118,7 @@ class OptionButton():
             inputButton.setPlaceholderText(var_name)
             # commented this line for now, since the "choose file" option doesn't work from inside container
             #button = QPushButton(button_text)
+            button = None
             if initial_setting == "off":
               inputButton.setEnabled(False)
               # commented this line for now, since the "choose file" option doesn't work from inside container
@@ -335,30 +336,25 @@ class WidgetGallery(QDialog):
 
         layout = QVBoxLayout()
         
-        self.pushUpdateButton.setDefault(True)    
+        #self.pushUpdateButton.setDefault(True)    
 
-        with open(os.path.join(self.scripts_dir, 'mypipe'), 'w') as f:
-            f.write('./appsAway_checkUpdates.sh > mypipe_to_gui')
-#        out = subprocess.Popen(['./appsAway_checkUpdates.sh'], 
-#           stdout=subprocess.PIPE, 
- #          stderr=subprocess.STDOUT)
-        
-        #stdout,stderr = out.communicate()
+        #with open(os.path.join(self.scripts_dir, 'mypipe'), 'w') as f:
+        #    f.write('./appsAway_checkUpdates.sh > mypipe_to_gui')
 
-        while True:
-          with open(os.path.join(self.scripts_dir, 'mypipe_to_gui'), 'r') as f:
-            stdout = f.read()
-            if stdout:
-              break
+        #while True:
+        #  with open(os.path.join(self.scripts_dir, 'mypipe_to_gui'), 'r') as f:
+        #    stdout = f.read()
+        #    if stdout:
+        #      break
 
-        if "true" in stdout:
-          self.pushUpdateButton.setEnabled(True)
-          self.pushUpdateButton.setText("Update Available")
-        elif "false" in stdout:
-          self.pushUpdateButton.setEnabled(False)
-          self.pushUpdateButton.setText("Everything is Up to Date!")
+        #if "true" in stdout:
+        #  self.pushUpdateButton.setEnabled(True)
+        #  self.pushUpdateButton.setText("Update Available")
+        #elif "false" in stdout:
+        #  self.pushUpdateButton.setEnabled(False)
+        #  self.pushUpdateButton.setText("Everything is Up to Date!")
 
-        layout.addWidget(self.pushUpdateButton)
+        #layout.addWidget(self.pushUpdateButton)
 
 
         pixmap = QPixmap(self.image)
@@ -373,7 +369,7 @@ class WidgetGallery(QDialog):
         layout.setAlignment(Qt.AlignCenter)
         self.topGroupBox.setLayout(layout)
 
-        self.pushUpdateButton.clicked.connect(self.startUpdate)
+        #self.pushUpdateButton.clicked.connect(self.startUpdate)
     
 ########################################################## right options ###########################################################################
 ####################################################################################################################################################
