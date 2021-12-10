@@ -130,7 +130,10 @@ init()
    exit_err "enviroment file ${_APPSAWAY_ENV_FILE} does not exist"
  fi
  source ${_APPSAWAY_ENV_FILE}
- source ${HOME}/${APPSAWAY_APP_PATH_NOT_CONSOLE}/${_DOCKER_ENV_FILE}
+ #if [ !-f "${HOME}/${APPSAWAY_APP_PATH_NOT_CONSOLE}/${_DOCKER_ENV_FILE}" ]; then
+ #  exit_err "enviroment file ${HOME}/${APPSAWAY_APP_PATH_NOT_CONSOLE}/${_DOCKER_ENV_FILE} does not exist"
+ #fi
+ #source ${HOME}/${APPSAWAY_APP_PATH_NOT_CONSOLE}/${_DOCKER_ENV_FILE}
  if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
   _DOCKER_COMPOSE_BIN_HEAD=$(ssh $APPSAWAY_ICUBHEADNODE_USERNAME@$APPSAWAY_ICUBHEADNODE_ADDR 'which docker-compose;')
   echo "Docker compose head path: $_DOCKER_COMPOSE_BIN_HEAD"
@@ -169,7 +172,7 @@ check_params()
 
 run_via_ssh()
 {
-  _SSH_CMD_PREFIX_FOR_USER="cd ${_OS_HOME_DIR}/$1/${APPSAWAY_APP_PATH_NOT_CONSOLE}"
+  _SSH_CMD_PREFIX_FOR_USER="if [ -d '${_OS_HOME_DIR}/$1/${APPSAWAY_APP_PATH_NOT_CONSOLE}' ]; then cd ${_OS_HOME_DIR}/$1/${APPSAWAY_APP_PATH_NOT_CONSOLE}; else echo 'no folder found, exiting' && exit ; fi"
   if [ "$4" != "" ]; then
     ${_SSH_BIN} ${_SSH_PARAMS} $1@$2 "$_SSH_CMD_PREFIX_FOR_USER ; $3 > $4 2>&1"
   else
@@ -275,7 +278,7 @@ clean_up_icubapps()
   for index in "${!nodes_addr_list[@]}"
   do
     log "Removing ${_OS_HOME_DIR}/${nodes_username_list[$index]}/${APPSAWAY_APP_PATH_NOT_CONSOLE} on node ${nodes_addr_list[$index]}..."
-    run_via_ssh_no_folder ${nodes_username_list[$index]} ${nodes_addr_list[$index]} "rm -rf ${_OS_HOME_DIR}/${nodes_username_list[$index]}/${APPSAWAY_APP_PATH_NOT_CONSOLE}"
+    run_via_ssh_no_folder ${nodes_username_list[$index]} ${nodes_addr_list[$index]} "if [ -d '${_OS_HOME_DIR}/${nodes_username_list[$index]}/${APPSAWAY_APP_PATH_NOT_CONSOLE}' ]; then rm -rf ${_OS_HOME_DIR}/${nodes_username_list[$index]}/${APPSAWAY_APP_PATH_NOT_CONSOLE}; fi"
   done
 }
 
