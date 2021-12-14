@@ -260,6 +260,7 @@ run_deploy()
         log "waiting for $service_name to pull $image_name"
       fi
       count=$(( count + 1 ))
+      sleep 0.1 # to relax the cpu 
     done
   done < <(${_DOCKER_BIN} service ls --format "{{.ID}}")
 }
