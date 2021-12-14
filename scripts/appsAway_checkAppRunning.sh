@@ -113,6 +113,7 @@ merge_environment()
     cat appsAway_setEnvironment.temp.sh | grep "APPSAWAY_APP_NAME=" >>appsAway_setEnvironment.local.sh || true
     cat appsAway_setEnvironment.temp.sh | grep "APPSAWAY_USER_NAME=" >>appsAway_setEnvironment.local.sh || true
     cat appsAway_setEnvironment.temp.sh | grep "APPSAWAY_APP_PATH=" >>appsAway_setEnvironment.local.sh || true
+    cat appsAway_setEnvironment.temp.sh | grep "APPSAWAY_APP_PATH_NOT_CONSOLE=" >>appsAway_setEnvironment.local.sh || true
     cat appsAway_setEnvironment.temp.sh | grep "APPSAWAY_CONSOLENODE_ADDR=" >>appsAway_setEnvironment.local.sh || true
     cat appsAway_setEnvironment.temp.sh | grep "APPSAWAY_CONSOLENODE_USERNAME=" >>appsAway_setEnvironment.local.sh || true
     #################################################################################

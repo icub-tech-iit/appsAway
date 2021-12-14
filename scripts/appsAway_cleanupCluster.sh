@@ -277,8 +277,11 @@ clean_up_icubapps()
 {
   for index in "${!nodes_addr_list[@]}"
   do
-    log "Removing ${_OS_HOME_DIR}/${nodes_username_list[$index]}/${APPSAWAY_APP_PATH_NOT_CONSOLE} on node ${nodes_addr_list[$index]}..."
-    run_via_ssh_no_folder ${nodes_username_list[$index]} ${nodes_addr_list[$index]} "if [ -d '${_OS_HOME_DIR}/${nodes_username_list[$index]}/${APPSAWAY_APP_PATH_NOT_CONSOLE}' ]; then rm -rf ${_OS_HOME_DIR}/${nodes_username_list[$index]}/${APPSAWAY_APP_PATH_NOT_CONSOLE}; fi"
+    if [ -v "$APPSAWAY_APP_PATH_NOT_CONSOLE" ]
+    then
+      log "Removing ${_OS_HOME_DIR}/${nodes_username_list[$index]}/${APPSAWAY_APP_PATH_NOT_CONSOLE} on node ${nodes_addr_list[$index]}..."
+      run_via_ssh_no_folder ${nodes_username_list[$index]} ${nodes_addr_list[$index]} "if [ -d '${_OS_HOME_DIR}/${nodes_username_list[$index]}/${APPSAWAY_APP_PATH_NOT_CONSOLE}' ]; then rm -rf ${_OS_HOME_DIR}/${nodes_username_list[$index]}/${APPSAWAY_APP_PATH_NOT_CONSOLE}; fi"
+    fi
   done
 }
 
