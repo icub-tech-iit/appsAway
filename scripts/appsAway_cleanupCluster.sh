@@ -222,6 +222,7 @@ stop_deploy()
 clean_up_stack() 
 { 
   stop_deploy
+  ${_DOCKER_COMPOSE_BIN_CONSOLE} -f $HOME/teamcode/appsAway/scripts/appsAway_guiLaunch.yml down
   if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_HEAD_YAML_FILE_LIST}
     do
