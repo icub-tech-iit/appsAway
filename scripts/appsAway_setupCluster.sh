@@ -362,6 +362,40 @@ copy_yarp_files()
   done
 }
 
+create_empty_dir() # we create an empty directory in /tmp/empty-dir, useful e.g. as a default for sharing empty volumes in docker
+{
+  _EMPTY_DIR_COMMAND="mkdir -p /tmp/empty-dir; rm -r /tmp/empty-dir/* 2>/dev/null"
+  
+  # console
+  ${_EMPTY_DIR_COMMAND}
+  
+  # head
+  if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
+    ${_SSH_BIN} ${_SSH_PARAMS} ${APPSAWAY_ICUBHEADNODE_USERNAME}@${APPSAWAY_ICUBHEADNODE_ADDR} ${_EMPTY_DIR_COMMAND}
+  fi
+
+  #gui
+  if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
+    ${_SSH_BIN} ${_SSH_PARAMS} ${APPSAWAY_GUINODE_USERNAME}@${APPSAWAY_GUINODE_ADDR} ${_EMPTY_DIR_COMMAND}
+  fi
+
+  # workers
+  iter=0
+  for node in ${_WORKER_NODE_LIST[@]}
+  do
+    ${_SSH_BIN} ${_SSH_PARAMS} ${_WORKER_USERNAME_LIST[iter]}@${_WORKER_NODE_LIST[iter]} ${_EMPTY_DIR_COMMAND}
+    iter=$((iter+1))
+  done
+  
+  # cuda
+  iter=0
+  for node in ${_CUDA_NODE_LIST[@]}
+  do
+    ${_SSH_BIN} ${_SSH_PARAMS} ${_CUDA_USERNAME_LIST[iter]}@${_CUDA_NODE_LIST[iter]} ${_EMPTY_DIR_COMMAND}
+    iter=$((iter+1))
+  done
+}
+
 find_docker_images()
 {
   APPSAWAY_IMAGES_LIST=($APPSAWAY_IMAGES)
@@ -416,6 +450,7 @@ main()
   create_yarp_config_files
   create_env_file
   copy_yarp_files
+  create_empty_dir
 }
 
 parse_opt "$@"
