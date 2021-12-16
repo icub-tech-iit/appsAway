@@ -239,6 +239,13 @@ create_env_file()
 
 copy_yaml_files()
 {
+  nodes_addr_list=(${APPSAWAY_NODES_ADDR_LIST})
+  nodes_username_list=(${APPSAWAY_NODES_USERNAME_LIST})
+  for index in "${!nodes_addr_list[@]}"
+  do
+    log "Removing ${_OS_HOME_DIR}/${nodes_username_list[$index]}/${APPSAWAY_APP_PATH_NOT_CONSOLE} on node ${nodes_addr_list[$index]}..."
+    run_via_ssh_no_folder ${nodes_username_list[$index]} ${nodes_addr_list[$index]} "if [ -d '${_OS_HOME_DIR}/${nodes_username_list[$index]}/${APPSAWAY_APP_PATH_NOT_CONSOLE}' ]; then rm -rf ${_OS_HOME_DIR}/${nodes_username_list[$index]}/${APPSAWAY_APP_PATH_NOT_CONSOLE}; fi"
+  done
   log "creating path ${APPSAWAY_APP_PATH} on master node (this)"
   mkdir -p ${APPSAWAY_APP_PATH}
   for file in ${APPSAWAY_DEPLOY_YAML_FILE_LIST}
@@ -323,6 +330,15 @@ copy_yaml_files()
     ${_SSH_BIN} ${_SSH_PARAMS} ${_WORKER_USERNAME_LIST[iter]}@${_WORKER_NODE_LIST[iter]} "mkdir -p ${APPSAWAY_APP_PATH_NOT_CONSOLE}"
     iter=$((iter+1))
   done
+}
+
+run_via_ssh_no_folder()
+{
+  if [ "$4" != "" ]; then
+    ${_SSH_BIN} ${_SSH_PARAMS} $1@$2 " $3 > $4 2>&1"
+  else
+    ${_SSH_BIN} ${_SSH_PARAMS} $1@$2 " $3"
+  fi
 }
 
 scp_to_node()
