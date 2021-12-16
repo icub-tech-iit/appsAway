@@ -31,7 +31,7 @@ services:
     <<: *yarp-base
     devices: 
       - "/dev/snd:/dev/snd"
-    command: sh -c "if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; yarpdev --device AudioRecorderWrapper --from /root/startaudio.ini --channels 1  --AUDIO_BASE::channels 1 --rate 16000 --AUDIO_BASE::rate 16000 --samples 16000 --AUDIO_BASE::samples 16000"
+    command: sh -c "if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; yarpdev --device AudioRecorderWrapper --from /root/startaudio.ini"
   
   yconnect_audio:
     <<: *yarp-base
