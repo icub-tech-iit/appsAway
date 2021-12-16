@@ -30,12 +30,12 @@ services:
   #Opening the viewer to see the left output image
   yview_right_img_o:
     <<: *yarp-base
-    command: yarpview --name /leftImageOutput
+    command: sh -c "if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; yarpview --name /leftImageOutput"
 
   #Opening we open the viewer to see the right output image
   yview_left_img_o:
     <<: *yarp-base
-    command: yarpview --name /rightImageOutput
+    command: sh -c "if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; yarpview --name /rightImageOutput"
 
 
 
