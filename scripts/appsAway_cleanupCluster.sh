@@ -129,7 +129,8 @@ init()
  if [ ! -f "${_APPSAWAY_ENV_FILE}" ]; then
    exit_err "enviroment file ${_APPSAWAY_ENV_FILE} does not exist"
  fi
- source ${_APPSAWAY_ENV_FILE}
+ # we send output to /dev/null to prevent spam on the terminal
+ source ${_APPSAWAY_ENV_FILE} > /dev/null 2>&1
  #if [ !-f "${HOME}/${APPSAWAY_APP_PATH_NOT_CONSOLE}/${_DOCKER_ENV_FILE}" ]; then
  #  exit_err "enviroment file ${HOME}/${APPSAWAY_APP_PATH_NOT_CONSOLE}/${_DOCKER_ENV_FILE} does not exist"
  #fi
@@ -278,10 +279,12 @@ clean_up_icubapps()
 {
   for index in "${!nodes_addr_list[@]}"
   do
-    if [ -v "$APPSAWAY_APP_PATH_NOT_CONSOLE" ]
+    if [ -v APPSAWAY_APP_PATH_NOT_CONSOLE ]
     then
       log "Removing ${_OS_HOME_DIR}/${nodes_username_list[$index]}/${APPSAWAY_APP_PATH_NOT_CONSOLE} on node ${nodes_addr_list[$index]}..."
       run_via_ssh_no_folder ${nodes_username_list[$index]} ${nodes_addr_list[$index]} "if [ -d '${_OS_HOME_DIR}/${nodes_username_list[$index]}/${APPSAWAY_APP_PATH_NOT_CONSOLE}' ]; then rm -rf ${_OS_HOME_DIR}/${nodes_username_list[$index]}/${APPSAWAY_APP_PATH_NOT_CONSOLE}; fi"
+    else
+      log "APPSAWAY_APP_PATH_NOT_CONSOLE not defined, skipping removal..."
     fi
   done
 }

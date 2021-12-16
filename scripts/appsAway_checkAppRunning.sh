@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
 # we first load the temporary environment file
-source ./appsAway_setEnvironment.temp.sh
+source ./appsAway_setEnvironment.temp.sh > /dev/null 2>&1
 
 _APPSAWAY_ENV_FILE="appsAway_setEnvironment.local.sh"
 _YARP_CONFIG_FILES_PATH="config_yarp"
@@ -236,10 +236,47 @@ merge_environment()
 
 }
 
+add_resources()
+{
+  # moving the temp.sh to local.sh
+  mv appsAway_setEnvironment.temp.sh appsAway_setEnvironment.local.sh
+
+  log "replacing localhost with its ip..."
+  sed -i 's/export APPSAWAY_CONSOLENODE_ADDR=localhost/export APPSAWAY_CONSOLENODE_ADDR='$(hostname -I | awk '{print $1}')'/g' appsAway_setEnvironment.local.sh
+
+  # handling yarp resources
+  if [ "${_YARP_BIN}" != "" ] 
+  then
+    resourcePath=$(echo "$(yarp resource --context cameraCalibration --from icubEyes.ini)" | awk -F'"' '{print $2}' | awk -F'icubEyes.ini' '{print $1}')
+    resourcePathClean="$(echo -e "${resourcePath}" | tr -d '[:space:]')"
+    echo "export APPSAWAY_CALIB_CONTEXT=$resourcePathClean" >>appsAway_setEnvironment.local.sh
+
+    resourcePath=$(echo "$(yarp resource --context demoRedBall --from config.ini)" | awk -F'"' '{print $2}' | awk -F'config.ini' '{print $1}')
+    resourcePathClean="$(echo -e "${resourcePath}" | tr -d '[:space:]')"
+    echo "export APPSAWAY_DEMOREDBALL_CONTEXT=$resourcePathClean" >>appsAway_setEnvironment.local.sh
+  else
+    log "yarp binary not found, cameraCalibration and demoRedBall contexts will not be set"
+  fi
+}
+
+check_running_app()
+{
+  _NUM_APPS=$( ps aux | grep -c ./appGUI )
+  if (( $_NUM_APPS > 1 ))
+  then
+    log "An application is already running in your machine, please make sure you close it before launching a new one."
+    log "If you stopped an old application but it is still hanging, run the following command:"
+    log "cd \$HOME/teamcode/appsAway/scripts && ./appsAway_cleanupCluster.sh all"
+    exit 1
+  fi
+}
+
 
 main()
 {
-  merge_environment
+  #merge_environment
+  check_running_app
+  add_resources
 }
 
 parse_opt "$@"
