@@ -262,6 +262,13 @@ copy_yaml_files()
       cp ../demos/${APPSAWAY_APP_NAME}/${file} ${APPSAWAY_APP_PATH}/
     fi
   done
+  for file in ${APPSAWAY_HEAD_YAML_FILE_LIST}
+  do
+    if [ -f "../demos/$APPSAWAY_APP_NAME/$file" ]; then
+      log "copying yaml file $file to master node (this)"
+      cp ../demos/${APPSAWAY_APP_NAME}/${file} ${APPSAWAY_APP_PATH}/
+    fi
+  done
   APPSAWAY_DATA_FOLDERS=$( ls ../demos/$APPSAWAY_APP_NAME/ )
   echo "the folders are $APPSAWAY_DATA_FOLDERS"
   for folder in ${APPSAWAY_DATA_FOLDERS}
