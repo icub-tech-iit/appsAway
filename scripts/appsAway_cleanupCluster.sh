@@ -214,37 +214,38 @@ clean_up_registry()
     fi
 }
 
-stop_deploy()
-{
-  log "executing docker stack stop"
-  ${_DOCKER_BIN} ${_DOCKER_PARAMS} stack rm ${APPSAWAY_STACK_NAME} || true
-}
+#stop_deploy()
+#{
+#  log "executing docker stack stop"
+#  ${_DOCKER_BIN} ${_DOCKER_PARAMS} stack rm ${APPSAWAY_STACK_NAME} || true
+#}
 
 clean_up_stack() 
 { 
-  stop_deploy
+  #stop_deploy
+  #if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
+  #  for file in ${APPSAWAY_HEAD_YAML_FILE_LIST}
+  #  do
+  #    log "stopping docker-compose with file ${file} on host $APPSAWAY_ICUBHEADNODE_ADDR with command ${stop_cmd}"
+  #    run_via_ssh $APPSAWAY_ICUBHEADNODE_USERNAME $APPSAWAY_ICUBHEADNODE_ADDR "if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_HEAD} -f ${file} ${stop_cmd}; fi" &
+  #  done
+  #fi
+  #if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
+  #  for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
+  #  do
+  #    log "stopping docker-compose with file ${file} on host $APPSAWAY_GUINODE_ADDR with command ${stop_cmd}"
+  #    run_via_ssh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR "if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_GUI} -f ${file} ${stop_cmd}; fi" &
+  #  done
+  #elif [ "$APPSAWAY_GUINODE_ADDR" == "" ] && [ "$APPSAWAY_CONSOLENODE_ADDR" != "" ]; then
+  #  for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
+  #  do
+  #    log "stopping docker-compose with file ${file} on host $APPSAWAY_CONSOLENODE_ADDR with command ${stop_cmd}"
+  #    run_via_ssh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR "if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_CONSOLE} -f ${file} ${stop_cmd}; fi" &
+  #  done
+  #fi
+  #wait
+  ./appsAway_stopApp.sh
   ${_DOCKER_COMPOSE_BIN_CONSOLE} -f $HOME/teamcode/appsAway/scripts/appsAway_guiLaunch.yml down
-  if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
-    for file in ${APPSAWAY_HEAD_YAML_FILE_LIST}
-    do
-      log "stopping docker-compose with file ${file} on host $APPSAWAY_ICUBHEADNODE_ADDR with command ${stop_cmd}"
-      run_via_ssh $APPSAWAY_ICUBHEADNODE_USERNAME $APPSAWAY_ICUBHEADNODE_ADDR "if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_HEAD} -f ${file} ${stop_cmd}; fi" &
-    done
-  fi
-  if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
-    for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
-    do
-      log "stopping docker-compose with file ${file} on host $APPSAWAY_GUINODE_ADDR with command ${stop_cmd}"
-      run_via_ssh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR "if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_GUI} -f ${file} ${stop_cmd}; fi" &
-    done
-  elif [ "$APPSAWAY_GUINODE_ADDR" == "" ] && [ "$APPSAWAY_CONSOLENODE_ADDR" != "" ]; then
-    for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
-    do
-      log "stopping docker-compose with file ${file} on host $APPSAWAY_CONSOLENODE_ADDR with command ${stop_cmd}"
-      run_via_ssh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR "if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_CONSOLE} -f ${file} ${stop_cmd}; fi" &
-    done
-  fi
-  wait
   nodes_addr_list=(${APPSAWAY_NODES_ADDR_LIST})
   nodes_username_list=(${APPSAWAY_NODES_USERNAME_LIST})
   for index in "${!nodes_addr_list[@]}"
