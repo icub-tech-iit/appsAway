@@ -280,17 +280,15 @@ stop_hardware_steps_via_ssh()
   fi
 
   _YAML_VOLUMES_HOST=$(eval echo -e \"$_YAML_VOLUMES_HOST\")
-  
-  for file in ${APPSAWAY_DEPLOY_YAML_FILE_LIST}
-  do
-    log "stopping docker-compose with file ${file} on host $APPSAWAY_CONSOLENODE_ADDR with command ${stop_cmd}"
-    run_via_ssh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR "export APPSAWAY_STACK_NAME=${APPSAWAY_STACK_NAME}; export _YAML_VOLUMES_HOST=\"${_YAML_VOLUMES_HOST}\" ; export _YAML_VOLUMES_CONTAINER=\"${_YAML_VOLUMES_CONTAINER}\" ; export APPSAWAY_APP_PATH_NOT_CONSOLE=${APPSAWAY_APP_PATH_NOT_CONSOLE} ; export APPSAWAY_APP_PATH=${_OS_HOME_DIR}/${APPSAWAY_CONSOLENODE_USERNAME}/${APPSAWAY_APP_PATH_NOT_CONSOLE} ; ${_OS_HOME_DIR}/${APPSAWAY_CONSOLENODE_USERNAME}/${APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_changeNewFilesPermissions.sh ; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_CONSOLE} -f ${file} ${stop_cmd}; fi"
-  done
+
   if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_HEAD_YAML_FILE_LIST}
     do
       log "stopping docker-compose with file ${file} on host $APPSAWAY_ICUBHEADNODE_ADDR with command ${stop_cmd}"
-      run_via_ssh $APPSAWAY_ICUBHEADNODE_USERNAME $APPSAWAY_ICUBHEADNODE_ADDR "export APPSAWAY_STACK_NAME=${APPSAWAY_STACK_NAME}; export _YAML_VOLUMES_HOST=\"${_YAML_VOLUMES_HOST}\" ; export _YAML_VOLUMES_CONTAINER=\"${_YAML_VOLUMES_CONTAINER}\" ; export APPSAWAY_APP_PATH_NOT_CONSOLE=${APPSAWAY_APP_PATH_NOT_CONSOLE} ; export APPSAWAY_APP_PATH=${_OS_HOME_DIR}/${APPSAWAY_ICUBHEADNODE_USERNAME}/${APPSAWAY_APP_PATH_NOT_CONSOLE} ; ${_OS_HOME_DIR}/${APPSAWAY_ICUBHEADNODE_USERNAME}/${APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_changeNewFilesPermissions.sh ; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_HEAD} -f ${file} ${stop_cmd}; fi"
+      run_via_ssh $APPSAWAY_ICUBHEADNODE_USERNAME $APPSAWAY_ICUBHEADNODE_ADDR "export APPSAWAY_STACK_NAME=${APPSAWAY_STACK_NAME}; export _YAML_VOLUMES_HOST=\"${_YAML_VOLUMES_HOST}\" ; export _YAML_VOLUMES_CONTAINER=\"${_YAML_VOLUMES_CONTAINER}\" ; export APPSAWAY_APP_PATH_NOT_CONSOLE=${APPSAWAY_APP_PATH_NOT_CONSOLE} ; export APPSAWAY_APP_PATH=${_OS_HOME_DIR}/${APPSAWAY_ICUBHEADNODE_USERNAME}/${APPSAWAY_APP_PATH_NOT_CONSOLE} ; ${_OS_HOME_DIR}/${APPSAWAY_ICUBHEADNODE_USERNAME}/${APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_changeNewFilesPermissions.sh ; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_HEAD} -f ${file} ${stop_cmd} -t 60; fi"
+      sleep 30
+      # increased the timeout of the docker-compose down command to allow the robot interface to close gracefully. 
+      # in addition I added the 30 seconds sleep to allow it to close before closing yarp server
     done
   fi
   if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
@@ -306,6 +304,11 @@ stop_hardware_steps_via_ssh()
       run_via_ssh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR "export APPSAWAY_STACK_NAME=${APPSAWAY_STACK_NAME}; export _YAML_VOLUMES_HOST=\"${_YAML_VOLUMES_HOST}\" ; export _YAML_VOLUMES_CONTAINER=\"${_YAML_VOLUMES_CONTAINER}\" ; export APPSAWAY_APP_PATH_NOT_CONSOLE=${APPSAWAY_APP_PATH_NOT_CONSOLE} ; export APPSAWAY_APP_PATH=${_OS_HOME_DIR}/${APPSAWAY_CONSOLENODE_USERNAME}/${APPSAWAY_APP_PATH_NOT_CONSOLE} ; ${_OS_HOME_DIR}/${APPSAWAY_CONSOLENODE_USERNAME}/${APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_changeNewFilesPermissions.sh ; export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_CONSOLE} -f ${file} ${stop_cmd}; fi"
     done
   fi
+  for file in ${APPSAWAY_DEPLOY_YAML_FILE_LIST}
+  do
+    log "stopping docker-compose with file ${file} on host $APPSAWAY_CONSOLENODE_ADDR with command ${stop_cmd}"
+    run_via_ssh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR "export APPSAWAY_STACK_NAME=${APPSAWAY_STACK_NAME}; export _YAML_VOLUMES_HOST=\"${_YAML_VOLUMES_HOST}\" ; export _YAML_VOLUMES_CONTAINER=\"${_YAML_VOLUMES_CONTAINER}\" ; export APPSAWAY_APP_PATH_NOT_CONSOLE=${APPSAWAY_APP_PATH_NOT_CONSOLE} ; export APPSAWAY_APP_PATH=${_OS_HOME_DIR}/${APPSAWAY_CONSOLENODE_USERNAME}/${APPSAWAY_APP_PATH_NOT_CONSOLE} ; ${_OS_HOME_DIR}/${APPSAWAY_CONSOLENODE_USERNAME}/${APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_changeNewFilesPermissions.sh ; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN_CONSOLE} -f ${file} ${stop_cmd}; fi"
+  done
 }
 
 stop_deploy()
