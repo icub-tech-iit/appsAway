@@ -506,18 +506,6 @@ check_variable_sanity()
   then
     exit_err "sanity checked failed for variable APPSAWAY_TAGS"
   fi
-  if [ ! -v APPSAWAY_GUI_YAML_FILE_LIST ]
-  then
-    exit_err "sanity checked failed for variable APPSAWAY_GUI_YAML_FILE_LIST"
-  fi
-  if [ ! -v APPSAWAY_HEAD_YAML_FILE_LIST ]
-  then
-    exit_err "sanity checked failed for variable APPSAWAY_HEAD_YAML_FILE_LIST"
-  fi
-  if [ ! -v APPSAWAY_DEPLOY_YAML_FILE_LIST ]
-  then
-    exit_err "sanity checked failed for variable APPSAWAY_DEPLOY_YAML_FILE_LIST"
-  fi
   if [ ! -v APPSAWAY_NODES_ADDR_LIST ]
   then
     exit_err "sanity checked failed for variable APPSAWAY_NODES_ADDR_LIST"
