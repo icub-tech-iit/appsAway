@@ -482,6 +482,10 @@ check_variable_sanity()
   then
     exit_err "sanity checked failed for variable APPSAWAY_APP_PATH"
   fi
+  if [ ! -v APPSAWAY_APP_PATH_NOT_CONSOLE ]
+  then
+    exit_err "sanity checked failed for variable APPSAWAY_APP_PATH_NOT_CONSOLE"
+  fi
   if [ ! -v APPSAWAY_NODES_NAME_LIST ]
   then
     exit_err "sanity checked failed for variable APPSAWAY_NODES_NAME_LIST"
