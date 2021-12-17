@@ -22,13 +22,13 @@ services:
     <<: *yarp-head
     devices: 
       - "/dev/video0:/dev/video0"
-    command: sh -c "if [ ${CAMERA_MANUALLY} = false ]; then yarpdev --from camera/${CAMERA_CONF_FILE}; fi;"
+    command: sh -c "if [ ${CAMERA_MANUALLY} = false ]; then if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; yarpdev --from camera/${CAMERA_CONF_FILE}; fi;"
 
   yrobotinterface:
     <<: *yarp-head
     devices: 
       - "/dev/bosch-i2c-imu:/dev/bosch-i2c-imu"
-    command: yarprobotinterface
+    command: sh -c "if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; yarprobotinterface"
 
 
 
