@@ -472,9 +472,66 @@ find_docker_images()
   source ${HOME}/teamcode/appsAway/scripts/appsAway_setEnvironment.local.sh
 }
 
+check_variable_sanity()
+{
+  if [ ! -v APPSAWAY_APP_NAME ]
+  then
+    exit_err "sanity checked failed for variable APPSAWAY_APP_NAME"
+  fi
+  if [ ! -v APPSAWAY_APP_PATH ]
+  then
+    exit_err "sanity checked failed for variable APPSAWAY_APP_PATH"
+  fi
+  if [ ! -v APPSAWAY_NODES_NAME_LIST ]
+  then
+    exit_err "sanity checked failed for variable APPSAWAY_NODES_NAME_LIST"
+  fi
+  if [ ! -v APPSAWAY_YML_IMAGES ]
+  then
+    exit_err "sanity checked failed for variable APPSAWAY_YML_IMAGES"
+  fi
+  if [ ! -v APPSAWAY_IMAGES ]
+  then
+    exit_err "sanity checked failed for variable APPSAWAY_IMAGES"
+  fi
+  if [ ! -v APPSAWAY_VERSIONS ]
+  then
+    exit_err "sanity checked failed for variable APPSAWAY_VERSIONS"
+  fi
+  if [ ! -v APPSAWAY_YARP_VERSIONS ]
+  then
+    exit_err "sanity checked failed for variable APPSAWAY_YARP_VERSIONS"
+  fi
+  if [ ! -v APPSAWAY_TAGS ]
+  then
+    exit_err "sanity checked failed for variable APPSAWAY_TAGS"
+  fi
+  if [ ! -v APPSAWAY_GUI_YAML_FILE_LIST ]
+  then
+    exit_err "sanity checked failed for variable APPSAWAY_GUI_YAML_FILE_LIST"
+  fi
+  if [ ! -v APPSAWAY_HEAD_YAML_FILE_LIST ]
+  then
+    exit_err "sanity checked failed for variable APPSAWAY_HEAD_YAML_FILE_LIST"
+  fi
+  if [ ! -v APPSAWAY_DEPLOY_YAML_FILE_LIST ]
+  then
+    exit_err "sanity checked failed for variable APPSAWAY_DEPLOY_YAML_FILE_LIST"
+  fi
+  if [ ! -v APPSAWAY_NODES_ADDR_LIST ]
+  then
+    exit_err "sanity checked failed for variable APPSAWAY_NODES_ADDR_LIST"
+  fi
+  if [ ! -v APPSAWAY_NODES_USERNAME_LIST ]
+  then
+    exit_err "sanity checked failed for variable APPSAWAY_NODES_USERNAME_LIST"
+  fi
+}
+
 
 main()
 { 
+  check_variable_sanity
   find_docker_images
   copy_yaml_files
   create_yarp_config_files
