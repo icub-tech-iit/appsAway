@@ -31,7 +31,7 @@ services:
       deploy:
         placement:
           constraints: [node.role == manager]
-      command: yarpdev --device test_grabber --period 0.5 --width 640 --height 480
+      command: yarpdev --device fakeFrameGrabber --width 640 --height 480
        #use network.peer ip address and port 8080 to see the containers status in browser (http://localhost:8080/)
     visualizer:
       image: dockersamples/visualizer:stable
