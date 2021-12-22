@@ -41,7 +41,7 @@ service_str = """
               constraints: [node.role == manager]
             restart_policy:
               condition: on-failure
-          command: sh -c "yarp where | grep 'is available at ip' > /dev/null ; if [ ! $$? -eq 0 ]; then yarpserver --write; fi"
+          command: sh -c "yarp where | grep 'is available at ip' > /dev/null ; if [ ! $$? -eq 0 ]; then yarpserver --read; fi"
 """
 
 for m in modulelist:
@@ -154,7 +154,7 @@ x-yarp-base: &yarp-base
   volumes:
     - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
     - "${{XAUTHORITY}}:/root/.Xauthority:rw"
-    - "${{YARP_CONF_PATH}}:/root/.config/yarp"
+    - "${{HOME}}/${{YARP_CONF_PATH}}:/root/.config/yarp"
 """
 
 yaml_gui_str = yaml_str

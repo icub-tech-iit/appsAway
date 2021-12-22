@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Funny Things Application</title>
+    <link rel="stylesheet" href="style.css">
+    <script defer type="text/javascript" src="constants.js"></script>
+    <script defer type="text/javascript" src="state.js"></script>
+    <script defer type="text/javascript" src="dom.js"></script>
+    <script defer type="text/javascript" src="renderer.js"></script>
+  </head>
+  <body>
+    <div>
+      <h1>Funny Things Application</h1>
+      <h3>Choose the actions the robot will perform</h3>
+      <div class="buttons-container top-actions">
+        <div class="dropdown">
+          <button onclick="exportActivities()" data="Save">
+            <img src="assets/save.svg"/>
+          </button>
+        </div>
+        <div class="dropdown">
+          <button onclick="importActivities()" data="Open">
+            <img src="assets/load.svg"/>
+          </button>
+        </div>
+        <div class="dropdown">
+          <button onclick="bashExporter()" data="Export">
+            <img src="assets/export.svg"/>
+          </button>
+        </div>
+      </div>
+
+      <div class="panels-container">
+        <div class="panel-container">
+          <span>Available Actions</span>
+          <div class="left-panel panel"></div>
+        </div>
+        <div class="arrow-container">
+          <span>></span>
+        </div>
+        <div class="panel-container">
+          <span>Your Awesome Demo</span>
+          <div class="right-panel panel"></div>
+        </div>         
+      </div>
+      <div class="buttons-container">
+        <button onclick="runDemo()" id="run" data="Run">
+          <img src="assets/run.png"/>
+        </button>
+        <button onclick="stopDemo()" data="Stop">
+          <img src="assets/stop.png"/>
+        </button>
+        <button onclick="clearAll()" id="clear" data="Clear">
+          <img src="assets/clear.png"/>
+        </button>
+      </div>  
+      <div class="invisible popup">
+        Invalid funnythings file
+      </div> 
+    </div> 
+  </body>
+</html>

@@ -18,7 +18,7 @@ _SCRIPT_TEMPLATE_VERSION="1.1.0" #
 # ##############################################################################
 # Defaults
 # local variable name starts with "_"
-_APPSAWAY_ENVFILE="appsAway_setEnvironment.local.sh"
+_APPSAWAY_ENV_FILE="appsAway_setEnvironment.local.sh"
 _SCRIPT2RUN_FILE_NAME="worker.sh.APPSAWAY"
 _EXIT_FILE_NAME="worker.exit.APPSAWAY"
 _RUNNER_SCRIPT_FILE_NAME="appsAway_scriptRunner.sh"
@@ -35,11 +35,33 @@ _SCP_PARAMS="-q -B"
 _SSH_BIN=$(which ssh || true)
 _SSH_PARAMS="-T"
 _DOCKER_BIN=$(which docker || true)
-_DOCKER_COMPOSE_BIN=$(which docker-compose || true)
+_DOCKER_ENV_FILE=.env
+_DOCKER_COMPOSE_BIN_CONSOLE=$(which docker-compose || true)
+if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
+  _DOCKER_COMPOSE_BIN_HEAD=$(ssh $APPSAWAY_ICUBHEADNODE_USERNAME@$APPSAWAY_ICUBHEADNODE_ADDR 'which docker-compose;')
+  echo "Docker compose head path: $_DOCKER_COMPOSE_BIN_HEAD"
+  if [ "${_DOCKER_COMPOSE_BIN_HEAD}" == "" ]; then
+   exit_err "docker-compose binary not found in the head node"
+  fi
+fi
+if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
+  _DOCKER_COMPOSE_BIN_GUI=$(ssh $APPSAWAY_GUINODE_USERNAME@$APPSAWAY_GUINODE_ADDR 'which docker-compose;')
+  echo "Docker compose gui path: $_DOCKER_COMPOSE_BIN_GUI" 
+  if [ "${_DOCKER_COMPOSE_BIN_GUI}" == "" ]; then
+   exit_err "docker-compose binary not found in the gui node" 
+  fi
+fi
 _DOCKER_PARAMS=""
 _SSH_CMD_PREFIX=""
-
+_CWD=$(pwd)
+_YAML_VOLUMES_HOST=""
 val1=$((0))
+if [ "$os" = "Darwin" ]
+then
+  _OS_HOME_DIR=/Users
+else
+  _OS_HOME_DIR=/home
+fi
 
 echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE
 
@@ -48,7 +70,7 @@ print_defs ()
   echo "Default parameters are"
   echo " _SCRIPT_TEMPLATE_VERSION is $_SCRIPT_TEMPLATE_VERSION"
   echo " _SCRIPT_VERSION is $_SCRIPT_VERSION"
-  echo " _APPSAWAY_ENVFILE is $_APPSAWAY_ENVFILE"
+  echo " _APPSAWAY_ENV_FILE is $_APPSAWAY_ENV_FILE"
   echo " _SCP_BIN is $_SCP_BIN"
   echo " _SCP_PARAMS is $_SCP_PARAMS"
   echo " _SSH_BIN is $_SSH_BIN"
@@ -129,14 +151,15 @@ init()
  if [ "${_DOCKER_BIN}" == "" ]; then
    exit_err "docker binary not found"
  fi
- if [ "${_DOCKER_COMPOSE_BIN}" == "" ]; then
-   exit_err "docker-compose binary not found"
+ if [ "${_DOCKER_COMPOSE_BIN_CONSOLE}" == "" ]; then
+   exit_err "docker-compose binary not found in the console node"
  fi
 
- if [ ! -f "${_APPSAWAY_ENVFILE}" ]; then
-   exit_err "enviroment file ${_APPSAWAY_ENVFILE} does not exists"
+ if [ ! -f "${_APPSAWAY_ENV_FILE}" ]; then
+   exit_err "enviroment file ${_APPSAWAY_ENV_FILE} does not exists"
  fi
- source ${_APPSAWAY_ENVFILE}
+ source ${_APPSAWAY_ENV_FILE}
+ source ${APPSAWAY_APP_PATH}/${_DOCKER_ENV_FILE}
  for _deploy_file in ${APPSAWAY_DEPLOY_YAML_FILE_LIST}
  do
     if [ ! -f "../demos/${APPSAWAY_APP_NAME}/${_deploy_file}" ]; then
@@ -144,6 +167,29 @@ init()
     else echo "found ../demos/${APPSAWAY_APP_NAME}/${_deploy_file}"
     fi
  done
+
+ for file in ${APPSAWAY_DEPLOY_YAML_FILE_LIST}
+ do
+    get_shared_volumes ${APPSAWAY_APP_PATH}/${file}
+ done 
+ if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
+ for file in ${APPSAWAY_HEAD_YAML_FILE_LIST}
+   do
+      get_shared_volumes ${APPSAWAY_APP_PATH}/${file}
+   done
+ fi
+ if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
+   for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
+   do
+      get_shared_volumes ${APPSAWAY_APP_PATH}/${file}
+   done
+ elif [ "$APPSAWAY_GUINODE_ADDR" == "" ] && [ "$APPSAWAY_CONSOLENODE_ADDR" != "" ]; then
+   for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
+   do
+      get_shared_volumes ${APPSAWAY_APP_PATH}/${file}
+   done
+ fi
+ _YAML_VOLUMES_HOST=$(eval echo -e \"$_YAML_VOLUMES_HOST\" || echo \"\")
  _SSH_CMD_PREFIX="cd ${APPSAWAY_APP_PATH} "
 }
 
@@ -154,13 +200,13 @@ fini()
 
 run_via_ssh()
 {
+  _SSH_CMD_PREFIX_FOR_USER="cd ${_OS_HOME_DIR}/$1/${APPSAWAY_APP_PATH_NOT_CONSOLE}"
   if [ "$4" != "" ]; then
-    ${_SSH_BIN} ${_SSH_PARAMS} $1@$2 "$_SSH_CMD_PREFIX ; $3 > $4 2>&1"
+    ${_SSH_BIN} ${_SSH_PARAMS} $1@$2 "$_SSH_CMD_PREFIX_FOR_USER ; $3 > $4 2>&1"
   else
-    ${_SSH_BIN} ${_SSH_PARAMS} $1@$2 "$_SSH_CMD_PREFIX ; $3"
+    ${_SSH_BIN} ${_SSH_PARAMS} $1@$2 "$_SSH_CMD_PREFIX_FOR_USER ; $3"
   fi
 }
-
 
 run_via_ssh_nowait()
 {
@@ -188,17 +234,35 @@ run_deploy()
   log "executing docker stack deploy"
   cd $APPSAWAY_APP_PATH
   export $(cat .env)
+  
   for _file2deploy in ${APPSAWAY_DEPLOY_YAML_FILE_LIST}
-  do
-    log "downloading the image: ${_DOCKER_COMPOSE_BIN} -f ${_file2deploy} pull "
-    ${_DOCKER_COMPOSE_BIN} -f ${_file2deploy} pull
-    log "pushing image into service registry for distribution in swarm"
-    ${_DOCKER_COMPOSE_BIN} -f ${_file2deploy} push
-    log "Image from ${_file2deploy} successfully pushed"
+  do       
+    #log "downloading the image: ${_DOCKER_COMPOSE_BIN_CONSOLE} -f ${_file2deploy} up" # pull "
+    #${_DOCKER_COMPOSE_BIN_CONSOLE} -f ${_file2deploy} pull
+    #log "pushing image into service registry for distribution in swarm"
+    #${_DOCKER_COMPOSE_BIN_CONSOLE} -f ${_file2deploy} push
+    #log "Image from ${_file2deploy} successfully pushed"
     val1=$(( $val1 + 10 ))
     echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE
     ${_DOCKER_BIN} ${_DOCKER_PARAMS} stack deploy -c ${_file2deploy} ${APPSAWAY_STACK_NAME}
   done
+  
+  #docker stack deploy does not wait the image to be pulled
+  #we check the list of services and wait for "Preparing" state to finish (this guarantees that the image has been pulled)
+  while read -r SERVICE_ID; do
+    service_name=$(${_DOCKER_BIN} service ps --format "{{.Name}}" $SERVICE_ID)
+    image_name=$(${_DOCKER_BIN} service ps --format "{{.Image}}" $SERVICE_ID)
+    count=0
+    while [[ $(${_DOCKER_BIN} service ps --format "{{.CurrentState}}" $SERVICE_ID) == *"Preparing"* ]]
+    do
+      if [ $(expr $count % 5000) == "0" ]
+      then
+        log "waiting for $service_name to pull $image_name"
+      fi
+      count=$(( count + 1 ))
+      sleep 0.1 # to relax the cpu 
+    done
+  done < <(${_DOCKER_BIN} service ls --format "{{.ID}}")
 }
 
 getdisplay()
@@ -216,51 +280,100 @@ getdisplay()
   
 }
 
+scp_to_node()
+{
+  file_to_send=$1
+  username_to_receive=$2
+  ip_to_receive=$3
+  path_to_receive=$4
+  full_path_to_receive=${_OS_HOME_DIR}/${username_to_receive}/${path_to_receive}
+  # TODO: this only works in ubuntu, we should check how to do this in other OS
+  ${_SCP_BIN} ${_SCP_PARAMS_DIR} ${file_to_send} ${username_to_receive}@${ip_to_receive}:${full_path_to_receive}/
+}
+
 run_hardware_steps_via_ssh()
 {
   log "running hardware-dependant steps to nodes"
-
   mydisplay=$(getdisplay)
-
+  if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
+    GUI_DISPLAY=$(ssh $APPSAWAY_GUINODE_USERNAME@$APPSAWAY_GUINODE_ADDR "ps -a -u $(id -u) -o pid= | xargs -I PID -r cat /proc/PID/environ 2> /dev/null | tr '\0' '\n' | grep ^DISPLAY=: | grep -o ':[0-9]*' | sort -u")
+    GUI_UID=$(ssh $APPSAWAY_GUINODE_USERNAME@$APPSAWAY_GUINODE_ADDR "printenv | grep XDG_RUNTIME_DIR" | awk -F"/run/user/" '{print $2}')
+    GUI_XAUTHORITY="/run/user/$GUI_UID/gdm/Xauthority"
+  fi
   myXauth="" 
   os=`uname -s`
   if [ "$os" = "Darwin" ]
   then
-     myXauth=${XAUTHORITY}
+    myXauth=${XAUTHORITY}
   else
     myXauth="/run/user/$UID/gdm/Xauthority"
   fi
-
- if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
+  
+  if [ "$APPSAWAY_CONSOLENODE_ADDR" != "" ]; then
+    scp_to_node ${_CWD}/appsAway_containerPermissions.sh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR $APPSAWAY_APP_PATH_NOT_CONSOLE
+    scp_to_node ${_CWD}/appsAway_changeNewFilesPermissions.sh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR $APPSAWAY_APP_PATH_NOT_CONSOLE 
+    scp_to_node ${_CWD}/appsAway_getVolumesFileList.sh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR $APPSAWAY_APP_PATH_NOT_CONSOLE       
+    run_via_ssh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR "export APPSAWAY_OPTIONS=${APPSAWAY_OPTIONS} ; export _YAML_VOLUMES_HOST=\"${_YAML_VOLUMES_HOST}\" ; export APPSAWAY_APP_PATH_NOT_CONSOLE=${APPSAWAY_APP_PATH_NOT_CONSOLE} ; ${_OS_HOME_DIR}/${APPSAWAY_CONSOLENODE_USERNAME}/${APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_getVolumesFileList.sh"  
+  fi 
+  ( if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_HEAD_YAML_FILE_LIST}
     do
-      log "running ${_DOCKER_COMPOSE_BIN} with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_ICUBHEADNODE_ADDR"
+      log "running ${_DOCKER_COMPOSE_BIN_HEAD} with file ${_OS_HOME_DIR}/${APPSAWAY_ICUBHEADNODE_USERNAME}/${APPSAWAY_APP_PATH_NOT_CONSOLE}/${file} on host $APPSAWAY_ICUBHEADNODE_ADDR"
       #run_via_ssh_nowait $APPSAWAY_ICUBHEADNODE_ADDR "${_DOCKER_COMPOSE_BIN} -f ${file} up" "log.txt"
-      run_via_ssh $APPSAWAY_ICUBHEADNODE_USERNAME $APPSAWAY_ICUBHEADNODE_ADDR "export APPSAWAY_OPTIONS=${APPSAWAY_OPTIONS} ; ${_DOCKER_COMPOSE_BIN} -f ${file} up --detach"
-    done
-    val1=$(( $val1 + 5 ))
-    echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE
-  fi
+      scp_to_node ${_CWD}/appsAway_containerPermissions.sh $APPSAWAY_ICUBHEADNODE_USERNAME $APPSAWAY_ICUBHEADNODE_ADDR $APPSAWAY_APP_PATH_NOT_CONSOLE
+      scp_to_node ${_CWD}/appsAway_changeNewFilesPermissions.sh $APPSAWAY_ICUBHEADNODE_USERNAME $APPSAWAY_ICUBHEADNODE_ADDR $APPSAWAY_APP_PATH_NOT_CONSOLE      
+      scp_to_node ${_CWD}/appsAway_getVolumesFileList.sh $APPSAWAY_ICUBHEADNODE_USERNAME $APPSAWAY_ICUBHEADNODE_ADDR $APPSAWAY_APP_PATH_NOT_CONSOLE 
+      # We only need to pull if there is a registry to pull from
+      if [[ ${MUST_PULL_IMAGES} == true ]]
+      then
+        _DOCKER_PULL="${_DOCKER_COMPOSE_BIN_HEAD} -f ${file} pull"
+      else
+        _DOCKER_PULL="true"
+      fi
+      run_via_ssh $APPSAWAY_ICUBHEADNODE_USERNAME $APPSAWAY_ICUBHEADNODE_ADDR "export APPSAWAY_OPTIONS=${APPSAWAY_OPTIONS} ; export _YAML_VOLUMES_HOST=\"${_YAML_VOLUMES_HOST}\" ; export APPSAWAY_APP_PATH_NOT_CONSOLE=${APPSAWAY_APP_PATH_NOT_CONSOLE} ; ${_OS_HOME_DIR}/${APPSAWAY_CONSOLENODE_USERNAME}/${APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_getVolumesFileList.sh ; ${_DOCKER_PULL} ; ${_DOCKER_COMPOSE_BIN_HEAD} -f ${file} up --detach"
+    done 
+  fi ) &
+  val1=$(( $val1 + 5 ))
+  echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE
   #sleep 3
-  if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
+  ( if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
     do
-      log "running ${_DOCKER_COMPOSE_BIN} with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_GUINODE_ADDR"
+      log "running ${_DOCKER_COMPOSE_BIN_GUI} with file ${_OS_HOME_DIR}/${APPSAWAY_GUINODE_USERNAME}/${APPSAWAY_APP_PATH_NOT_CONSOLE}/${file} on host $APPSAWAY_GUINODE_ADDR"
       #run_via_ssh_nowait $APPSAWAY_GUINODE_ADDR "${_DOCKER_COMPOSE_BIN} -f ${file} up" "log.txt"
-      run_via_ssh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR "export APPSAWAY_OPTIONS=${APPSAWAY_OPTIONS} ; export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN} -f ${file} up --detach; fi"
-    done
-    val1=$(( $val1 + 5 ))
-    echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE
+      scp_to_node ${_CWD}/appsAway_containerPermissions.sh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR $APPSAWAY_APP_PATH_NOT_CONSOLE
+      scp_to_node ${_CWD}/appsAway_changeNewFilesPermissions.sh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR $APPSAWAY_APP_PATH_NOT_CONSOLE
+      scp_to_node ${_CWD}/appsAway_getVolumesFileList.sh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR $APPSAWAY_APP_PATH_NOT_CONSOLE
+      log "we are using the following variables: DISPLAY=${GUI_DISPLAY}; XAUTHORITY=${GUI_XAUTHORITY}"     
+      # We only need to pull if there is a registry to pull from
+      if [[ ${MUST_PULL_IMAGES} == true ]]
+      then
+        _DOCKER_PULL="${_DOCKER_COMPOSE_BIN_GUI} -f ${file} pull"
+      else
+        _DOCKER_PULL="true"
+      fi  
+      run_via_ssh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR "export APPSAWAY_OPTIONS=${APPSAWAY_OPTIONS} ; export DISPLAY=${GUI_DISPLAY} ; export XAUTHORITY=${GUI_XAUTHORITY}; export _YAML_VOLUMES_HOST=\"${_YAML_VOLUMES_HOST}\" ; export APPSAWAY_APP_PATH_NOT_CONSOLE=${APPSAWAY_APP_PATH_NOT_CONSOLE} ; ${_OS_HOME_DIR}/${APPSAWAY_GUINODE_USERNAME}/${APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_getVolumesFileList.sh ; if [ -f '$file' ]; then ${_DOCKER_PULL}; ${_DOCKER_COMPOSE_BIN_GUI} -f ${file} up --detach; fi"
+    done 
   elif [ "$APPSAWAY_GUINODE_ADDR" == "" ] && [ "$APPSAWAY_CONSOLENODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
     do
-      log "running ${_DOCKER_COMPOSE_BIN} with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_CONSOLENODE_ADDR"
+      log "running ${_DOCKER_COMPOSE_BIN_CONSOLE} with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_CONSOLENODE_ADDR"
       #run_via_ssh_nowait $APPSAWAY_GUINODE_ADDR "${_DOCKER_COMPOSE_BIN} -f ${file} up" "log.txt"
-      run_via_ssh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR "export APPSAWAY_OPTIONS=${APPSAWAY_OPTIONS} ; export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; if [ -f '$file' ]; then ${_DOCKER_COMPOSE_BIN} -f ${file} up --detach; fi"
-    done
-    val1=$(( $val1 + 5 ))
-    echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE
-  fi
+      scp_to_node ${_CWD}/appsAway_containerPermissions.sh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR $APPSAWAY_APP_PATH_NOT_CONSOLE
+      scp_to_node ${_CWD}/appsAway_changeNewFilesPermissions.sh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR $APPSAWAY_APP_PATH_NOT_CONSOLE
+      scp_to_node ${_CWD}/appsAway_getVolumesFileList.sh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR $APPSAWAY_APP_PATH_NOT_CONSOLE       
+      # We only need to pull if there is a registry to pull from
+      if [[ ${MUST_PULL_IMAGES} == true ]]
+      then
+        _DOCKER_PULL="${_DOCKER_COMPOSE_BIN_CONSOLE} -f ${file} pull"
+      else
+        _DOCKER_PULL="true"
+      fi  
+      run_via_ssh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR "export APPSAWAY_OPTIONS=${APPSAWAY_OPTIONS} ; export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth};  export _YAML_VOLUMES_HOST=\"${_YAML_VOLUMES_HOST}\" ; export APPSAWAY_APP_PATH_NOT_CONSOLE=${APPSAWAY_APP_PATH_NOT_CONSOLE} ; ${_OS_HOME_DIR}/${APPSAWAY_CONSOLENODE_USERNAME}/${APPSAWAY_APP_PATH_NOT_CONSOLE}/appsAway_getVolumesFileList.sh ; if [ -f '$file' ]; then ${_DOCKER_PULL} ; ${_DOCKER_COMPOSE_BIN_CONSOLE} -f ${file} up --detach; fi"
+    done 
+  fi ) &
+  val1=$(( $val1 + 10 ))
+  echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE
 }
 
 stop_hardware_steps_via_ssh()
@@ -281,21 +394,22 @@ stop_hardware_steps_via_ssh()
   if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_HEAD_YAML_FILE_LIST}
     do
-      log "stopping ${_DOCKER_COMPOSE_BIN} with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_ICUBHEADNODE_ADDR"
-      run_via_ssh $APPSAWAY_ICUBHEADNODE_uSERNAME $APPSAWAY_ICUBHEADNODE_ADDR "${_DOCKER_COMPOSE_BIN} -f ${file} down"
+      log "stopping ${_DOCKER_COMPOSE_BIN_HEAD} with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_ICUBHEADNODE_ADDR"
+      run_via_ssh $APPSAWAY_ICUBHEADNODE_uSERNAME $APPSAWAY_ICUBHEADNODE_ADDR "${_DOCKER_COMPOSE_BIN_HEAD} -f ${file} down"
     done
   fi
   if [ "$APPSAWAY_GUINODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
     do
-      log "stopping ${_DOCKER_COMPOSE_BIN} with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_GUINODE_ADDR"
-      run_via_ssh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; ${_DOCKER_COMPOSE_BIN} -f ${file} down"
+      log "stopping ${_DOCKER_COMPOSE_BIN_GUI} with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_GUINODE_ADDR"
+      #run_via_ssh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; ${_DOCKER_COMPOSE_BIN_GUI} -f ${file} down"
+      run_via_ssh $APPSAWAY_GUINODE_USERNAME $APPSAWAY_GUINODE_ADDR "${_DOCKER_COMPOSE_BIN_GUI} -f ${file} down"
     done
   elif [ "$APPSAWAY_GUINODE_ADDR" == "" ] && [ "$APPSAWAY_CONSOLENODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_GUI_YAML_FILE_LIST}
     do
-      log "stopping ${_DOCKER_COMPOSE_BIN} with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_CONSOLENODE_ADDR"
-      run_via_ssh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; ${_DOCKER_COMPOSE_BIN} -f ${file} down"
+      log "stopping ${_DOCKER_COMPOSE_BIN_CONSOLE} with file ${APPSAWAY_APP_PATH}/${file} on host $APPSAWAY_CONSOLENODE_ADDR"
+      run_via_ssh $APPSAWAY_CONSOLENODE_USERNAME $APPSAWAY_CONSOLENODE_ADDR "export DISPLAY=${mydisplay} ; export XAUTHORITY=${myXauth}; ${_DOCKER_COMPOSE_BIN_CONSOLE} -f ${file} down"
     done
   fi
 }
@@ -305,14 +419,48 @@ main()
   is_this_node_swarm_master
   val1=$(( 30 ))
   echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE
-  run_deploy
+  run_deploy &
   val1=$(( 70 ))
   echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE
   run_hardware_steps_via_ssh
+  wait
   val1=$(( 90 ))
   echo $val1 >| ${HOME}/teamcode/appsAway/scripts/PIPE
 #  stop_hardware_steps_via_ssh
 }
+
+get_shared_volumes()
+{
+  file=$1
+  look_for_volumes=false
+  while read -r line || [ -n "$line" ]
+  do
+      volumes_result=$( echo "$line" | grep "volumes" || true) # Look for yml line that says "volumes"
+      if [[ $look_for_volumes == true ]]
+      then
+          if [[ $line == -* || $line == \#* ]] # If line is a volume or comment
+          then
+              if [[ $line == -* ]] # If line is a volume (ignore comments)
+              then
+                if [[ $line == *:rw || $line == *:rw\" ]] # If volume includes the rw flag
+                then
+                  volume_machine_side=$(echo $line | awk -F':' '{print $1}' | tr -d '"' | tr -d ' ' ) # Get volume 
+                  volume_container_side=$(echo $line | sed 's/[^:]*://' | tr -d '"' | tr -d ' ' | sed 's/:.*//' )
+                  _YAML_VOLUMES_HOST="$_YAML_VOLUMES_HOST ${volume_machine_side:1}"
+                  _YAML_VOLUMES_CONTAINER="$_YAML_VOLUMES_CONTAINER ${volume_container_side:1}"
+                fi
+              fi
+          else # If line is not volume nor comment, it's a continuation of the yml and we are done
+              look_for_volumes=false
+          fi
+      fi
+
+      if [[ "$volumes_result" != "" &&  "$line" != \#* ]] # If line says "volumes" and it's not a comment, we can look for volumes
+      then                   
+          look_for_volumes=true             
+      fi
+  done < $file
+} 
 
 parse_opt "$@"
 init

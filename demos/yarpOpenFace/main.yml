@@ -1,7 +1,7 @@
 version: "3.7"
 
 x-yarp-base: &yarp-base
-  image: icubteamcode/yarpopenface:master-unstable_sources
+  image: icubteamcode/open-face:v2021.08.1-stable_master_sources
   environment:
     - DISPLAY=${DISPLAY}
     - QT_X11_NO_MITSHM=1
@@ -10,9 +10,9 @@ x-yarp-base: &yarp-base
     - YARP_ROBOT_NAME
     - CUSTOM_PORT
   volumes:
-    - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
-    - "${XAUTHORITY}:/root/.Xauthority:rw"
-    - "${YARP_CONF_PATH}:/root/.config/yarp"
+    - "/tmp/.X11-unix:/tmp/.X11-unix"
+    - "${XAUTHORITY}:/root/.Xauthority"
+    - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
   networks:
     - hostnet
 
@@ -29,7 +29,7 @@ services:
         constraints: [node.role == manager]
       restart_policy:
         condition: on-failure
-    command: sh -c "yarp where | grep 'is available at ip' > /dev/null ; if [ ! $$? -eq 0 ]; then yarpserver --write; fi"
+    command: sh -c "yarp where | grep 'is available at ip' > /dev/null ; if [ ! $$? -eq 0 ]; then yarpserver --read; fi"
 
 #------------------------------------------------------------------------------------------------
 #Following services are configured in ./icub-main/app/default/scripts/cameras_calib.xml.template

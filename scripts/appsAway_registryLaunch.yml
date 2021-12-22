@@ -1,0 +1,11 @@
+version: "3.7"
+
+services:
+    myregistry:
+        image: "registry:2"
+        network_mode: "host"
+        expose:
+            - "5000"
+            
+
+ 

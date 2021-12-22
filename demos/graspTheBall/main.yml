@@ -1,7 +1,7 @@
 version: "3.7"
 
 x-yarp-base: &yarp-base
-  image: icubteamcode/grasptheball:v2021.02.feat-01_master-stable_sources
+  image: icubteamcode/grasp-the-ball:v2021.08.1-stable_master_sources
   environment:
     - DISPLAY=${DISPLAY}
     - QT_X11_NO_MITSHM=1
@@ -13,9 +13,9 @@ x-yarp-base: &yarp-base
     - ARM
     - YARP_ROBOT_NAME
   volumes:
-    - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
-    - "${XAUTHORITY}:/root/.Xauthority:rw"
-    - "${YARP_CONF_PATH}:/root/.config/yarp"
+    - "/tmp/.X11-unix:/tmp/.X11-unix"
+    - "${XAUTHORITY}:/root/.Xauthority"
+    - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
     - "${APPSAWAY_DEMOREDBALL_CONTEXT}:/usr/local/share/ICUBcontrib/contexts/demoRedBall/"
   networks:
     - hostnet
@@ -26,7 +26,7 @@ x-yarp-base: &yarp-base
 #    - YARP_FORWARD_LOG_ENABLE=1
 #    - YARP_ROBOT_NAME
 #  volumes:
-#    - "${YARP_CONF_PATH}:/root/.config/yarp"
+#    - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
 #  network_mode: "host"
 
 #note: following services that need yarpRobotinterface is running, I write yarp wait /yarpRobotInterface;
@@ -41,7 +41,7 @@ services:
         constraints: [node.role == manager]
       restart_policy:
         condition: on-failure
-    command: sh -c "yarp where | grep 'is available at ip' > /dev/null ; if [ ! $$? -eq 0 ]; then yarpserver --write; fi"
+    command: sh -c "yarp where | grep 'is available at ip' > /dev/null ; if [ ! $$? -eq 0 ]; then yarpserver --read; fi"
 
   yCartesianSolver_r:
     <<: *yarp-base
@@ -83,7 +83,7 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "gravityCompensator --autoconnect --no_legs --headV2"
+    command: sh -c "yarp wait /icub/head/state:o; gravityCompensator --autoconnect --no_legs --headV2"
     #note: Do I add --headV2 option??.
 
 #------------------------------------------------------------------------------------------------
@@ -101,14 +101,14 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "camCalib --context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_LEFT --name /icub/camcalib/left"
+    command: sh -c "yarp wait /icub/cam/left; camCalib --context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_LEFT --name /icub/camcalib/left"
 
   yCamCalib_r:
     <<: *yarp-base
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "camCalib --context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_RIGHT --name /icub/camcalib/right"
+    command: sh -c "yarp wait /icub/cam/right; camCalib --context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_RIGHT --name /icub/camcalib/right"
 
   yConnectCam_l:
     <<: *yarp-base

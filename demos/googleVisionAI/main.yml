@@ -1,13 +1,13 @@
 version: "3.7"
 
 x-yarp-base: &yarp-base
-  image: icubteamcode/googlevision:master_master-unstable_sources
+  image: icubteamcode/google-vision:v2021.08.1-stable_master_sources
   environment:
     - YARP_FORWARD_LOG_ENABLE=1
     - FILE_INPUT
     - CUSTOM_PORT
   volumes:
-    - "${YARP_CONF_PATH}:/root/.config/yarp"
+    - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
     - "${FILE_INPUT_PATH}:/root/authorization"
   networks:
     - hostnet
@@ -24,16 +24,18 @@ services:
         constraints: [node.role == manager]
       restart_policy:
         condition: on-failure
-    command: sh -c "yarp where | grep 'is available at ip' > /dev/null ; if [ ! $$? -eq 0 ]; then yarpserver --write; fi"
+    command: sh -c "yarp where | grep 'is available at ip' > /dev/null ; if [ ! $$? -eq 0 ]; then yarpserver --read; fi"
 
 
-    #command: sh -c "_YARP_GOT=$$( yarp where | grep 'is available at ip' > /dev/null ); echo '${_YARP_GOT}'; if [ -z '${_YARP_GOT}' ]; then yarpserver --write; fi"
+    #command: sh -c "_YARP_GOT=$$( yarp where | grep 'is available at ip' > /dev/null ); echo '${_YARP_GOT}'; if [ -z '${_YARP_GOT}' ]; then yarpserver --read; fi"
 #------------------------------------------------------------------------------------------------
   yDemoGoogleVisionAI:
     <<: *yarp-base
     deploy:
       placement:
         constraints: [node.labels.type != head]
+    depends_on:
+      - yserver
     command: sh -c "googleVisionAI" 
  
 

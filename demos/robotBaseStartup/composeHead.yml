@@ -1,12 +1,12 @@
 version: "3.7"
 
 x-yarp-head: &yarp-head
-  image: icubteamcode/superbuild-icubhead:master-unstable_binaries
+  image: icubteamcode/superbuild-icubhead:v2021.08.1-stable_master_sources
   environment:
     - YARP_FORWARD_LOG_ENABLE=1
     - YARP_ROBOT_NAME
   volumes:
-    - "${YARP_CONF_PATH}:/root/.config/yarp"
+    - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
     - "/dev:/dev"
   ports:
     - "10000:10000"
@@ -20,7 +20,6 @@ services:
     <<: *yarp-head
     devices: 
       - "/dev/bosch-i2c-imu:/dev/bosch-i2c-imu"
-    container_name: yrobotinterface
     command: yarprobotinterface
 
 

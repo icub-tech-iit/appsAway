@@ -1,13 +1,13 @@
 version: "3.7"
 
 x-yarp-base: &yarp-base
-  image: icubteamcode/calib-supervisor:master_master-unstable_sources
+  image: icubteamcode/supervise-calib:v2021.08.1-stable_master_sources 
   environment:
     - YARP_FORWARD_LOG_ENABLE=1
     - LEFT_CUSTOM_PORT
     - RIGHT_CUSTOM_PORT
   volumes:
-    - "${YARP_CONF_PATH}:/root/.config/yarp"
+    - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
   networks:
     - hostnet
 
@@ -23,7 +23,7 @@ services:
         constraints: [node.role == manager]
       restart_policy:
         condition: on-failure
-    command: sh -c "yarp where | grep 'is available at ip' > /dev/null ; if [ ! $$? -eq 0 ]; then yarpserver --write; fi"
+    command: sh -c "yarp where | grep 'is available at ip' > /dev/null ; if [ ! $$? -eq 0 ]; then yarpserver --read; fi"
 
 
 

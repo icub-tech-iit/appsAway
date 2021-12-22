@@ -1,7 +1,7 @@
 version: "3.7"
 
 x-yarp-base: &yarp-base
-  image: icubteamcode/superbuild:master-unstable_binaries
+  image: icubteamcode/superbuild:master_master-unstable_binaries
   environment:
     - DISPLAY=${DISPLAY}
     - QT_X11_NO_MITSHM=1
@@ -11,8 +11,8 @@ x-yarp-base: &yarp-base
     - APPSAWAY_ROBOT_MODEL
     - APPSAWAY_OPTIONS
   volumes:
-    - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
-    - "${XAUTHORITY}:/root/.Xauthority:rw"
+    - "/tmp/.X11-unix:/tmp/.X11-unix"
+    - "${XAUTHORITY}:/root/.Xauthority"
     - type: volume
       source: yarp-config
       target: /root/.config/yarp
@@ -28,7 +28,7 @@ services:
     deploy:
       placement:
         constraints: [node.role == manager]
-    command: yarpserver --write
+    command: yarpserver --read
 
 
 #################################### ADD YOUR SERVICES HERE #####################################

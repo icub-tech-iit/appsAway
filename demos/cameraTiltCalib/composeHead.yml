@@ -1,12 +1,12 @@
 version: "3.7"
 
 x-yarp-base: &yarp-base
-  image: icubteamcode/superbuild-icubhead:master_master-unstable_sources
+  image: icubteamcode/superbuild-icubhead:v2021.08.1-stable_master_sources
   environment:
     - YARP_FORWARD_LOG_ENABLE=1
     - YARP_ROBOT_NAME
   volumes:
-    - "${YARP_CONF_PATH}:/root/.config/yarp"
+    - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
     - "/dev:/dev"
   network_mode: "host"
   privileged: true
@@ -19,8 +19,8 @@ services:
     <<: *yarp-base
     devices: 
       - "/dev/video0:/dev/video0"
-    container_name: yGrabberCameras
-    command: sh -c "if [ -z ${LEFT_CUSTOM_PORT} && -z ${RIGHT_CUSTOM_PORT} ]; then yarpdev --from camera/ServerGrabberDualDragon.ini --split true; fi"
+    command: sh -c "if [ -z ${LEFT_CUSTOM_PORT} ] && [ -z ${RIGHT_CUSTOM_PORT} ]; then if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; yarpdev --from camera/ServerGrabberDualDragon.ini --split true; fi"
+
 
 
 

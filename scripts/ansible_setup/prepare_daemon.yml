@@ -1,0 +1,39 @@
+- name: Prepare Daemon 
+  hosts: nodes
+  become: yes
+  tasks:      
+    - name: Update packages
+      shell: apt-get update
+      ignore_errors: yes
+      when: ansible_distribution != 'MacOSX'
+
+    - name: Install jq
+      apt: 
+        name:
+          - jq
+        state: latest
+        autoclean: yes
+      when: ansible_distribution != 'MacOSX'
+
+    - name: Initialize JSON structure
+      shell: |
+        if [ -s /etc/docker/daemon.json ]
+        then
+          echo "File is not empty"
+        else
+          echo "{}" > /etc/docker/daemon.json
+        fi
+      args:
+        warn: no
+      when: ansible_distribution != 'MacOSX'
+
+    - name: Adding entries to daemon.json
+      shell: |
+        jq '. + {"max-concurrent-uploads": 50}' /etc/docker/daemon.json > daemon_new.txt
+        mv daemon_new.txt /etc/docker/daemon.json
+        jq '. + {"max-concurrent-downloads": 50}' /etc/docker/daemon.json > daemon_new.txt
+        mv daemon_new.txt /etc/docker/daemon.json
+      args:
+        warn: no
+      when: ansible_distribution != 'MacOSX'
+

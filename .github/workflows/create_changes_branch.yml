@@ -4,19 +4,26 @@ on:
     repository_dispatch:
         types: [user_changes]
 
-
-#            mv -v ./appsAway/user_changes/* ./icub-tech-apps/dist/database/upgrade/
-#            mv -v ./appsAway/user_changes/images/* ./icub-tech-apps/dist/express/images/
-
 jobs:
   update_code:
     runs-on: ubuntu-latest
     steps: 
+    
+      - name: Get Token
+        id: get_workflow_token
+        uses: tibdex/github-app-token@v1
+        with:
+            private_key: ${{ secrets.ICUB_TECH_CODE_APP_KEY }}
+            app_id: ${{ secrets.ICUB_TECH_CODE_APP_ID }}
+            repository: icub-tech-iit/code
+        
       # we checkout appsAway code
       - uses: actions/checkout@v2
+        env:
+            GITHUB_APPS_TOKEN: ${{ steps.get_workflow_token.outputs.token }}
         with:
           repository: icub-tech-iit/code
-          token: ${{ secrets.CODE_REPO_ACCSS_TOKEN }}
+          token: ${{ env.GITHUB_APPS_TOKEN }}
           path: code
           ref: ${{ github.event.client_payload.branch_name }}
             
@@ -24,8 +31,7 @@ jobs:
         run: |
             ls
             pwd
-
-      #      git checkout ${{ github.event.client-payload.branch_name }}
+            
       - name: copies user_changes to temporary folder
         run: |
             cd code
@@ -35,56 +41,31 @@ jobs:
       - uses: actions/checkout@v2
         with:
           path: appsAway
-      - name: Create branch
-        run: |
-            cd appsAway
-            git branch ${{ github.event.client_payload.branch_name }}
           
       - name: check working directory
         run: |
-            ls
+            ls -la
             pwd
-      - name: checkout created branch
-        run: |
-            cd appsAway
-            git checkout ${{ github.event.client_payload.branch_name }}
 
       - name: copies user_changes folder
         run: |
             mkdir -p ./appsAway/user_changes/
             mv -v ./test/* ./appsAway/user_changes/
+            ls -la ../
 
-      - name: Commit changes
-        run: |
-            cd appsAway
-            pwd
-            git status
-            git config --local user.email "actions@github.com"
-            git config --local user.name "GitHub Action"
-            git add -A
-            git commit -m "Merged user changes in appsAway" -a
-        
-      - name: push changes
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.event.client_payload.branch_name }}
-          directory: "./appsAway/"
       - name: clean working directory
         run: |
-            rm -rf appsAway
+            pwd
+            ls
             rm -rf code
-
-      - uses: actions/checkout@v2
-        with:
-          repository: icub-tech-iit/appsAway
-          token: ${{ secrets.GITHUB_TOKEN }}
-          ref: ${{ github.event.client_payload.branch_name }}
-
+            ls
+    
       - name: get file data
         id: get_filedata
         run: |
-              cd user_changes
+              pwd
+              ls
+              cd appsAway/user_changes
               file_list=$(ls -p | grep -v / )
               len_list=${#file_list[@]}
               iter=0
@@ -93,23 +74,48 @@ jobs:
                 if [ $iter != 0 ];
                 then
                   user_list="$user_list,"
+                  exported_img_list="$exported_img_list "
                   changes_list="$changes_list<br/>"
                 fi
                 user_list="$user_list$(head -1 $file | awk -F'//' '{print $2}')"
+                exported_img_list="$exported_img_list$(head -2 $file | tail -1 | awk -F'//' '{print $2}')"
                 changes_list="$changes_list$(tail -n +1 $file | awk -F'//&' '{print $2}')"
-                iter=$((iter+1))
+              iter=$((iter+1))
               done
               echo $user_list
+              exported_img_list=($exported_img_list)
+              echo ${exported_img_list[@]}
               echo $changes_list
               echo ::set-output name=user_list::$user_list
               echo ::set-output name=changes_list::$changes_list
-              
+              echo ::set-output name=exported_img_list::${exported_img_list[@]}            
+            
       - name: pull-request
-        uses: repo-sync/pull-request@v2
+        id: open-pr
+        uses: peter-evans/create-pull-request@v3
         with:
-            pr_title: "Adding user changes into the website."
-            pr_body: ${{ steps.get_filedata.outputs.changes_list }}
-            pr_reviewer: "AlexAntn,vtikha,ilaria-carlini"
-            pr_assignee: ${{ steps.get_filedata.outputs.user_list }}
-            source_branch: ${{ github.event.client_payload.branch_name }}
-            github_token: ${{ secrets.GITHUB_TOKEN }}
+            path: appsAway
+            branch: ${{ github.event.client_payload.branch_name }}
+            title: "Adding user changes into the website."
+            body: ${{ steps.get_filedata.outputs.changes_list }}
+            assignees: ${{ steps.get_filedata.outputs.user_list }}
+            reviewers: "AlexAntn,vtikha,ilaria-carlini"
+        
+      - name: Check outputs
+        run: |
+          echo "Pull Request Number - ${{ steps.open-pr.outputs.pull-request-number }}"
+          echo "Pull Request URL - ${{ steps.open-pr.outputs.pull-request-url }}"
+              
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@master
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
+
+      - name: add metadata to bucket
+        run: |
+          for img in ${{ steps.get_filedata.outputs.exported_img_list }}
+          do
+            gsutil setmeta -h "x-goog-meta-pr-number: ${{steps.open-pr.outputs.pr_number}}" gs://$img
+          done

@@ -1,7 +1,7 @@
 version: "3.7"
 
 x-yarp-base: &yarp-base
-  image: icubteamcode/speech:v2020.08.patch-01_master-unstable_sources
+  image: icubteamcode/speech:v2021.08.1-stable_master_sources
   environment:
     - DISPLAY=${DISPLAY}
     - QT_X11_NO_MITSHM=1
@@ -13,16 +13,17 @@ x-yarp-base: &yarp-base
     - GOOGLE_SYNTHESIS_INPUT
     - LANGUAGE_SYNTHESIS_INPUT
     - VOICE_NAME_INPUT
+    - XDG_RUNTIME_DIR
   volumes:
-    - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
-    - "${XAUTHORITY}:/root/.Xauthority:rw"
-    - "${YARP_CONF_PATH}:/root/.config/yarp"
+    - "/tmp/.X11-unix:/tmp/.X11-unix"
+    - "${XAUTHORITY}:/root/.Xauthority"
+    - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
     - "${FILE_INPUT_PATH}:/root/authorization"
     - "${XDG_RUNTIME_DIR}/pulse/native:${XDG_RUNTIME_DIR}/pulse/native"
     - "~/.config/pulse/cookie:/root/.config/pulse/cookie"
     - "/dev:/dev"
-  ports:
-    - "10000:10000"
+  #ports:
+  #  - "10000:10000"
   network_mode: "host"
   privileged: true
   #ipc: host
@@ -36,8 +37,7 @@ services:
     <<: *yarp-base
     devices: 
       - "/dev/snd:/dev/snd"
-    container_name: yMicrophone
-    command: sh -c "if [ ${GOOGLE_INPUT} = 'True' ]; then yarp wait /root; yarpdev --device AudioRecorderWrapper --from /root/startaudio.ini --channels 1  --rate 16000 --samples 16000; fi;"
+    command: sh -c "if [ ${GOOGLE_INPUT} = 'True' ]; then if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; yarpdev --device AudioRecorderWrapper --from /root/startaudio.ini; fi;"
 
   yDemoGoogleSynthesis:
     <<: *yarp-base

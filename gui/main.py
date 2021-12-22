@@ -116,10 +116,13 @@ class OptionButton():
         elif button_type == ButtonType.FILE_INPUT:
             inputButton = QLineEdit(widget_gallery)
             inputButton.setPlaceholderText(var_name)
-            button = QPushButton(button_text)
+            # commented this line for now, since the "choose file" option doesn't work from inside container
+            #button = QPushButton(button_text)
+            button = None
             if initial_setting == "off":
               inputButton.setEnabled(False)
-              button.setEnabled(False)
+              # commented this line for now, since the "choose file" option doesn't work from inside container
+              #button.setEnabled(False)
 
         elif button_type == ButtonType.TOGGLE_BUTTON:
             inputButton = None
@@ -237,11 +240,13 @@ class WidgetGallery(QDialog):
         self.image = "" #'src/main/images/redball.jpg'
 
         self.rc = None #inits the subprocess
-        self.ansible = subprocess.Popen(['true'])
+        #self.ansible = subprocess.Popen(['true'])
 
         self.button_list = []
 
-        self.gui_dir = os.getcwd()
+        #self.gui_dir = os.getcwd()
+        self.gui_dir = os.path.join(os.getcwd(),"conf")
+        self.scripts_dir = os.path.join(os.environ.get('HOME'),"teamcode","appsAway","scripts")
 
         # read from .ini file here
         self.button_name_list = []
@@ -331,22 +336,25 @@ class WidgetGallery(QDialog):
 
         layout = QVBoxLayout()
         
-        self.pushUpdateButton.setDefault(True)    
+        #self.pushUpdateButton.setDefault(True)    
 
-        out = subprocess.Popen(['./appsAway_checkUpdates.sh'], 
-           stdout=subprocess.PIPE, 
-           stderr=subprocess.STDOUT)
-        
-        stdout,stderr = out.communicate()
+        #with open(os.path.join(self.scripts_dir, 'mypipe'), 'w') as f:
+        #    f.write('./appsAway_checkUpdates.sh > mypipe_to_gui')
 
-        if b"true" in stdout:
-          self.pushUpdateButton.setEnabled(True)
-          self.pushUpdateButton.setText("Update Available")
-        elif b"false" in stdout:
-          self.pushUpdateButton.setEnabled(False)
-          self.pushUpdateButton.setText("Everything is Up to Date!")
+        #while True:
+        #  with open(os.path.join(self.scripts_dir, 'mypipe_to_gui'), 'r') as f:
+        #    stdout = f.read()
+        #    if stdout:
+        #      break
 
-        layout.addWidget(self.pushUpdateButton)
+        #if "true" in stdout:
+        #  self.pushUpdateButton.setEnabled(True)
+        #  self.pushUpdateButton.setText("Update Available")
+        #elif "false" in stdout:
+        #  self.pushUpdateButton.setEnabled(False)
+        #  self.pushUpdateButton.setText("Everything is Up to Date!")
+
+        #layout.addWidget(self.pushUpdateButton)
 
 
         pixmap = QPixmap(self.image)
@@ -361,7 +369,7 @@ class WidgetGallery(QDialog):
         layout.setAlignment(Qt.AlignCenter)
         self.topGroupBox.setLayout(layout)
 
-        self.pushUpdateButton.clicked.connect(self.startUpdate)
+        #self.pushUpdateButton.clicked.connect(self.startUpdate)
     
 ########################################################## right options ###########################################################################
 ####################################################################################################################################################
@@ -372,7 +380,7 @@ class WidgetGallery(QDialog):
 # fileInput       # "Google file"     # FILE_INPUT        # None                                                            # on      # False      #
 # toggleButton    # "Google Input"    # GOOGLE_INPUT      # true/false                                                      # on      # False      #
 # dropdownList    # "Language sel"    # LANG_INPUT        # en-US/it-IT                                                     # off     # False      #
-# pushButtom      # "Try your voice!" # AUDIO_INPUT       # /home/laura/teamcode/appsAway/demos/synthesis/audioicon.png     # on      # False      #
+# pushButtom      # "Try your voice!" # AUDIO_INPUT       # ${HOME}/teamcode/appsAway/demos/demoName/gui/images/audioicon.png    # on      # False      #
 ####################################################################################################################################################
 
     def createBottomRightGroupBox(self):
@@ -420,7 +428,8 @@ class WidgetGallery(QDialog):
           if buttonOption.varType == 'fileInput':
             #layout.addWidget(buttonOption.button)
             #layout.addWidget(buttonOption.inputBox)
-            buttonOption.button.clicked.connect(self.openFile(buttonOption))
+            # commented this line for now, since the "choose file" option doesn't work from inside container
+            #buttonOption.button.clicked.connect(self.openFile(buttonOption))
             buttonOption.inputBox.textChanged.connect(self.checkToggleState(buttonOption))
 
           if buttonOption.varType == 'toggleButton':
@@ -549,6 +558,9 @@ class WidgetGallery(QDialog):
                   buttonOption.button.clear()
                   for new_item in opt_list:
                     buttonOption.button.addItem(new_item)
+                  buttonOption.button.setCurrentIndex(0)
+                  for button in self.button_list: # check the status of all buttons
+                    self.checkDependencies(button)
  
     
     @pyqtSlot()
@@ -562,9 +574,9 @@ class WidgetGallery(QDialog):
     def playAudio(self):
       def play():
         sel_voice=[el.button.currentText() for el in list(filter(lambda x: x.varName == 'VOICE_NAME_INPUT', self.button_list)) ] #to avoid another for loop on all the buttons, we do a filter 
-        sel_lang=[el.button.currentText() for el in list(filter(lambda x: x.varName == 'LANGUAGE_SYNTHESIS_INPUT', self.button_list)) ] #here we have the selected voice
+        sel_lang=[el.button.currentText() for el in list(filter(lambda x: x.varName == 'LANGUAGE_SYNTHESIS_INPUT' or x.varName == 'LANGUAGE_INPUT', self.button_list)) ] #here we have the selected voice
         
-        rc = subprocess.call(["play", os.path.join('..','gui','target','appGUI','Archive','language '+ sel_lang[0] + '_' + sel_voice[0] + '.mp3')])
+        rc = subprocess.call(["play", os.path.join('/','root','iCubApps','Archive','language '+ sel_lang[0] + '_' + sel_voice[0] + '.mp3')])
 
       return play
 
@@ -636,40 +648,52 @@ class WidgetGallery(QDialog):
         elapsedTime.start()
 
         self.startApplication()
-
+        os.chdir(os.path.join(os.environ.get('HOME'),"teamcode","appsAway","scripts"))
+        rc = subprocess.call("./appsAway_setEnvironment.local.sh")
+        #with open(os.path.join(self.scripts_dir, 'mypipe'), 'w') as f:
+        #  f.write("./appsAway_setEnvironment.local.sh")
             
     def stopProgressBar(self):
         self.pushStopButton.setEnabled(True)
 
     def checkForUpdates(self):
-        if self.ansible.poll() == None:
-          return
-        self.timer.start(300000)
-        out = subprocess.Popen(['./appsAway_checkUpdates.sh'], 
-           stdout=subprocess.PIPE, 
-           stderr=subprocess.STDOUT)
-        
-        stdout,stderr = out.communicate()
+        #if self.ansible.poll() == None:
+        #  return
+        #self.timer.start(300000)
+        with open(os.path.join(self.scripts_dir, 'mypipe'), 'w') as f:
+          f.write("./appsAway_checkUpdates.sh > mypipe_to_gui")
+        #out = subprocess.Popen(['./appsAway_checkUpdates.sh'], 
+        #   stdout=subprocess.PIPE, 
+        #   stderr=subprocess.STDOUT)
+        while True:
+          with open(os.path.join(self.scripts_dir, 'mypipe_to_gui'), 'r') as f:
+            stdout = f.read()
+            if stdout:
+              break
+        #stdout,stderr = out.communicate()
 
-        if b"true" in stdout:
+        if "true" in stdout:
           self.pushUpdateButton.setEnabled(True)
           self.pushUpdateButton.setText("Update Available")
-        elif b"false" in stdout:
+        elif "false" in stdout:
           self.pushUpdateButton.setEnabled(False)
           self.pushUpdateButton.setText("Everything is Up to Date!")
 
     def startUpdate(self):
         # first we pause the timer
-        self.timer.start(1000)
+        #self.timer.start(1000)
         self.pushUpdateButton.setEnabled(False)
         self.pushUpdateButton.setText("Installing....")
         # then we change working directory
         #os.chdir("ansible_setup") 
-        os.chdir(os.path.join(os.environ.get('HOME'),"teamcode","appsAway","scripts","ansible_setup"))
-        rc = subprocess.call("./setup_hosts_ini.sh")
-        self.ansible = subprocess.Popen(['make', 'prepare'])
+        with open(os.path.join(self.scripts_dir, 'mypipe'), 'w') as f:
+          f.write("cd ansible_setup && ./setup_hosts_ini.sh && make prepare_all && cd ..")
+
+        #os.chdir(os.path.join(os.environ.get('HOME'),"teamcode","appsAway","scripts","ansible_setup"))
+        #rc = subprocess.call("./setup_hosts_ini.sh")
+        #self.ansible = subprocess.Popen(['make', 'prepare'])
         #os.chdir("..") 
-        os.chdir(os.path.join(os.environ.get('HOME'),"teamcode","appsAway","scripts"))
+        #os.chdir(os.path.join(os.environ.get('HOME'),"teamcode","appsAway","scripts"))
 
     def startApplication(self):
         print("starting application")
@@ -708,7 +732,11 @@ class WidgetGallery(QDialog):
             elif buttonOption.button == None and not buttonOption.inputBox.isEnabled:
               os.environ[buttonOption.varName] = ""
         self.setupEnvironment()
-        rc = subprocess.Popen("./appsAway_startApp.sh", shell=True)
+
+        with open(os.path.join(self.scripts_dir, 'mypipe'), 'w') as f:
+          f.write("./appsAway_startApp.sh")
+
+        #rc = subprocess.Popen("./appsAway_startApp.sh", shell=True)
         #self.rc = subprocess.Popen("./appsAway_startApp.sh", stdout=subprocess.PIPE, shell=True)
     
     def stopApplication(self):
@@ -731,62 +759,92 @@ class WidgetGallery(QDialog):
             buttonOption.inputBox.setEnabled(True)
           self.checkDependencies(buttonOption)      
 
-        rc = subprocess.call("./appsAway_stopApp.sh")
+        with open(os.path.join(self.scripts_dir, 'mypipe'), 'w') as f:
+          f.write("./appsAway_stopApp.sh")
+
+        #rc = subprocess.call("./appsAway_stopApp.sh")
 
     def setupEnvironment(self):
-        os.chdir(os.path.join(os.environ.get('HOME'), "teamcode","appsAway","demos", os.environ.get('APPSAWAY_APP_NAME')))
-        yml_files_default = ["main.yml", "composeGui.yml", "composeHead.yml"]
-        yml_files = []
+        # os.chdir(os.path.join(os.environ.get('HOME'), "teamcode","appsAway","demos", os.environ.get('APPSAWAY_APP_NAME')))
+        # yml_files_default = ["main.yml", "composeGui.yml", "composeHead.yml"]
+        # yml_files = []
 
-        for yml_file in yml_files_default:
-          if os.path.isfile(yml_file):
-            yml_files = yml_files + [yml_file]
+        # for yml_file in yml_files_default:
+        #   if os.path.isfile(yml_file):
+        #     yml_files = yml_files + [yml_file]
 
-        for yml_file in yml_files:
-          main_file = open(yml_file, "r")
-          main_list = main_file.read().split('\n')
+        # for yml_file in yml_files:
+        #   main_file = open(yml_file, "r")
+        #   main_list = main_file.read().split('\n')
 
-          custom_option_found = False
-          end_environ_set = False
+        #   custom_option_found = False
+        #   end_environ_set = False
+        #   if os.environ.get('APPSAWAY_SENSORS') != None:
+        #     list_sensors = os.environ.get('APPSAWAY_SENSORS').split(' ')
+        #     if yml_file == "composeHead.yml":
+        #       for i in range(len(main_list)):
+        #         if main_list[i].find("devices:") != -1:
+        #           device_list=[]
+        #           #main_list[i] = main_list[i] + "\n"
+        #           for k in range(i+1,len(main_list),1):
+        #             if main_list[k].find("command:") != -1:
+        #               break
+        #             tmp_device_shared = main_list[k].split('"')[1]    # device:device
+        #             tmp_device = tmp_device_shared.split(":")[0]      # device
+        #             device_list = device_list + [tmp_device]          # we create a list with all devices for this service
+        #           for sensor in list_sensors:
+        #             if sensor not in device_list and sensor != "":
+        #               main_list[i] = main_list[i] + "\n      - \"" + sensor + ":" + sensor + "\"" #- "/dev/snd:/dev/snd"
 
-          if os.environ.get('APPSAWAY_IMAGES') != '':
-            list_images = os.environ.get('APPSAWAY_IMAGES').split(' ')
-            list_versions = os.environ.get('APPSAWAY_VERSIONS').split(' ')
-            list_tags = os.environ.get('APPSAWAY_TAGS').split(' ')
+        #   if os.environ.get('APPSAWAY_IMAGES') != '':
+        #     list_images = os.environ.get('APPSAWAY_IMAGES').split(' ')
+        #     list_versions = os.environ.get('APPSAWAY_VERSIONS').split(' ')
+        #     list_tags = os.environ.get('APPSAWAY_TAGS').split(' ')
+        #     print("image list: ", list_images)            
 
-            for i in range(len(main_list)):
-              if main_list[i].find("x-yarp-") != -1:
-                if main_list[i+1].find("image") != -1:
-                  image_line = main_list[i+1]
-                  image_line = image_line.split(':')
-                  for f in range(len(list_images)):
-                    if image_line[1].strip() == list_images[f].strip(): # if the name is correct (the image name contains also the repository name - 'icubteamcode/superbuild')
-                      image_line[2] = list_versions[f] + "_" + list_tags[f] # we update the version
-                      break
-                  main_list[i+1] = image_line[0] + ':' + image_line[1] + ':' + image_line[2]
+        #     for i in range(len(main_list)):
+        #       if main_list[i].find("x-yarp-") != -1:
+        #         if main_list[i+1].find("image") != -1:
+        #           image_line = main_list[i+1]
+        #           image_line = image_line.split(':')
+                  
+        #           print("Flag:" ,os.environ.get('LOCAL_IMAGE_FLAG'))
+        #           if os.environ.get('LOCAL_IMAGE_FLAG').strip() == "true":
+        #             image_line[1] = "localhost:5000/" + os.environ.get('LOCAL_IMAGE_NAME').strip() # we update the version
+        #             main_list[i+1] = image_line[0] + ': ' + image_line[1] 
+        #             break
+  
+        #           for f in range(len(list_images)):
+        #             print("image line:", image_line[1].strip())
+        #             print("list_images[f]:", list_images[f].strip())
+                                          
+        #             if image_line[1].strip() == list_images[f].strip() : # if the name is correct (the image name contains also the repository name - 'icubteamcode/superbuild')
+        #               image_line[2] = list_versions[f] + "_" + list_tags[f] # we update the version
+        #               break
+        #           main_list[i+1] = image_line[0] + ':' + image_line[1] + ':' + image_line[2]
 
-          else:
-            for i in range(len(main_list)):
-              if main_list[i].find("x-yarp-base") != -1 or main_list[i].find("x-yarp-head") != -1 or main_list[i].find("x-yarp-gui") != -1:
-                if main_list[i+1].find("image") != -1:
-                  image_line = main_list[i+1]
-                  image_line = image_line.split(':')
-                  image_line[2] = os.environ.get('APPSAWAY_REPO_VERSION') + "_" + os.environ.get('APPSAWAY_REPO_TAG')
-                  main_list[i+1] = image_line[0] + ':' + image_line[1] + ':' + image_line[2]
+        #   else:
+        #     for i in range(len(main_list)):
+        #       if main_list[i].find("x-yarp-base") != -1 or main_list[i].find("x-yarp-head") != -1 or main_list[i].find("x-yarp-gui") != -1:
+        #         if main_list[i+1].find("image") != -1:
+        #           image_line = main_list[i+1]
+        #           image_line = image_line.split(':')
+        #           image_line[2] = os.environ.get('APPSAWAY_REPO_VERSION') + "_" + os.environ.get('APPSAWAY_REPO_TAG')
+        #           main_list[i+1] = image_line[0] + ':' + image_line[1] + ':' + image_line[2]
 
-            if main_list[i].find("services") != -1:
-                break
-          main_file.close()
-          main_file = open(yml_file, "w")
-          for i in range(len(main_list)-1):
-            main_file.write(main_list[i]+ '\n')
-          main_file.write(main_list[-1])
-          main_file.close()
+        #     if main_list[i].find("services") != -1:
+        #         break
+        #   main_file.close()
+        #   main_file = open(yml_file, "w")
+        #   for i in range(len(main_list)-1):
+        #     main_file.write(main_list[i]+ '\n')
+        #   main_file.write(main_list[-1])
+        #   main_file.close()
 
         # env file is located in iCubApps folder, so we need APPSAWAY_APP_PATH
-        os.chdir(os.environ.get('APPSAWAY_APP_PATH'))
+        #os.chdir(os.environ.get('APPSAWAY_APP_PATH'))
 
-        env_file = open(".env", "r")
+        env_file = open(os.path.join("/root/iCubApps/",".env"), "r")
         env_list = env_file.read().split('\n')
         env_file.close()
 
@@ -807,16 +865,39 @@ class WidgetGallery(QDialog):
           if not_found_path and os.environ.get(button.varName + "_PATH") != None:
             env_list.insert(len(env_list), button.varName + "_PATH=" + os.environ.get(button.varName + "_PATH"))
 
-
-        env_file = open(".env", "w")
+        string_to_print = "echo \""
         for line in env_list:
-          env_file.write(line + '\n')
-        env_file.close()
+          string_to_print = string_to_print + line + '\n'
+        string_to_print = string_to_print + "\" > ${APPSAWAY_APP_PATH}/.env && echo \"done creating .env\" > mypipe_to_gui"
 
-        os.chdir(os.path.join(os.environ.get('HOME'), "teamcode","appsAway","scripts"))
+        with open(os.path.join(self.scripts_dir, 'mypipe'), 'w') as f:
+          f.write(string_to_print)
+
+        while True:
+          with open(os.path.join(self.scripts_dir, 'mypipe_to_gui'), 'r') as f:
+            stdout = f.read()
+            print(stdout)
+            if stdout:
+              break
+
+        #env_file = open(".env", "w")
+        #for line in env_list:
+        #  env_file.write(line + '\n')
+        #env_file.close()
+
+        #os.chdir(os.path.join(os.environ.get('HOME'), "teamcode","appsAway","scripts"))
           
+        with open(os.path.join(self.scripts_dir, 'mypipe'), 'w') as f:
+          f.write("./appsAway_copyFiles.sh && echo \"done copy files\" > mypipe_to_gui")
+
+        while True:
+          with open(os.path.join(self.scripts_dir, 'mypipe_to_gui'), 'r') as f:
+            stdout = f.read()
+            print(stdout)
+            if stdout:
+              break
         # now we copy all the files to their respective machines
-        rc = subprocess.call("./appsAway_copyFiles.sh")
+        #rc = subprocess.call("./appsAway_copyFiles.sh")
 
     # overload the closing function to close the watchdog
     def exec_(self):
@@ -830,4 +911,9 @@ if __name__ == '__main__':
     appctxt = ApplicationContext()
     gallery = WidgetGallery()
     gallery.show()
-    sys.exit(appctxt.app.exec_())
+    ret_stat = appctxt.app.exec_()
+    with open(os.path.join(os.environ.get('HOME'),"teamcode","appsAway","scripts", 'mypipe'), 'w') as f:
+      f.write("break")
+    sys.exit(ret_stat)
+
+#self.scripts_dir = os.path.join(os.environ.get('HOME'),"teamcode","appsAway","scripts")

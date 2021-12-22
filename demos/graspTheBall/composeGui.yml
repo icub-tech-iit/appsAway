@@ -1,16 +1,16 @@
 version: "3.7"
 
 x-yarp-base: &yarp-base
-  image: icubteamcode/superbuild:v2021.02.feat-01_master-stable_binaries
+  image: icubteamcode/grasp-the-ball:v2021.08.1-stable_master_sources
   environment:
     - DISPLAY=${DISPLAY}
     - QT_X11_NO_MITSHM=1
     - XAUTHORITY=/root/.Xauthority
     - YARP_FORWARD_LOG_ENABLE=1
   volumes:
-    - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
-    - "${XAUTHORITY}:/root/.Xauthority:rw"
-    - "${YARP_CONF_PATH}:/root/.config/yarp"
+    - "/tmp/.X11-unix:/tmp/.X11-unix"
+    - "${XAUTHORITY}:/root/.Xauthority"
+    - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
   ports:
     - "10000:10000"
   network_mode: "host"
@@ -22,23 +22,19 @@ services:
 
   ylogger:
     <<: *yarp-base
-    container_name: ylogger
     command: yarplogger --start
 
 #following services are configured in ./icub-main/app/default/scripts/cameras_calib.xml.template
   yview_l:
     <<: *yarp-base
-    container_name: yview_l
-    command: yarpview --name /icub/view/left --x 0 --y 0 --p 50 --w 320 --h 240
+    command: sh -c "yarp wait /icub/cam/left; yarpview --name /icub/view/left --x 0 --y 0 --p 50 --w 320 --h 240"
 
   yview_r:
     <<: *yarp-base
-    container_name: yview_r
-    command: yarpview --name /icub/view/right --x 320 --y 0 --p 50 --w 320 --h 240
+    command: sh -c "yarp wait /icub/cam/right; yarpview --name /icub/view/right --x 320 --y 0 --p 50 --w 320 --h 240"
 
   yconnect_l:
     <<: *yarp-base
-    container_name: yconnect_l
     depends_on:
       - yview
     command: sh -c "yarp wait /icub/camcalib/left/out; yarp wait /icub/view/left; yarp connect /icub/camcalib/left/out /icub/view/left fast_tcp"
@@ -46,7 +42,6 @@ services:
 
   yconnect_r:
     <<: *yarp-base
-    container_name: yconnect_r
     depends_on:
       - yview
     command: sh -c "yarp wait /icub/camcalib/right/out; yarp wait /icub/view/right; yarp connect /icub/camcalib/right/out /icub/view/right fast_tcp"
@@ -56,12 +51,10 @@ services:
 #Following services are configured in icub-basic-demos/demoRedBall/app/scripts/demoRedBall.xml.template
   yview:
     <<: *yarp-base
-    container_name: yview_demo
-    command: yarpview --name /PF3DTracker_viewer --x 320 --y 0 --p 50 --compact
+    command: sh -c "yarp wait /pf3dTracker/video:o; yarpview --name /PF3DTracker_viewer --x 320 --y 0 --p 50 --compact"
 
   yconnect_demo:
     <<: *yarp-base
-    container_name: yconnect_demo
     depends_on:
       - yview
     command: sh -c "yarp wait /pf3dTracker/video:o; yarp wait /PF3DTracker_viewer; yarp connect /pf3dTracker/video:o /PF3DTracker_viewer fast_tcp"

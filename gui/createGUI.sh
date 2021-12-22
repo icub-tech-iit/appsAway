@@ -33,7 +33,7 @@ else
   echo -ne "[....          ] installing GUI...\r"
   echo ${password} | sudo -S update-alternatives --set python3 /usr/bin/python3.6 > /dev/null 2>&1
   echo -ne "[.....         ] installing GUI...\r"
-  echo ${password} | sudo -S apt -y install python3-pip pulseaudio sox > /dev/null 2>&1
+  echo ${password} | sudo -S apt -y install python3-pip pulseaudio sox libsox-fmt-mp3 > /dev/null 2>&1
   echo -ne "[......        ] installing GUI...\r"
 fi
 

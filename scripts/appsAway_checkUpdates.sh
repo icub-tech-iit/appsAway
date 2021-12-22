@@ -2,13 +2,13 @@
 
 
 
-_APPSAWAY_ENVFILE="appsAway_setEnvironment.local.sh"
+_APPSAWAY_ENV_FILE="appsAway_setEnvironment.local.sh"
 ######################################################
 
 _SSH_CHECK_UPD="/usr/lib/update-notifier/apt-check -p"
 
 
-source ${_APPSAWAY_ENVFILE}
+source ${_APPSAWAY_ENV_FILE}
 ##################### IT PRINTS TO STDERR!!!!!! #############################
 #OUTPUT=$($_SSH_CHECK_UPD 2>&1)
 #############################################################################

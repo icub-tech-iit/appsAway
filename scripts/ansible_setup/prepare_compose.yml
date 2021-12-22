@@ -1,0 +1,50 @@
+- name: Uninstall old versions
+  hosts: nodes
+  become: yes
+  tasks:      
+    - name: Purge docker-compose
+      shell: |
+          apt-get -y purge docker-compose 
+          rm -f /usr/local/bin/docker-compose 
+          rm -f /usr/bin/docker-compose
+      args:
+        warn: no
+      ignore_errors: yes
+      when: ansible_distribution != 'MacOSX'
+
+    - name: Update packages
+      shell: apt-get update
+      ignore_errors: yes
+      when: ansible_distribution != 'MacOSX'
+
+    - name: Install packages to use a repository over HTTPS
+      apt: 
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+          - gnupg
+          - lsb-release
+        state: latest
+        autoclean: yes
+      when: ansible_distribution != 'MacOSX'
+        
+    - name: Install docker-compose
+      shell: |
+          curl -L "https://github.com/docker/compose/releases/download/1.25.0-rc2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          chmod +x /usr/local/bin/docker-compose 
+          ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+      when: ansible_distribution != 'MacOSX'
+
+    - name: Finishing up with needed packages 
+      apt: 
+        name:
+          - openssh-client
+          - openssh-server
+          - curl
+          - gnupg-agent
+          - software-properties-common
+        state: latest
+        autoclean: yes
+      when: ansible_distribution != 'MacOSX'

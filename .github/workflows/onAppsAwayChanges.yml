@@ -1,0 +1,88 @@
+# this workflow will generate the containers on push. These containers are for test only, so ideally they should be uploaded to a private repo, not available to the public. tag=superbuild_devel (?)
+# for the stable versions, use superbuild_builder_stable.yml, triggered on release
+
+name: onAppsawayChanges
+
+on: 
+    push:
+        paths:
+            - 'demos/**'
+        branches:
+            - master 
+
+jobs:
+
+    check_files:
+      runs-on: ubuntu-latest
+      steps: 
+      - id: file_changes
+        uses: trilom/file-changes-action@v1.2.3
+      - name: files
+        run: |
+          cat $HOME/files.json
+          cat $HOME/files_modified.json
+          cat $HOME/files_added.json
+          echo '${{ steps.file_changes.outputs.files}}'
+          echo '${{ steps.file_changes.outputs.files_modified}}'
+          echo '${{ steps.file_changes.outputs.files_added}}'
+      - name: Checkout appsAway
+        uses: actions/checkout@v2
+      - name: find demo name
+        id: set_app_list
+        run: |
+          changed_files=($(echo '${{ steps.file_changes.outputs.files}}' | tr ',' '\n' | tr -d '[' | tr -d ']'))
+          changed_dirs=""
+          for i in "${changed_files[@]}"
+          do 
+            changed_dir=$(echo $i | tr -d '"' | awk -F'/' '{print $1"/"$2}')
+            changed_dirs="$changed_dirs $changed_dir"
+          done
+          echo "Changed dirs: ${changed_dirs[@]}"
+          changed_dirs_unique=($(echo "${changed_dirs[@]}" | tr ' ' '\n' | sort -u | tr '\n' ' '))
+          app_name_list=""
+          iter_app_list=0
+          for i in "${changed_dirs_unique[@]}"
+          do 
+            if [ $(echo $i | awk '/demos/') ]
+            then
+              app_name=$(echo $i | awk -F'/' '{print $2}' | tr -d '"')
+              cd demos/"${app_name}"
+              if [[ -f "test-script.sh" ]]
+              then 
+                if [ $iter_app_list == 0 ]
+                then 
+                  app_name_list="$app_name"
+                  iter_app_list=$(($iter_app_list+1))
+                else
+                  app_name_list="$app_name_list $app_name"
+                fi
+              else 
+                echo "Test script not found!"
+              fi
+              cd ../..
+            fi
+          done
+          app_name_list=$(echo "${app_name_list[@]}" | tr ' ' '\n' | sort -u | tr '\n' ' ')
+          app_name_list=$(echo ${app_name_list::-1})
+          echo "::set-output name=apps::${app_name_list[@]}"
+
+      - name: Get Token
+        id: get_workflow_token
+        uses: tibdex/github-app-token@v1
+        with:
+          private_key: ${{ secrets.ICUB_TECH_CODE_APP_KEY }}
+          app_id: ${{ secrets.ICUB_TECH_CODE_APP_ID }}
+          repository: icub-tech-iit/code
+            
+      - name: Repository dispatch to code
+        uses: peter-evans/repository-dispatch@v1
+        if:  steps.set_app_list.outputs.apps != ''
+        env:
+          GITHUB_APPS_TOKEN: ${{ steps.get_workflow_token.outputs.token }}
+        with:
+          token: ${{ env.GITHUB_APPS_TOKEN }}   
+          repository: icub-tech-iit/code
+          event-type: app_testing_from_appsaway
+          client-payload: '{"type": "app_testing_from_appsaway",  "app_list": "${{ steps.set_app_list.outputs.apps}}"}'
+
+

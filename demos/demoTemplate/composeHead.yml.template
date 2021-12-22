@@ -6,7 +6,7 @@ x-yarp-head: &yarp-head
     - YARP_FORWARD_LOG_ENABLE=1
     - YARP_ROBOT_NAME
   volumes:
-    - "${YARP_CONF_PATH}:/root/.config/yarp"
+    - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
     - "/dev:/dev"
   network_mode: "host"
   privileged: true
@@ -19,7 +19,6 @@ services:
     <<: *yarp-head
     devices: 
       - "/dev/bosch-i2c-imu:/dev/bosch-i2c-imu"
-    container_name: yrobotinterface
     command: yarprobotinterface
 
 #################################### ADD YOUR SERVICES HERE #####################################

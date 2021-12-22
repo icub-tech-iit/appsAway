@@ -1,7 +1,7 @@
 version: "3.7"
 
 x-yarp-base: &yarp-base
-  image: icubteamcode/superbuild-gazebo:master-unstable_sources
+  image: icubteamcode/superbuild-gazebo:master-unstable_master_sources
   environment:
     - DISPLAY=${DISPLAY}
     - QT_X11_NO_MITSHM=1
@@ -10,9 +10,9 @@ x-yarp-base: &yarp-base
     - YARP_ROBOT_NAME
     - APPSAWAY_ROBOT_MODEL
   volumes:
-    - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
-    - "${XAUTHORITY}:/root/.Xauthority:rw"
-    - "${YARP_CONF_PATH}:/root/.config/yarp"
+    - "/tmp/.X11-unix:/tmp/.X11-unix"
+    - "${XAUTHORITY}:/root/.Xauthority"
+    - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
   ports:
     - "10000:10000"
   network_mode: "host"
@@ -23,5 +23,4 @@ services:
   #following service are configured in icub-main/app/iCubStartup/scripts/iCubStartup.xml.template
   gazebo:
     <<: *yarp-base
-    command: gazebo
-
+    command: sh -c "if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; gazebo"

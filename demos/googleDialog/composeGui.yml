@@ -1,7 +1,7 @@
 version: "3.7"
 
 x-yarp-base: &yarp-base
-  image: icubteamcode/speech:master_master-unstable_sources
+  image: icubteamcode/speech:v2021.08.1-stable_master_sources
   environment:
     - DISPLAY=${DISPLAY}
     - QT_X11_NO_MITSHM=1
@@ -13,10 +13,11 @@ x-yarp-base: &yarp-base
     - GOOGLE_SYNTHESIS_INPUT
     - LANGUAGE_SYNTHESIS_INPUT
     - VOICE_NAME_INPUT
+    - XDG_RUNTIME_DIR
   volumes:
-    - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
-    - "${XAUTHORITY}:/root/.Xauthority:rw"
-    - "${YARP_CONF_PATH}:/root/.config/yarp"
+    - "/tmp/.X11-unix:/tmp/.X11-unix"
+    - "${XAUTHORITY}:/root/.Xauthority"
+    - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
     - "${FILE_INPUT_PATH}:/root/authorization"
     - "${XDG_RUNTIME_DIR}/pulse/native:${XDG_RUNTIME_DIR}/pulse/native"
     - "~/.config/pulse/cookie:/root/.config/pulse/cookie"
@@ -36,8 +37,7 @@ services:
     <<: *yarp-base
     devices: 
       - "/dev/snd:/dev/snd"
-    container_name: yMicrophone
-    command: sh -c "yarp wait /root; yarpdev --device AudioRecorderWrapper --from /root/startaudio.ini --channels 1  --rate 16000 --samples 16000"
+    command: sh -c "if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; yarpdev --device AudioRecorderWrapper --from /root/startaudio.ini"
 
   yDemoGoogleSynthesis:
     <<: *yarp-base

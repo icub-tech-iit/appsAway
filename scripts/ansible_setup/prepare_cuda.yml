@@ -1,0 +1,84 @@
+#################################################################
+# this follows this installation: https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker
+
+- name: Setting up GPUs for Cuda nodes
+  hosts: cuda
+  become: yes
+  tasks:
+    - name: get stable repository for nvidia-docker
+      shell: |
+          distribution=$(. /etc/os-release;echo $ID$VERSION_ID) 
+          curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add - 
+          curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
+      when: ansible_distribution != 'MacOSX'
+    
+    - name: Update packages
+      shell: apt-get update
+      ignore_errors: yes
+      when: ansible_distribution != 'MacOSX'
+
+    - name: Install nvidia-docker2
+      apt:
+        name:
+          - nvidia-docker2
+        state: latest
+        autoclean: yes
+      when: ansible_distribution != 'MacOSX'
+
+    - name: Install jq
+      apt: 
+        name:
+          - jq
+        state: latest
+        autoclean: yes
+      when: ansible_distribution != 'MacOSX'
+
+    - name: Initialize JSON structure
+      shell: |
+        if [ -s /etc/docker/daemon.json ]
+        then
+          echo "File is not empty"
+        else
+          echo "{}" > /etc/docker/daemon.json
+        fi
+      args:
+        warn: no
+      when: ansible_distribution != 'MacOSX'
+      
+    - name: Setting up GPUs for Cuda nodes docker configuration
+      shell: |
+        GPU_ID=`nvidia-smi -a | grep UUID | awk '{print substr($4,0,12)}'` 
+        set -- $GPU_ID && GPU_actual=$1
+        echo $GPU_ID
+        echo $GPU_actual
+        _has_nvidia_entries=$( cat /etc/docker/daemon.json | grep '"default-runtime": "nvidia"' )
+        if [$_has_nvidia_entries == ""]
+        then
+          jq '. + {"default-runtime": ("nvidia"), "runtimes": {"nvidia": {"path": ("/usr/bin/nvidia-container-runtime"), "runtimeArgs": []} } }' /etc/docker/daemon.json > daemon_temp.txt
+          mv daemon_temp.txt /etc/docker/daemon.json
+          echo "edited default runtime"
+        fi
+        _has_resources=$( cat /etc/docker/daemon.json | grep "node-generic-resources" )
+        if [$_has_resources == ""]
+        then
+          jq --arg GPU "gpu=$GPU_actual" '. + {"node-generic-resources": [$GPU]}' /etc/docker/daemon.json > daemon_temp.txt
+          mv daemon_temp.txt /etc/docker/daemon.json
+          echo "edited resources"
+        else
+          _has_GPU=$( cat /etc/docker/daemon.json | grep "gpu=$GPU_actual\"" )
+          if [$_has_GPU == ""]	
+          then
+            jq --arg GPU "gpu=$GPU_actual" '."node-generic-resources"[."node-generic-resources"| length] |= . + $GPU' /etc/docker/daemon.json > daemon_temp.txt
+            mv daemon_temp.txt /etc/docker/daemon.json
+            echo "edited GPUs"
+          fi
+        fi
+      args:
+        warn: no
+      when: ansible_distribution != 'MacOSX'
+
+#    - name: Setting up GPUs for Cuda nodes docker configuration
+#      shell: "GPU_ID=`nvidia-smi -a | grep UUID | awk '{print substr($4,0,12)}'` && set -- $GPU_ID && GPU_actual=$1 && echo '{' > /etc/docker/daemon.json && echo '  \"runtimes\": {' >> /etc/docker/daemon.json && echo '    \"nvidia\": {' >> /etc/docker/daemon.json && echo '      \"path\": \"/usr/bin/nvidia-container-runtime\",' >> /etc/docker/daemon.json && echo '      \"runtimeArgs\": []' >> /etc/docker/daemon.json && echo '    }' >> /etc/docker/daemon.json && echo '  },' >> /etc/docker/daemon.json && echo '  \"default-runtime\": \"nvidia\",' >> /etc/docker/daemon.json && echo '  \"node-generic-resources\": [' >> /etc/docker/daemon.json && echo '    \"gpu=$GPU_actual\"' >> /etc/docker/daemon.json && echo '    ]' >> /etc/docker/daemon.json && echo '}' >> /etc/docker/daemon.json"
+#      args:
+#        warn: no
+#      when: ansible_distribution != 'MacOSX'

@@ -1,16 +1,16 @@
 version: "3.7"
 
 x-yarp-base: &yarp-base
-  image: icubteamcode/calib-supervisor:master_master-unstable_sources
+  image: icubteamcode/supervise-calib:v2021.08.1-stable_master_sources
   environment:
     - DISPLAY=${DISPLAY}
     - XAUTHORITY=/root/.Xauthority
     - YARP_FORWARD_LOG_ENABLE=1
     - YARP_ROBOT_NAME
   volumes:
-    - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
-    - "${XAUTHORITY}:/root/.Xauthority:rw"
-    - "${YARP_CONF_PATH}:/root/.config/yarp"
+    - "/tmp/.X11-unix:/tmp/.X11-unix"
+    - "${XAUTHORITY}:/root/.Xauthority"
+    - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
     - "/dev:/dev"
   network_mode: "host"
   privileged: true
@@ -24,20 +24,18 @@ services:
   
   yDemoCalibCamTilt:
     <<: *yarp-base
-    command: sh -c "calibCamTilt" 
+    command: sh -c "if [ ! -z ${LEFT_CUSTOM_PORT} ]; then yarp wait ${LEFT_CUSTOM_PORT}; else yarp wait /icub/cam/left; fi; calibCamTilt" 
  
 #------------------------------------------------------------------------------------------------
   #Opening the viewer to see the left output image
   yview_right_img_o:
     <<: *yarp-base
-    container_name: yview_output_l
-    command: yarpview --name /leftImageOutput
+    command: sh -c "if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; yarpview --name /leftImageOutput"
 
   #Opening we open the viewer to see the right output image
   yview_left_img_o:
     <<: *yarp-base
-    container_name: yview_output_r
-    command: yarpview --name /rightImageOutput
+    command: sh -c "if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; yarpview --name /rightImageOutput"
 
 
 

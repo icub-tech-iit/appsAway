@@ -1,0 +1,113 @@
+version: "3.7"
+
+x-yarp-base: &yarp-base
+  image: icubteamcode/funny-things:v2021.08.1-stable_master_sources
+  environment:
+    - DISPLAY=${DISPLAY}
+    - QT_X11_NO_MITSHM=1
+    - XAUTHORITY=/root/.Xauthority
+    - YARP_FORWARD_LOG_ENABLE=1
+    - YARP_ROBOT_NAME
+  volumes:
+    - "/tmp/.X11-unix:/tmp/.X11-unix"
+    - "${XAUTHORITY}:/root/.Xauthority"
+    - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
+  networks:
+    - hostnet
+    
+services:
+  yserver:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+    command: sh -c "yarp where | grep 'is available at ip' > /dev/null ; if [ ! $$? -eq 0 ]; then yarpserver --read; fi"
+    
+  iCubBlinker_0:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "iCubBlinker --autoStart"
+  gazeLua_1:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "yarp wait /iKinGazeCtrl/angles:i; yarp wait /iKinGazeCtrl/angles:o; gaze.lua --look-around"
+  iSpeak_2:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "iSpeak"
+  ctpService_3:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "ctpService --robot icub --part torso"
+  ctpService_4:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "ctpService --robot icub --part left_arm"
+  ctpService_5:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "ctpService --robot icub --part right_arm"
+  ctpService_6:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.labels.type != head]
+    command: sh -c "ctpService --robot icub --part head"
+  yconnect_1:
+    <<: *yarp-base
+    deploy:
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp wait /iCubBlinker/emotions/raw; yarp wait /icub/face/raw/in; yarp connect /iCubBlinker/emotions/raw /icub/face/raw/in tcp"
+  yconnect_2:
+    <<: *yarp-base
+    deploy:
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp wait /gaze/tx; yarp wait /iKinGazeCtrl/angles:i; yarp connect /gaze/tx /iKinGazeCtrl/angles:i tcp"
+  yconnect_3:
+    <<: *yarp-base
+    deploy:
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp wait /iKinGazeCtrl/angles:o; yarp wait /gaze/rx; yarp connect /iKinGazeCtrl/angles:o /gaze/rx tcp"
+  yconnect_4:
+    <<: *yarp-base
+    deploy:
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp wait /iSpeak/speech-dev/rpc; yarp wait /googleSynthesis/rpc; yarp connect /iSpeak/speech-dev/rpc /googleSynthesis/rpc tcp"
+  yconnect_5:
+    <<: *yarp-base
+    deploy:
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp wait /iSpeak/emotions:o; yarp wait /icub/face/emotions/in; yarp connect /iSpeak/emotions:o /icub/face/emotions/in tcp"
+
+#use network.peer ip address and port 8080 to see the containers status in browser
+  visualizer:
+    image: dockersamples/visualizer:stable
+    ports:
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+networks:
+  hostnet:
+    external: true
+    name: host

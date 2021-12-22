@@ -1,7 +1,7 @@
 version: "3.7"
 
 x-yarp-base: &yarp-base
-  image: icubteamcode/superbuild:master-unstable_sources
+  image: icubteamcode/human-sensing:v2021.08.1-stable_master_sources
   environment:
     - DISPLAY=${DISPLAY}
     - QT_X11_NO_MITSHM=1
@@ -9,9 +9,9 @@ x-yarp-base: &yarp-base
     - YARP_FORWARD_LOG_ENABLE=1
     - YARP_ROBOT_NAME
   volumes:
-    - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
-    - "${XAUTHORITY}:/root/.Xauthority:rw"
-    - "${YARP_CONF_PATH}:/root/.config/yarp"
+    - "/tmp/.X11-unix:/tmp/.X11-unix"
+    - "${XAUTHORITY}:/root/.Xauthority"
+    - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
   ports:
     - "10000:10000"
   network_mode: "host"
@@ -22,18 +22,15 @@ services:
 
   ylogger:
     <<: *yarp-base
-    container_name: ylogger
     command: yarplogger --start
 
 #following services are configured in ./icub-main/app/default/scripts/cameras_calib.xml.template
   yview_pose:
     <<: *yarp-base
-    container_name: yview_l
     command: yarpview --name /pose --x 0 --y 0 --p 50 --w 320 --h 240
 
   yview_image:
     <<: *yarp-base
-    container_name: yview_r
     command: yarpview --name /view/input_image --x 320 --y 0 --p 50 --w 320 --h 240
 
 

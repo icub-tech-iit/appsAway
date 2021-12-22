@@ -1,7 +1,7 @@
 version: "3.7"
 
 x-yarp-base: &yarp-base
-  image: icubteamcode/icubgraspgazebo:master_master-unstable_sources
+  image: icubteamcode/grasp-gazebo:master_sources
   environment:
     - DISPLAY=${DISPLAY}
     - QT_X11_NO_MITSHM=1
@@ -10,9 +10,9 @@ x-yarp-base: &yarp-base
     - YARP_ROBOT_NAME
     - ICUBcontrib_DIR=/workspace/iCubContrib
   volumes:
-    - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
-    - "${XAUTHORITY}:/root/.Xauthority:rw"
-    - "${YARP_CONF_PATH}:/root/.config/yarp"
+    - "/tmp/.X11-unix:/tmp/.X11-unix"
+    - "${XAUTHORITY}:/root/.Xauthority"
+    - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
     - "/usr/local/cuda/lib64:/usr/lib/nvidia"
     - "/usr/local/cuda:/usr/local/cuda"
     - "/usr/lib/x86_64-linux-gnu:/usr/lib/projects/x86_64-linux-gnu"
@@ -38,22 +38,18 @@ services:
 
   find-superquadric:
     <<: *yarp-base
-    container_name: find-superquadric
     command: sh -c "yarp wait /view/left; find-superquadric --remove-outliers '(0.01 10)' --random-sample 0.2 --disable-viewer"
 
   yview:
     <<: *yarp-base
-    container_name: yview
     command: yarpview --name /view/left --compact --p 10 --x 20 --y 20
 
   icub-gazebo-grasping-sandbox:
     <<: *yarp-base
-    container_name: icub-gazebo-grasping-sandbox
     command: sh -c "yarp wait /iKinGazeCtrl/rpc; yarp wait /icubSim/cartesianController/right_arm/state:o; yarp wait /icubSim/cartesianController/left_arm/state:o; icub-gazebo-grasping-sandbox"
 
 #  icub-gazebo-grasping-sandbox:
 #    <<: *yarp-base
-#    container_name: icub-gazebo-grasping-sandbox
 #    depends_on:
 #      - yrobotinterface
 #    command: sh -c "yarp wait /icubSim/torso/state:o ; yarp wait /icubSim/left_arm/state:o ; yarp wait /icubSim/right_arm/state:o ; ( yarprobotinterface --context gazeboCartesianControl --config no_legs.xml & ) ; checkRobotInterface --robot icubSim ; yarp wait /icubSim/torso/state:o ; yarp wait /icubSim/right_arm/state:o ; ( iKinCartesianSolver --context gazeboCartesianControl --part right_arm & ) ; yarp wait /icubSim/torso/state:o ; yarp wait /icubSim/left_arm/state:o ; ( iKinCartesianSolver --context gazeboCartesianControl --part left_arm & ) ; yarp wait /icubSim/torso/state:o ; yarp wait /icubSim/head/state:o ; yarp wait /icubSim/inertial ; (iKinGazeCtrl --context gazeboCartesianControl --from iKinGazeCtrl.ini &) ; yarp wait /iKinGazeCtrl/rpc; yarp wait /icubSim/cartesianController/right_arm/state:o; yarp wait /icubSim/cartesianController/left_arm/state:o; sleep 20; icub-gazebo-grasping-sandbox"
