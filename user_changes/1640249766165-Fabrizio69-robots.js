@@ -1,0 +1,4 @@
+//Fabrizio69
+//
+//&<h3>Field changed in robot manager</h3><br><ul><li>ID: <ins>51</ins><ul><li>institution_name: <b>Universidad Técnica Federico Santa María, Valparaiso</b></li><li>sensors: [<b>/dev/ttyXsens</b>]</li><li>current_version: <b>v2.7</b></li><li>current_version_array: <b>v2.7</b></li><li>os_version: <b>Ubuntu 20.04</b></li><li>os_version_array: <b>Ubuntu 20.04</b></li><li>laboratory_name: <b>Department of Electronic Engineering</b></li><li>laboratory_url: <b>http://www.elo.utfsm.cl/</b></li></ul></li></ul>
+db.robots.update ({id: 51},{$set: { institution_name: "Universidad Técnica Federico Santa María, Valparaiso", sensors: ["/dev/ttyXsens"], current_version: "v2.7", current_version_array: "v2.7", os_version: "Ubuntu 20.04", os_version_array: "Ubuntu 20.04", laboratory_name: "Department of Electronic Engineering", laboratory_url: "http://www.elo.utfsm.cl/"}});
