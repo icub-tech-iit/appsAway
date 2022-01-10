@@ -31,21 +31,21 @@ services:
 
   ygazebo:
     <<: *yarp-gazebo
-    command: sh -c "sleep 10; gazebo grasp-ball-gazebo.sdf --verbose"
+    command: sh -c "if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; gazebo grasp-ball-gazebo.sdf --verbose"
 
 #following services are configured in ./icub-main/app/default/scripts/cameras_calib.xml.template
   yview_l:
     <<: *yarp-gazebo
-    command: yarpview --name /icubSim/view/left --x 0 --y 0 --p 50 --compact
+    command: sh -c "yarp wait /icubSim/cam/left/rgbImage:o; yarpview --name /icubSim/view/left --x 0 --y 0 --p 50 --compact"
 
   yview_r:
     <<: *yarp-gazebo
-    command: yarpview --name /icubSim/view/right --x 400 --y 0 --p 50 --compact
+    command: sh -c "yarp wait /icubSim/cam/left/rgbImage:o; yarpview --name /icubSim/view/right --x 400 --y 0 --p 50 --compact"
 
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------
 #Following services are configured in icub-basic-demos/demoRedBall/app/scripts/demoRedBall.xml.template
   yview:
     <<: *yarp-gazebo
-    command: yarpview --name /PF3DTracker_viewer --x 750 --y 0 --p 50 --compact
+    command: sh -c "yarp wait /pf3dTracker/video:o; yarpview --name /PF3DTracker_viewer --x 750 --y 0 --p 50 --compact"
 

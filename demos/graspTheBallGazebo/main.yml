@@ -77,7 +77,7 @@ services:
 
   yDemoRedBall:
     <<: *yarp-base
-    command: sh -c "yarp wait /iKinGazeCtrl/rpc; yarp wait /red-ball/mover:i; demoRedBall --from config-gazebo.ini"
+    command: sh -c "yarp wait /iKinGazeCtrl/rpc; yarp wait /red-ball/mover:i; yarp wait /icubSim/cartesianController/left_arm/rpc:i; yarp wait /icubSim/cartesianController/right_arm/rpc:i; yarp wait /pf3dTracker/data:o; demoRedBall --from config-gazebo.ini"
 
   yConnectCam2Traker:
     <<: *yarp-base
