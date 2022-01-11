@@ -37,7 +37,7 @@ services:
 
   yrobotinterface:
     <<: *yarp-base
-    command: sh -c "yarp wait /icubSim/torso/state:o; yarp wait /icubSim/head/state:o; yarp wait /icubSim/left_arm/state:o; yarp wait /icubSim/right_arm/state:o; sleep 10; yarprobotinterface --context gazeboCartesianControl --config no_legs.xml "
+    command: sh -c "yarp wait /icubSim/torso/state:o; yarp wait /icubSim/head/state:o; yarp wait /icubSim/left_arm/state:o; yarp wait /icubSim/right_arm/state:o; yarprobotinterface --context gazeboCartesianControl --config no_legs.xml "
 #    command: sh -c " yarp wait /icubSim/torso/state:o ; yarp wait /icubSim/left_arm/state:o ; yarp wait /icubSim/right_arm/state:o ; ( yarprobotinterface --context gazeboCartesianControl --config no_legs.xml & ) ; checkRobotInterface --robot icubSim ; yarp wait /icubSim/torso/state:o ; yarp wait /icubSim/right_arm/state:o ; ( iKinCartesianSolver --context gazeboCartesianControl --part right_arm & ) ; yarp wait /icubSim/torso/state:o ; yarp wait /icubSim/left_arm/state:o ; ( iKinCartesianSolver --context gazeboCartesianControl --part left_arm & ) ; yarp wait /icubSim/torso/state:o ; yarp wait /icubSim/head/state:o ; yarp wait /icubSim/inertial ; iKinGazeCtrl --context gazeboCartesianControl --from iKinGazeCtrl.ini"
 
 #    yarp wait /icubSim/torso/state:o; yarp wait /icubSim/head/state:o; yarp wait /icubSim/left_arm/state:o; yarp wait /icubSim/right_arm/state:o
@@ -47,19 +47,19 @@ services:
     <<: *yarp-base
     depends_on:
       - yrobotinterface
-    command: sh -c "yarp wait /icubSim/torso/state:o; yarp wait /icubSim/right_arm/state:o; sleep 10; iKinCartesianSolver --context gazeboCartesianControl --part right_arm"
+    command: sh -c "yarp wait /icubSim/torso/state:o; yarp wait /icubSim/right_arm/state:o; iKinCartesianSolver --context gazeboCartesianControl --part right_arm"
 
   iKinCartesianSolver_l:
     <<: *yarp-base
     depends_on:
       - yrobotinterface
-    command: sh -c "yarp wait /icubSim/torso/state:o; yarp wait /icubSim/left_arm/state:o; sleep 10; iKinCartesianSolver --context gazeboCartesianControl --part left_arm"
+    command: sh -c "yarp wait /icubSim/torso/state:o; yarp wait /icubSim/left_arm/state:o; iKinCartesianSolver --context gazeboCartesianControl --part left_arm"
 
   iKinGazeCtrl:
     <<: *yarp-base
     depends_on:
       - yrobotinterface
-    command: sh -c "yarp wait /icubSim/torso/state:o; yarp wait /icubSim/head/state:o; yarp wait /icubSim/inertial; sleep 10; iKinGazeCtrl --context gazeboCartesianControl --from iKinGazeCtrl.ini"
+    command: sh -c "yarp wait /icubSim/torso/state:o; yarp wait /icubSim/head/state:o; yarp wait /icubSim/inertial; iKinGazeCtrl --context gazeboCartesianControl --from iKinGazeCtrl.ini"
 
 #  connect-world:
 #    <<: *yarp-base
@@ -77,7 +77,7 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
-    command: sh -c "yarp wait /icub-grasp/mustard_bottle/mover:o; yarp wait /mustard_bottle/model-mover/delta-pose:i; sleep 10; yarp connect /icub-grasp/mustard_bottle/mover:o /mustard_bottle/model-mover/delta-pose:i tcp"
+    command: sh -c "yarp wait /icub-grasp/mustard_bottle/mover:o; yarp wait /mustard_bottle/model-mover/delta-pose:i; yarp connect /icub-grasp/mustard_bottle/mover:o /mustard_bottle/model-mover/delta-pose:i tcp"
 
   connect-pudding:
     <<: *yarp-base
@@ -86,7 +86,7 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
-    command: sh -c "yarp wait /icub-grasp/pudding_box/mover:o; yarp wait /pudding_box/model-mover/delta-pose:i; sleep 10; yarp connect /icub-grasp/pudding_box/mover:o /pudding_box/model-mover/delta-pose:i tcp"
+    command: sh -c "yarp wait /icub-grasp/pudding_box/mover:o; yarp wait /pudding_box/model-mover/delta-pose:i; yarp connect /icub-grasp/pudding_box/mover:o /pudding_box/model-mover/delta-pose:i tcp"
 
   connect-view:
     <<: *yarp-base
@@ -95,7 +95,7 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
-    command: sh -c "yarp wait /icubSim/cam/left/rgbImage:o; yarp wait /view/left; sleep 10; yarp connect /icubSim/cam/left/rgbImage:o /view/left tcp"
+    command: sh -c "yarp wait /icubSim/cam/left/rgbImage:o; yarp wait /view/left; yarp connect /icubSim/cam/left/rgbImage:o /view/left tcp"
 
   connect-rgb:
     <<: *yarp-base
@@ -104,7 +104,7 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
-    command: sh -c "yarp wait /icubSim/cam/left/rgbImage:o; yarp wait /icub-grasp/rgb:i; sleep 10; yarp connect /icubSim/cam/left/rgbImage:o /icub-grasp/rgb:i tcp"
+    command: sh -c "yarp wait /icubSim/cam/left/rgbImage:o; yarp wait /icub-grasp/rgb:i; yarp connect /icubSim/cam/left/rgbImage:o /icub-grasp/rgb:i tcp"
 
   connect-depth:
     <<: *yarp-base
@@ -113,7 +113,7 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
-    command: sh -c "yarp wait /icubSim/cam/left/depthImage:o; yarp wait /icub-grasp/depth:i; sleep 10; yarp connect /icubSim/cam/left/depthImage:o /icub-grasp/depth:i tcp"
+    command: sh -c "yarp wait /icubSim/cam/left/depthImage:o; yarp wait /icub-grasp/depth:i; yarp connect /icubSim/cam/left/depthImage:o /icub-grasp/depth:i tcp"
 
   connect-superquadric:
     <<: *yarp-base
@@ -122,7 +122,7 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
-    command: sh -c "yarp wait /icub-grasp/sq:rpc; yarp wait /find-superquadric/points:rpc; sleep 10; yarp connect /icub-grasp/sq:rpc /find-superquadric/points:rpc tcp"
+    command: sh -c "yarp wait /icub-grasp/sq:rpc; yarp wait /find-superquadric/points:rpc; yarp connect /icub-grasp/sq:rpc /find-superquadric/points:rpc tcp"
 
 #  icub-gazebo-grasping-sandbox:
 #    <<: *yarp-base
