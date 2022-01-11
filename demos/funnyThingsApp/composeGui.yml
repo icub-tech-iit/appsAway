@@ -41,7 +41,7 @@ x-yarp-speech: &yarp-speech
 services:
   yFunnyThingsApp:
     <<: *yarp-base
-    command: funnyThingsApp.AppImage --no-sandbox
+    command: sh -c "yarp wait /ctpservice/left_arm/rpc; yarp wait /ctpservice/right_arm/rpc; yarp wait /ctpservice/head/rpc; yarp wait /googleSynthesis/text:i; funnyThingsApp.AppImage --no-sandbox"
 
   yDemoGoogleSynthesis:
     <<: *yarp-speech
@@ -50,6 +50,6 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "googleSynthesis --language ${LANGUAGE_SYNTHESIS_INPUT} --voice ${VOICE_NAME_INPUT} --speed 0.93 --pitch -3.60"
+    command: sh -c "if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; googleSynthesis --language ${LANGUAGE_SYNTHESIS_INPUT} --voice ${VOICE_NAME_INPUT} --speed 0.93 --pitch -3.60"
 
   

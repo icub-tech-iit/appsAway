@@ -28,7 +28,7 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "iCubBlinker --autoStart"
+    command: sh -c "if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; iCubBlinker --autoStart"
   gazeLua_1:
     <<: *yarp-base
     deploy:
@@ -40,31 +40,31 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "iSpeak"
+    command: sh -c "if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; iSpeak"
   ctpService_3:
     <<: *yarp-base
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "ctpService --robot icub --part torso"
+    command: sh -c "yarp wait /icub/torso/rpc; ctpService --robot icub --part torso"
   ctpService_4:
     <<: *yarp-base
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "ctpService --robot icub --part left_arm"
+    command: sh -c "yarp wait /icub/left_arm/rpc; ctpService --robot icub --part left_arm"
   ctpService_5:
     <<: *yarp-base
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "ctpService --robot icub --part right_arm"
+    command: sh -c "yarp wait /icub/right_arm/rpc; ctpService --robot icub --part right_arm"
   ctpService_6:
     <<: *yarp-base
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "ctpService --robot icub --part head"
+    command: sh -c "yarp wait /icub/head/rpc; ctpService --robot icub --part head"
   yconnect_1:
     <<: *yarp-base
     deploy:
