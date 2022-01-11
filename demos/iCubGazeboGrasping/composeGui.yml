@@ -13,11 +13,6 @@ x-yarp-base: &yarp-base
     - "/tmp/.X11-unix:/tmp/.X11-unix"
     - "${XAUTHORITY}:/root/.Xauthority"
     - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
-    - "/usr/local/cuda/lib64:/usr/lib/nvidia"
-    - "/usr/local/cuda:/usr/local/cuda"
-    - "/usr/lib/x86_64-linux-gnu:/usr/lib/projects/x86_64-linux-gnu"
-    - "/usr/bin:/usr/projects/bin"
-    - "/dev/dri:/dev/dri"
   ports:
     - "10000:10000"
   network_mode: "host"
