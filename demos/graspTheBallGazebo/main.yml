@@ -34,6 +34,15 @@ services:
         condition: on-failure
     command: sh -c "yarp where | grep 'is available at ip' > /dev/null ; if [ ! $$? -eq 0 ]; then yarpserver --read; fi"
 
+  yStartDemo:
+    <<: *yarp-base
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+      restart_policy:
+        condition: on-failure
+    command: sh -c "yarp wait /icubSim/torso/state:o; yarp wait /icubSim/head/state:o; yarp wait /icubSim/left_arm/state:o; yarp wait /icubSim/right_arm/state:o; yarp wait /demoRedBall/rpc; sleep 20 ; echo "start" | yarp rpc /demoRedBall/rpc"
+
   yRobotInterface:
     <<: *yarp-base
     command: sh -c "yarp wait /icubSim/torso/state:o; yarp wait /icubSim/right_arm/state:o; yarp wait /icubSim/left_arm/state:o; yarprobotinterface --context gazeboCartesianControl --config no_legs.xml"
