@@ -34,7 +34,7 @@ services:
 
   gazebo:
     <<: *yarp-base
-    command: sh -c "sleep 10; gazebo -e dart /workspace/iCubContrib/share/gazebo/worlds/icub-gazebo-grasping-sandbox.sdf"
+    command: sh -c "if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; gazebo -e dart /workspace/iCubContrib/share/gazebo/worlds/icub-gazebo-grasping-sandbox.sdf"
 
   find-superquadric:
     <<: *yarp-base
@@ -42,7 +42,7 @@ services:
 
   yview:
     <<: *yarp-base
-    command: yarpview --name /view/left --compact --p 10 --x 20 --y 20
+    command: sh -c "yarp wait /icubSim/cam/left/rgbImage:o; yarpview --name /view/left --compact --p 10 --x 20 --y 20"
 
   icub-gazebo-grasping-sandbox:
     <<: *yarp-base
