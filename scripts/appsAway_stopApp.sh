@@ -83,6 +83,11 @@ get_shared_volumes()
                 then
                   volume_machine_side=$(echo $line | awk -F':' '{print $1}' | tr -d '"' | tr -d ' ' ) # Get volume 
                   volume_container_side=$(echo $line | sed 's/[^:]*://' | tr -d '"' | tr -d ' ' | sed 's/:.*//' )
+                  if [[ $volume_machine_side == -\${* ]] && [[ $volume_machine_side != *} ]] ;
+                  then
+                      volume_machine_side="$volume_machine_side}"
+                      volume_machine_side=$(eval echo -e \"$volume_machine_side\")
+                  fi
                   _YAML_VOLUMES_HOST="$_YAML_VOLUMES_HOST ${volume_machine_side:1}"
                   _YAML_VOLUMES_CONTAINER="$_YAML_VOLUMES_CONTAINER ${volume_container_side:1}"
                 fi
@@ -279,7 +284,11 @@ stop_hardware_steps_via_ssh()
     done
   fi
 
-  _YAML_VOLUMES_HOST=$(eval echo -e \"$_YAML_VOLUMES_HOST\")
+  echo $FILE_IMPORT_EXPORT_PATH
+  echo $_YAML_VOLUMES_HOST
+  if [ "$_YAML_VOLUMES_HOST" != "" ]; then
+    _YAML_VOLUMES_HOST=$(eval echo -e \"$_YAML_VOLUMES_HOST\")
+  fi
 
   if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
     for file in ${APPSAWAY_HEAD_YAML_FILE_LIST}

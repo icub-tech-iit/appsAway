@@ -446,6 +446,11 @@ get_shared_volumes()
                 then
                   volume_machine_side=$(echo $line | awk -F':' '{print $1}' | tr -d '"' | tr -d ' ' ) # Get volume 
                   volume_container_side=$(echo $line | sed 's/[^:]*://' | tr -d '"' | tr -d ' ' | sed 's/:.*//' )
+                  if [[ $volume_machine_side == -\${* ]] && [[ $volume_machine_side != *} ]] ;
+                  then
+                      volume_machine_side="$volume_machine_side}"
+                      volume_machine_side=$(eval echo -e \"$volume_machine_side\")
+                  fi
                   _YAML_VOLUMES_HOST="$_YAML_VOLUMES_HOST ${volume_machine_side:1}"
                   _YAML_VOLUMES_CONTAINER="$_YAML_VOLUMES_CONTAINER ${volume_container_side:1}"
                 fi
@@ -460,7 +465,7 @@ get_shared_volumes()
           look_for_volumes=true             
       fi
   done < $file
-} 
+}
 
 parse_opt "$@"
 init
