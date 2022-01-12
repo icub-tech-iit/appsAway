@@ -3,14 +3,9 @@ version: "3.7"
 x-yarp-base: &yarp-base
   image: icubteamcode/grasp-gazebo:master_sources
   environment:
-    - DISPLAY=${DISPLAY}
-    - QT_X11_NO_MITSHM=1
-    - XAUTHORITY=/root/.Xauthority
     - YARP_FORWARD_LOG_ENABLE=1
     - YARP_ROBOT_NAME
   volumes:
-    - "/tmp/.X11-unix:/tmp/.X11-unix"
-    - "${XAUTHORITY}:/root/.Xauthority"
     - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
   networks:
     - hostnet
@@ -20,6 +15,8 @@ services:
   yserver:
     <<: *yarp-base
     deploy:
+      placement:
+        constraints: [node.role == manager]
       restart_policy:
         condition: on-failure
     command: sh -c "yarp where | grep 'is available at ip' > /dev/null ; if [ ! $$? -eq 0 ]; then yarpserver --read; fi"
@@ -27,8 +24,6 @@ services:
   yStartDemo:
     <<: *yarp-base
     deploy:
-      placement:
-        constraints: [node.role == manager]
       restart_policy:
         condition: on-failure
     command: sh -c "yarp wait /icubSim/torso/state:o; yarp wait /icubSim/head/state:o; yarp wait /icubSim/left_arm/state:o; yarp wait /icubSim/right_arm/state:o; yarp wait /icub-grasp/rpc; sleep 20 ; echo "go" | yarp rpc /icub-grasp/rpc"
