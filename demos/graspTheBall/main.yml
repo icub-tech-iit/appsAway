@@ -43,7 +43,7 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "checkRobotInterface; iKinCartesianSolver --part right_arm"
+    command: sh -c "yarp wait /icub/right_arm/state:o; iKinCartesianSolver --part right_arm"
     #<port timeout="60.0" request="is_ready" reply="[ok]">/icub/yarprobotinterface</port>
 
   yCartesianSolver_l:
@@ -51,7 +51,7 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "checkRobotInterface; iKinCartesianSolver --part left_arm"
+    command: sh -c "yarp wait /icub/left_arm/state:o; iKinCartesianSolver --part left_arm"
     #<port timeout="60.0" request="is_ready" reply="[ok]">/icub/yarprobotinterface</port>
 
   yGazeCtrl:
@@ -59,7 +59,7 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "checkRobotInterface; yarp wait /imuFilter/measures:o; iKinGazeCtrl --from iKinGazeCtrl.ini --imu::mode off"
+    command: sh -c "yarp wait /icub/head/state:o; yarp wait /imuFilter/measures:o; iKinGazeCtrl --from iKinGazeCtrl.ini --imu::mode off"
     #note: in our issue we used this configuration file config_no_imu_filter.ini,, but I could not find it.
     #<port timeout="60.0" request="is_ready" reply="[ok]">/icub/yarprobotinterface</port>
 
@@ -68,7 +68,7 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "checkRobotInterface; wholeBodyDynamics --autoconnect --no_legs --headV2"
+    command: sh -c "yarp wait /icub/head/state:o; yarp wait /icub/torso/state:o; yarp wait /icub/right_arm/state:o; yarp wait /icub/left_arm/state:o; yarp wait /icub/inertial; wholeBodyDynamics --autoconnect --no_legs --headV2"
     #note: Do I add --headV2 option??.
     #note: We need to check if WBD is already running, because some yarprobotinterface configuration files already contain it.
     # <port timeout="60.0" request="is_ready" reply="[ok]">/icub/yarprobotinterface</port>
@@ -78,7 +78,7 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "yarp wait /icub/head/state:o; gravityCompensator --autoconnect --no_legs --headV2"
+    command: sh -c "yarp wait /wholeBodyDynamics/filtered/inertial:o; gravityCompensator --autoconnect --no_legs --headV2"
     #note: Do I add --headV2 option??.
 
 #------------------------------------------------------------------------------------------------
@@ -170,7 +170,7 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "if [ ${CALIB_OFFSETS} = false ]; then yarp wait /icub/camcalib/left/out; yarp wait /iKinGazeCtrl/rpc; yarp wait /icub/cartesianController/right_arm/state:o; yarp wait /icub/cartesianController/left_arm/state:o; yarp wait /wholeBodyDynamics/right_arm/FT:i; yarp wait /wholeBodyDynamics/left_arm/FT:i; yarp wait /cartesianSolver/left_arm/rpc; yarp wait /cartesianSolver/right_arm/rpc; demoRedBall; fi;"
+    command: sh -c "if [ ${CALIB_OFFSETS} = false ]; then yarp wait /icub/camcalib/left/out; yarp wait /iKinGazeCtrl/rpc; yarp wait /icub/cartesianController/right_arm/state:o; yarp wait /icub/cartesianController/left_arm/state:o; yarp wait /wholeBodyDynamics/right_arm/FT:i; yarp wait /wholeBodyDynamics/left_arm/FT:i; yarp wait /cartesianSolver/left_arm/rpc; yarp wait /cartesianSolver/right_arm/rpc; yarp wait /pf3dTracker/data:o; demoRedBall; fi;"
 
   yConnectCam2Traker:
     <<: *yarp-base
@@ -216,7 +216,7 @@ services:
       restart_policy:
         condition: on-failure
     command: sh -c "if [ ${CALIB_COLOR} = true ]; then yarp wait /icub/camcalib/left/out; yarp wait /pf3dTracker/video:i; calibColor; fi;"
- 
+
   ySkinManager:
     <<: *yarp-base
     deploy:

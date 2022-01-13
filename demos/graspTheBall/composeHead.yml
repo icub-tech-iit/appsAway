@@ -18,14 +18,14 @@ services:
 
   yrobotinterface:
     <<: *yarp-head
-    devices: 
+    devices:
       - "/dev/bosch-i2c-imu:/dev/bosch-i2c-imu"
-    command: yarprobotinterface
+    command: sh -c "if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; yarprobotinterface"
 
   yGrabberCameras:
     <<: *yarp-head
-    devices: 
+    devices:
       - "/dev/video0:/dev/video0"
-    command: sh -c "yarpdev --from camera/ServerGrabberDualDragon.ini --split true"
+    command: sh -c "if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; yarpdev --from camera/ServerGrabberDualDragon.ini --split true"
     #command: sh -c "yarpdev --device usbCamera --d /dev/video0 --camModel leopard_python --name /icub/cam/left"
 

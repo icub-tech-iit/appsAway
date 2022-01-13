@@ -22,7 +22,7 @@ services:
 
   ylogger:
     <<: *yarp-base
-    command: yarplogger --start
+    command: sh -c "if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; yarplogger --start"
 
 #following services are configured in ./icub-main/app/default/scripts/cameras_calib.xml.template
   yview_l:
