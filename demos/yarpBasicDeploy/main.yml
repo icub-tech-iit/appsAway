@@ -3,20 +3,15 @@ version: "3.7"
 x-yarp-base: &yarp-base
   image: icubteamcode/superbuild:v2021.08.1-stable_master_sources
   environment:
-    - DISPLAY=${DISPLAY}
-    - QT_X11_NO_MITSHM=1
-    - XAUTHORITY=/root/.Xauthority
     - YARP_FORWARD_LOG_ENABLE=1
     - YARP_ROBOT_NAME
   volumes:
-    - "/tmp/.X11-unix:/tmp/.X11-unix"
-    - "${XAUTHORITY}:/root/.Xauthority"
     - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
   networks:
     - hostnet
 
 services:
-    
+
     yserver:
       <<: *yarp-base
       deploy:

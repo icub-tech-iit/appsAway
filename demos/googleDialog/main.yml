@@ -3,9 +3,6 @@ version: "3.7"
 x-yarp-base: &yarp-base
   image: icubteamcode/speech:v2021.08.1-stable_master_sources
   environment:
-    - DISPLAY=${DISPLAY}
-    - QT_X11_NO_MITSHM=1
-    - XAUTHORITY=/root/.Xauthority
     - YARP_FORWARD_LOG_ENABLE=1
     - FILE_INPUT
     - INPUT_BOX
@@ -14,8 +11,6 @@ x-yarp-base: &yarp-base
     - VOICE_NAME_INPUT
     - LANGUAGE_SYNTHESIS_INPUT
   volumes:
-    - "/tmp/.X11-unix:/tmp/.X11-unix"
-    - "${XAUTHORITY}:/root/.Xauthority"
     - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
     - "${FILE_INPUT_PATH}:/root/authorization"
   networks:
@@ -34,21 +29,21 @@ services:
       restart_policy:
         condition: on-failure
     command: sh -c "yarp where | grep 'is available at ip' > /dev/null ; if [ ! $$? -eq 0 ]; then yarpserver --read; fi"
-  
+
 #------------------------------------------------------------------------------------------------
   yDemoGoogleSpeech:
     <<: *yarp-base
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "if [ ${GOOGLE_INPUT} = 'True' ]; then yarp wait /microphone/audio:o; googleSpeech --language_code ${LANGUAGE_SYNTHESIS_INPUT}; fi" 
- 
+    command: sh -c "if [ ${GOOGLE_INPUT} = 'True' ]; then yarp wait /microphone/audio:o; googleSpeech --language_code ${LANGUAGE_SYNTHESIS_INPUT}; fi"
+
   yDemoGoogleDialog:
     <<: *yarp-base
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "googleDialog --agent ${INPUT_BOX} --language ${LANGUAGE_SYNTHESIS_INPUT}"
+    command: sh -c "if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; googleDialog --agent ${INPUT_BOX} --language ${LANGUAGE_SYNTHESIS_INPUT}"
 
   yConnectToGoogleSynthesis:
     <<: *yarp-base
@@ -67,7 +62,7 @@ services:
       restart_policy:
         condition: on-failure
     command: sh -c "if [ ${GOOGLE_INPUT} = 'True' ];then yarp wait /googleSpeech/result:o; yarp wait /googleDialog/text:i; yarp connect /googleSpeech/result:o /googleDialog/text:i; fi"
-  
+
   yconnect_audio:
     <<: *yarp-base
     deploy:
