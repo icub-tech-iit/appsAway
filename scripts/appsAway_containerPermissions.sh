@@ -58,7 +58,7 @@ change_permissions()
     do
       if [ -d /$volume ]
       then
-        complete_file_name=$(find /$volume | grep $base_file_name)
+        complete_file_name=$(find /$volume | grep $base_file_name || true)
         if [[ "$complete_file_name" != "" ]]
         then
           chown ${CURR_UID}:${CURR_GID} $complete_file_name
