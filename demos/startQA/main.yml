@@ -30,7 +30,7 @@ services:
       restart_policy:
         condition: on-failure
     command: sh -c "yarp where | grep 'is available at ip' > /dev/null ; if [ ! $$? -eq 0 ]; then yarpserver --read; fi"
-  
+
 #------------------------------------------------------------------------------------------------
   yDemoGoogleSpeech:
     <<: *yarp-base
@@ -44,7 +44,7 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "speech-start-ask"
+    command: sh -c "if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; speech-start-ask"
 
   yConnectToStartAsk:
     <<: *yarp-base
