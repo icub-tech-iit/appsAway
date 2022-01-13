@@ -29,14 +29,14 @@ services:
             - discrete_resource_spec:
                 kind: 'gpu'
                 value: 1 #does this work? or do we have to specify a particular number? - answer, number...
-    command: sh -c "if [ ${YOP_INPUT} = 'True' ]; then yarpOpenPose --hand_enable $USE_HANDS --face_enable $USE_FACE --num_gpu 1; fi"
+    command: sh -c "if [ ${YOP_INPUT} = 'True' ]; then if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; yarpOpenPose --hand_enable $USE_HANDS --face_enable $USE_FACE --num_gpu 1; fi"
 
   yDemofaceLandmarks:
     <<: *yarp-demo
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "if [ ${FL_INPUT} = 'True' ]; then faceLandmarks; fi"
+    command: sh -c "if [ ${FL_INPUT} = 'True' ]; then if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; faceLandmarks; fi"
 
   yConnectCamToFL_l:
     <<: *yarp-demo
@@ -98,14 +98,14 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "if [ -z ${CUSTOM_PORT} ]; then camCalib --context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_LEFT --name /icub/camcalib/left; fi"
+    command: sh -c "if [ -z ${CUSTOM_PORT} ]; then yarp wait /icub/cam/left; camCalib --context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_LEFT --name /icub/camcalib/left; fi"
 
   yCamCalib_r:
     <<: *yarp-demo
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "if [ -z ${CUSTOM_PORT} ]; then camCalib --context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_RIGHT --name /icub/camcalib/right; fi"
+    command: sh -c "if [ -z ${CUSTOM_PORT} ]; then yarp wait yarp wait /icub/cam/right; camCalib --context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_RIGHT --name /icub/camcalib/right; fi"
 
   yConnectCam_l:
     <<: *yarp-demo
