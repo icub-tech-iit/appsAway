@@ -36,8 +36,8 @@ services:
         constraints: [node.labels.type != head]
     depends_on:
       - yserver
-    command: sh -c "googleVisionAI" 
- 
+    command: sh -c "googleVisionAI"
+
 
   yConnectToGoogleVisionAI:
     <<: *yarp-base
@@ -47,7 +47,7 @@ services:
       restart_policy:
         condition: on-failure
     command: sh -c "if [ ! -z ${CUSTOM_PORT} ]; then yarp wait $CUSTOM_PORT ; yarp wait /googleVisionAI/image:i ; yarp connect $CUSTOM_PORT /googleVisionAI/image:i tcp ; else yarp wait /icub/camcalib/left/out; yarp wait /googleVisionAI/image:i ; yarp connect /icub/camcalib/left/out /googleVisionAI/image:i tcp; fi"
-  
+
   yConnectToOutImage:
     <<: *yarp-base
     deploy:
@@ -67,7 +67,7 @@ services:
         condition: on-failure
     command: sh -c "if [ ! -z ${CUSTOM_PORT} ]; then yarp wait ${CUSTOM_PORT} ; yarp wait /startImage ; yarp connect ${CUSTOM_PORT} /startImage udp; else yarp wait /icub/camcalib/left/out; yarp wait /icub/view/left; yarp connect /icub/camcalib/left/out /icub/view/left udp; fi"
     restart: on-failure
-     
+
 #------------------------------------------------------------------------------------------------
 
   yCamCalib_l:
@@ -75,14 +75,14 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "if [ -z ${CUSTOM_PORT} ]; then camCalib --context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_LEFT --name /icub/camcalib/left; fi"
+    command: sh -c "if [ -z ${CUSTOM_PORT} ]; then if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; camCalib --context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_LEFT --name /icub/camcalib/left; fi"
 
   yCamCalib_r:
     <<: *yarp-base
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "if [ -z ${CUSTOM_PORT} ]; then camCalib --context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_RIGHT --name /icub/camcalib/right; fi"
+    command: sh -c "if [ -z ${CUSTOM_PORT} ]; then if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; camCalib --context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_RIGHT --name /icub/camcalib/right; fi"
 
   yConnectCam_l:
     <<: *yarp-base
@@ -101,8 +101,8 @@ services:
       restart_policy:
         condition: on-failure
     command: sh -c "if [ -z ${CUSTOM_PORT} ]; then yarp wait /icub/cam/right; yarp wait /icub/camcalib/right/in; yarp connect /icub/cam/right /icub/camcalib/right/in; fi"
-   
-      
+
+
   #yconnect_groundtruth:
   #  <<: *yarp-base
   #  deploy:
@@ -110,8 +110,8 @@ services:
   #      constraints: [node.labels.type != head]
   #  command: sh -c "yarp wait /icub/camcalib/left/out ; yarp wait /view/input_image ; yarp connect /icub/camcalib/left/out /view/input_image udp"
   #  restart: on-failure
-    
-    
+
+
  #------------------------------------------------------------------------------------------------
 
   #use network.peer ip address and port 8080 to see the containers status in browser

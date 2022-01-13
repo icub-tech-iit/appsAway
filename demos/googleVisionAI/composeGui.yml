@@ -23,29 +23,29 @@ x-yarp-base: &yarp-base
 
 services:
 #following service are configured in icub-main/app/iCubStartup/scripts/iCubStartup.xml.template
-  
+
   yGrabberCameras:
     <<: *yarp-base
-    devices: 
+    devices:
       - "/dev/video0:/dev/video0"
-    command: sh -c "if [ -z ${CUSTOM_PORT} ]; then yarpdev --from camera/ServerGrabberDualDragon.ini --split true; fi" 
+    command: sh -c "if [ -z ${CUSTOM_PORT} ]; then if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; yarpdev --from camera/ServerGrabberDualDragon.ini --split true; fi"
 
 #------------------------------------------------------------------------------------------------
   #Here we open the viewer to see the output image
   yview_image_o:
     <<: *yarp-base
-    command: sh -c "yarp wait /googleVisionAI/image:o; yarpview --name /outImage" 
+    command: sh -c "yarp wait /googleVisionAI/image:o; yarpview --name /outImage"
 
   #Here we open the viewer to see icub view
   yview_icub_l:
     <<: *yarp-base
-    command: sh -c "if [ -z ${CUSTOM_PORT} ]; then yarpview --name  /icub/view/left; fi"
-  
+    command: sh -c "if [ -z ${CUSTOM_PORT} ]; then if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; yarpview --name  /icub/view/left; fi"
+
 
   #Here we open the viewer to see the input of the custom port
   yview_port_image_i:
     <<: *yarp-base
-    command: sh -c "if [ ! -z ${CUSTOM_PORT} ]; then yarpview --name /startImage; fi" 
+    command: sh -c "if [ ! -z ${CUSTOM_PORT} ]; then if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; yarpview --name /startImage; fi"
 
 
 
