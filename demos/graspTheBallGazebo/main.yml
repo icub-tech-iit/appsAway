@@ -3,15 +3,10 @@ version: "3.7"
 x-yarp-base: &yarp-base
   image: icubteamcode/grasp-the-ball-gazebo:master_sources
   environment:
-    - DISPLAY=${DISPLAY}
-    - QT_X11_NO_MITSHM=1
-    - XAUTHORITY=/root/.Xauthority
     - YARP_FORWARD_LOG_ENABLE=1
     - YARP_ROBOT_NAME
     - APPSAWAY_ROBOT_MODEL
   volumes:
-    - "/tmp/.X11-unix:/tmp/.X11-unix"
-    - "${XAUTHORITY}:/root/.Xauthority"
     - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
     - "${HOME}/teamcode/appsAway/demos/graspTheBallGazebo/gazebo/config-gazebo.ini:/projects/iCubContrib/share/ICUBcontrib/contexts/demoRedBall/config-gazebo.ini"
     - "${HOME}/teamcode/appsAway/demos/graspTheBallGazebo/gazebo/models/red-ball:/projects/iCubContrib/share/gazebo/models/red-ball"
