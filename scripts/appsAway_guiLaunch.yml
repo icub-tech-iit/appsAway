@@ -32,4 +32,4 @@ x-gui: &gui-container
 services:
   appGUI:
     <<: *gui-container
-    command: ./appGUI
+    command: sh -c "./appGUI; echo "break" > mypipe"
