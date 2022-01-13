@@ -35,18 +35,18 @@ services:
 #following service are configured in icub-main/app/iCubStartup/scripts/iCubStartup.xml.template
   yMicrophone:
     <<: *yarp-base
-    devices: 
+    devices:
       - "/dev/snd:/dev/snd"
     command: sh -c "if [ ${GOOGLE_INPUT} = 'True' ]; then if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; yarpdev --device AudioRecorderWrapper --from /root/startaudio.ini; fi;"
 
   yDemoGoogleSynthesis:
     <<: *yarp-base
-    devices: 
+    devices:
       - "/dev/snd:/dev/snd"
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "if [ ${GOOGLE_SYNTHESIS_INPUT} = 'True' ]; then googleSynthesis --language ${LANGUAGE_SYNTHESIS_INPUT} --voice ${VOICE_NAME_INPUT}; fi"
+    command: sh -c "if [ ${GOOGLE_SYNTHESIS_INPUT} = 'True' ]; then if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; googleSynthesis --language ${LANGUAGE_SYNTHESIS_INPUT} --voice ${VOICE_NAME_INPUT}; fi"
 
 
 
