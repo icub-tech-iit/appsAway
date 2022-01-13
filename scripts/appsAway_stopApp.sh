@@ -82,10 +82,13 @@ get_shared_volumes()
                 if [[ $line == *:rw || $line == *:rw\" ]] # If volume includes the rw flag
                 then
                   volume_machine_side=$(echo $line | awk -F':' '{print $1}' | tr -d '"' | tr -d ' ' ) # Get volume 
-                  volume_container_side=$(echo $line | sed 's/[^:]*://' | tr -d '"' | tr -d ' ' | sed 's/:.*//' )
-                  if [[ $volume_machine_side == -\${* ]] && [[ $volume_machine_side != *} ]] ;
+                  volume_container_side=$(echo $line | awk -F':' '{print $(NF-1)}' | tr -d '"' | tr -d ' ' | sed 's/:.*//' )
+                  if [[ $volume_machine_side == -\${* ]] ;
                   then
-                      volume_machine_side="$volume_machine_side}"
+                      if [[ $volume_machine_side != *} ]] ;
+                      then 
+                        volume_machine_side="$volume_machine_side}"
+                      fi
                       volume_machine_side=$(eval echo -e \"$volume_machine_side\")
                   fi
                   _YAML_VOLUMES_HOST="$_YAML_VOLUMES_HOST ${volume_machine_side:1}"
@@ -287,7 +290,7 @@ stop_hardware_steps_via_ssh()
   echo $FILE_IMPORT_EXPORT_PATH
   echo $_YAML_VOLUMES_HOST
   if [ "$_YAML_VOLUMES_HOST" != "" ]; then
-    _YAML_VOLUMES_HOST=$(eval echo -e \"$_YAML_VOLUMES_HOST\")
+    _YAML_VOLUMES_HOST=(${_YAML_VOLUMES_HOST:1}) # Removing initial space ' '
   fi
 
   if [ "$APPSAWAY_ICUBHEADNODE_ADDR" != "" ]; then
