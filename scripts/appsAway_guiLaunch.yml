@@ -1,7 +1,7 @@
 version: "3.7"
 
 x-gui: &gui-container
-  image: icubteamcode/gui-img:latest
+  image: icubteamcode/gui-img:latest_binaries
   environment:
     - PULSE_SERVER=unix:${XDG_RUNTIME_DIR}/pulse/native
     - QT_X11_NO_MITSHM=1
