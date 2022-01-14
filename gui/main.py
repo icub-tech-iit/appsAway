@@ -1,5 +1,5 @@
 from fbs_runtime.application_context.PyQt5 import ApplicationContext
-from PyQt5.QtCore import QDateTime, Qt, QTimer, QElapsedTimer
+from PyQt5.QtCore import QDateTime, Qt, QTimer, QElapsedTimer, QObject, pyqtSignal
 from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QDateTimeEdit,
         QDial, QDialog, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit,
         QProgressBar, QPushButton, QRadioButton, QScrollBar, QSizePolicy,
@@ -159,10 +159,12 @@ class OptionButton():
 
         return OptionButton(button_type.value, button, var_name, inputButton, val_value, label)
 
-class MyHandler(FileSystemEventHandler):
-    def __init__(self, progressBar, pushStopButton):
-        self.progressBar = progressBar
-        self.pushStopButton = pushStopButton
+class signalSlotHelper(QObject):
+    barUpdated = pyqtSignal(int)
+
+class MyHandler(FileSystemEventHandler, QObject):
+    def __init__(self, helper):
+        self.helper = helper
     def on_modified(self, event):
         global PAUSED
         if PAUSED:
@@ -173,12 +175,7 @@ class MyHandler(FileSystemEventHandler):
           if line == '':
             return
           curVal = int(line)
-          maxVal = self.progressBar.maximum()
-          self.progressBar.setValue(curVal + (maxVal - curVal) / 100)
-          if curVal == 100:
-            self.progressBar.setFormat("Application is being deployed!")
-            self.pushStopButton.setEnabled(True)
-            PAUSED = True
+          self.helper.barUpdated.emit(curVal)
           pipe_file.close()
 
 
@@ -306,12 +303,14 @@ class WidgetGallery(QDialog):
         self.timer.timeout.connect(self.checkForUpdates)
         self.timer.start(300000)  
 
-
+        self.helper = signalSlotHelper(self)
         self.createProgressBar()
-        self.event_handler = MyHandler(self.progressBar, self.pushStopButton)
+        self.event_handler = MyHandler(self.helper)
         self.observer = Observer()
         self.observer.schedule(self.event_handler, path=os.getcwd(), recursive=False)
         self.observer.start()
+        print("conneting the signal to the function...")
+        self.helper.barUpdated.connect(self.on_update)
         
 
         mainLayout = QGridLayout()
@@ -604,6 +603,16 @@ class WidgetGallery(QDialog):
         if buttonOption.varType == 'textEditButton':
           if buttonOption != currentOption:
             buttonOption.inputBox.setEnabled(False)
+
+    def on_update(self, curVal):
+      print("got signal with value", curVal)
+      maxVal = self.progressBar.maximum()
+      self.progressBar.setFormat("%p%")
+      self.progressBar.setValue(curVal + (maxVal - curVal) / 100)
+      if curVal == 100:
+        self.progressBar.setFormat("Application is being deployed!")
+        self.pushStopButton.setEnabled(True)
+        PAUSED = True
 
     def createBottomLeftGroupBox(self):
         self.bottomLeftGroupBox = QGroupBox("Application")
