@@ -36,7 +36,7 @@ services:
         constraints: [node.labels.type != head]
     depends_on:
       - yserver
-    command: sh -c "googleVisionAI"
+    command: sh -c "if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; googleVisionAI"
 
 
   yConnectToGoogleVisionAI:
