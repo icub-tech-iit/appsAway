@@ -226,42 +226,6 @@ services:
         condition: on-failure
     command: sh -c "if [ ${CALIB_OFFSETS} = true ]; then checkRobotInterface; skinManager --from skinManAll.ini --context skinGui; fi;"
 
-  #yiCubSkinGuiLeft:
-  #  <<: *yarp-base
-  #  deploy:
-  #    placement:
-  #      constraints: [node.labels.type != head]
-  #    restart_policy:
-  #      condition: on-failure
-  #  command: sh -c "if [ ${CALIB_OFFSETS} = true ]; then iCubSkinGui --from left_hand_${HAND_VERSION}.ini --useCalibration --xpos 320 --ypos 0 --width 300 --height 300; fi;"
-
-  #yiCubSkinGuiRight:
-  #  <<: *yarp-base
-  #  deploy:
-  #    placement:
-  #      constraints: [node.labels.type != head]
-  #    restart_policy:
-  #      condition: on-failure
-  #  command: sh -c "if [ ${CALIB_OFFSETS} = true ]; then iCubSkinGui --from right_hand_${HAND_VERSION}.ini --useCalibration --xpos 320 --ypos 0 --width 300 --height 300; fi;"
-
-  yConnectLeftSkin:
-    <<: *yarp-base
-    deploy:
-      placement:
-        constraints: [node.labels.type != head]
-      restart_policy:
-        condition: on-failure
-    command: sh -c "if [ ${CALIB_OFFSETS} = true ]; then yarp wait /icub/skin/left_hand_comp; yarp wait /skinGui/left_hand:i; yarp connect /icub/skin/left_hand_comp /skinGui/left_hand:i fast_tcp; fi;"
-
-  yConnectRightSkin:
-    <<: *yarp-base
-    deploy:
-      placement:
-        constraints: [node.labels.type != head]
-      restart_policy:
-        condition: on-failure
-    command: sh -c "if [ ${CALIB_OFFSETS} = true ]; then yarp wait /icub/skin/right_hand_comp; yarp wait /skinGui/right_hand:i; yarp connect /icub/skin/right_hand_comp /skinGui/right_hand:i fast_tcp; fi;"
-
   yConnectLeftCam2Color:
     <<: *yarp-base
     deploy:
