@@ -1,0 +1,33 @@
+version: "3.7"
+
+x-yarp-head: &yarp-head
+  image: icubteamcode/superbuild-icubhead:v2021.08.1-stable_master_sources
+  environment:
+    - YARP_FORWARD_LOG_ENABLE=1
+    - YARP_ROBOT_NAME
+  volumes:
+    - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
+    - "/dev:/dev"
+  ports:
+    - "10000:10000"
+  network_mode: "host"
+  privileged: true
+
+
+services:
+  
+  yGrabberCameras:
+    <<: *yarp-head
+    devices:
+      - "/dev/video0:/dev/video0"
+    command: sh -c "if [ -z ${CUSTOM_PORT} ]; then if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; yarpdev --from camera/ServerGrabberDualDragon.ini --split true; fi"
+
+
+
+
+
+
+
+
+
+
