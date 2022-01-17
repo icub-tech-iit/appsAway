@@ -130,10 +130,10 @@ init()
    exit_err "enviroment file ${_APPSAWAY_ENV_FILE} does not exist"
  fi
  source ${_APPSAWAY_ENV_FILE}
- if [ ! -f "${$APPSAWAY_APP_PATH}/${_DOCKER_ENV_FILE}" ]; then
+ if [ ! -f "${APPSAWAY_APP_PATH}/${_DOCKER_ENV_FILE}" ]; then
    exit_err "enviroment file ${_DOCKER_ENV_FILE} does not exist"
  fi
- source ${$APPSAWAY_APP_PATH}/${_DOCKER_ENV_FILE}
+ source ${APPSAWAY_APP_PATH}/${_DOCKER_ENV_FILE}
  os=`uname -s`
  if [ "$os" = "Darwin" ]
  then
@@ -480,7 +480,7 @@ copy_key_file()
 
     # first we copy the key file into iCubApps
     mkdir -p ${APPSAWAY_APP_PATH}/key_folder/
-    cp $KEY_FILE ${APPSAWAY_APP_PATH}/key_folder/
+    cp ${KEY_FILE_PATH}/${KEY_FILE} ${APPSAWAY_APP_PATH}/key_folder/
 
     # then we copy it to all other machines
     #iter=1
