@@ -481,22 +481,6 @@ copy_key_file()
     # first we copy the key file into iCubApps
     mkdir -p ${APPSAWAY_APP_PATH}/key_folder/
     cp ${KEY_FILE_PATH}/${KEY_FILE} ${APPSAWAY_APP_PATH}/key_folder/
-
-    # then we copy it to all other machines
-    #iter=1
-    #List=$APPSAWAY_NODES_USERNAME_LIST
-    #set -- $List
-    #for node_ip in ${APPSAWAY_NODES_ADDR_LIST}
-    #do
-    #  if [ "$node_ip" != "$APPSAWAY_CONSOLENODE_ADDR" ]; then
-    #    username=$( eval echo "\$$iter")
-    #    log "copying key file on node $node_ip.."
-  #       scp_to_node ${APPSAWAY_APP_PATH}/key_folder/ ${username} ${node_ip} ${APPSAWAY_APP_PATH_NOT_CONSOLE}
-  #     fi
-  #     iter=$((iter+1))
-  #   done
-  else
-    error "KEY_FILE was not detected here"
   fi
 }
 
