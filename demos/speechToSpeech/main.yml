@@ -7,15 +7,16 @@ x-yarp-base: &yarp-base
     - QT_X11_NO_MITSHM=1
     - XAUTHORITY=/root/.Xauthority
     - YARP_FORWARD_LOG_ENABLE=1
-    - FILE_INPUT
+    - FILE_INPUT=${KEY_FILE}
     - LANGUAGE_INPUT
     - GOOGLE_PROCESS_INPUT
     - VOICE_NAME_INPUT
+    - APPSAWAY_APP_PATH_NOT_CONSOLE
   volumes:
     - "/tmp/.X11-unix:/tmp/.X11-unix"
     - "${XAUTHORITY}:/root/.Xauthority"
     - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
-    - "${FILE_INPUT_PATH}:/root/authorization"
+    - "${HOME}/${APPSAWAY_APP_PATH_NOT_CONSOLE}/key_folder:/root/authorization"
   networks:
     - hostnet
 
