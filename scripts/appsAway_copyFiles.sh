@@ -127,13 +127,18 @@ init()
    exit_err "docker binary not found"
  fi
  if [ ! -f "${_APPSAWAY_ENV_FILE}" ]; then
-   exit_err "enviroment file ${_APPSAWAY_ENV_FILE} does not exists"
+   exit_err "enviroment file ${_APPSAWAY_ENV_FILE} does not exist"
  fi
  source ${_APPSAWAY_ENV_FILE}
+ if [ ! -f "${$APPSAWAY_APP_PATH}/${_DOCKER_ENV_FILE}" ]; then
+   exit_err "enviroment file ${_DOCKER_ENV_FILE} does not exist"
+ fi
+ source ${$APPSAWAY_APP_PATH}/${_DOCKER_ENV_FILE}
  os=`uname -s`
  if [ "$os" = "Darwin" ]
  then
   _ALL_LOCAL_IP_ADDRESSES=$(arp -a | awk -F'[()]' '{print $2}')
+  #' this is to solve the colors issue in code
  else
   _ALL_LOCAL_IP_ADDRESSES=$(hostname --all-ip-address)
   _ALL_LOCAL_IP_ADDRESSES+=$(hostname --all-fqdns)
@@ -465,6 +470,36 @@ copy_yarp_files()
   done
 }
 
+copy_key_file()
+{
+  if [ "$KEY_FILE" != "" ]
+  then
+    if [ ! -f "$KEY_FILE_PATH/$KEY_FILE" ]; then
+      exit_err "the key file $KEY_FILE you provided does not exist"
+    fi
+
+    # first we copy the key file into iCubApps
+    mkdir -p ${APPSAWAY_APP_PATH}/key_folder/
+    cp $KEY_FILE ${APPSAWAY_APP_PATH}/key_folder/
+
+    # then we copy it to all other machines
+    #iter=1
+    #List=$APPSAWAY_NODES_USERNAME_LIST
+    #set -- $List
+    #for node_ip in ${APPSAWAY_NODES_ADDR_LIST}
+    #do
+    #  if [ "$node_ip" != "$APPSAWAY_CONSOLENODE_ADDR" ]; then
+    #    username=$( eval echo "\$$iter")
+    #    log "copying key file on node $node_ip.."
+  #       scp_to_node ${APPSAWAY_APP_PATH}/key_folder/ ${username} ${node_ip} ${APPSAWAY_APP_PATH_NOT_CONSOLE}
+  #     fi
+  #     iter=$((iter+1))
+  #   done
+  else
+    error "KEY_FILE was not detected here"
+  fi
+}
+
 
 main()
 {
@@ -474,6 +509,7 @@ main()
   copy_yaml_files
 #  create_yarp_config_files
 #  create_env_file
+  copy_key_file
   copy_yarp_files
 }
 
