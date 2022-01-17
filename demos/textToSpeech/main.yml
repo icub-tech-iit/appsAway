@@ -4,12 +4,12 @@ x-yarp-base: &yarp-base
   image: icubteamcode/speech:v2021.08.1-stable_master_sources
   environment:
     - YARP_FORWARD_LOG_ENABLE=1
-    - FILE_INPUT
+    - FILE_INPUT=${KEY_FILE}
     - LANGUAGE_SYNTHESIS_INPUT
     - VOICE_NAME_INPUT
   volumes:
     - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
-    - "${FILE_INPUT_PATH}:/root/authorization"
+    - "${HOME}/${APPSAWAY_APP_PATH_NOT_CONSOLE}/key_folder:/root/authorization"
   networks:
     - hostnet
 

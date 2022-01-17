@@ -24,14 +24,14 @@ x-yarp-speech: &yarp-speech
     - PULSE_SERVER=unix:${XDG_RUNTIME_DIR}/pulse/native
     - YARP_FORWARD_LOG_ENABLE=1
     - YARP_ROBOT_NAME
-    - FILE_INPUT
+    - FILE_INPUT=${KEY_FILE}
     - LANGUAGE_SYNTHESIS_INPUT
     - VOICE_NAME_INPUT
   volumes:
     - "/tmp/.X11-unix:/tmp/.X11-unix"
     - "${XAUTHORITY}:/root/.Xauthority"
     - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
-    - "${FILE_INPUT_PATH}:/root/authorization"
+    - "${HOME}/${APPSAWAY_APP_PATH_NOT_CONSOLE}/key_folder:/root/authorization"
     - "${XDG_RUNTIME_DIR}/pulse/native:${XDG_RUNTIME_DIR}/pulse/native"
     - "~/.config/pulse/cookie:/root/.config/pulse/cookie"
     - "/dev:/dev"
