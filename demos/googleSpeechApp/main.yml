@@ -45,7 +45,7 @@ services:
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "if [ ${GOOGLE_PROCESSING} = 'True' ]; then yarp wait /microphone/audio:o; googleSpeechProcess; fi"
+    command: sh -c "if [ ${GOOGLE_PROCESSING} = 'True' ]; then if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; googleSpeechProcess; fi"
 
 #now we connect the output of the googleSpeech to the process
 
@@ -65,7 +65,7 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "if [ ${GOOGLE_SYNTHESIS_INPUT} = 'True' ];then yarp wait /googleSpeechProcess/result:o; yarp wait /googleSynthesis/text:i; yarp connect /googleSpeechProcess/result:o /googleSynthesis/text:i; fi"
+    command: sh -c "if [ ${GOOGLE_SYNTHESIS_INPUT} = 'True' ]; then if [ ${GOOGLE_INPUT} =  'False' ]; then yarp wait /googleSpeechProcess/result:o; yarp wait /googleSynthesis/text:i; yarp connect /googleSpeechProcess/result:o /googleSynthesis/text:i; fi; fi"
 
   yconnect_audio:
     <<: *yarp-base
