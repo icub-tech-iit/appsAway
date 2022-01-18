@@ -65,7 +65,7 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "yarp wait /icub/camcalib/left/out; yarp wait /yarpOpenPose/image:i; yarp connect /icub/camcalib/left/out /yarpOpenPose/image:i udp"
+    command: sh -c "if [ ! -z ${CUSTOM_PORT} ]; then yarp wait ${CUSTOM_PORT}; yarp wait /yarpOpenPose/image:i; yarp connect ${CUSTOM_PORT} /yarpOpenPose/image:i udp; else yarp wait /icub/camcalib/left/out; yarp wait /yarpOpenPose/image:i; yarp connect /icub/camcalib/left/out /yarpOpenPose/image:i udp; fi"
     restart: on-failure
 
   yconnect_output:
@@ -85,7 +85,7 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "yarp wait /icub/camcalib/left/out ; yarp wait /view/input_image ; yarp connect /icub/camcalib/left/out /view/input_image udp"
+    command: sh -c "if [ ! -z ${CUSTOM_PORT} ]; then yarp wait ${CUSTOM_PORT}; yarp wait /view/input_image ; yarp connect ${CUSTOM_PORT} /view/input_image udp; else yarp wait /icub/camcalib/left/out ; yarp wait /view/input_image ; yarp connect /icub/camcalib/left/out /view/input_image udp; fi"
     restart: on-failure
 
 

@@ -21,6 +21,6 @@ services:
     <<: *yarp-head
     devices: 
       - "/dev/video0:/dev/video0"
-    command: sh -c "if [ -z ${CUSTOM_PORT} ]; then yarpdev --from camera/ServerGrabberDualDragon.ini --split true; fi" 
+    command: sh -c "if [ -z ${CUSTOM_PORT} ]; then if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; yarpdev --from camera/ServerGrabberDualDragon.ini --split true; fi" 
 
 
