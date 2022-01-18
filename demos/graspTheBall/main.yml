@@ -6,7 +6,6 @@ x-yarp-base: &yarp-base
     - YARP_FORWARD_LOG_ENABLE=1
     - CALIB_COLOR
     - CALIB_OFFSETS
-    - HAND_VERSION
     - ARM
     - YARP_ROBOT_NAME
   volumes:
