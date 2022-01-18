@@ -32,19 +32,19 @@ services:
     <<: *yarp-base
     devices:
       - "/dev/snd:/dev/snd"
-    command: sh -c "if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; yarpdev --device AudioRecorderWrapper --from /root/startaudio.ini"
+    command: sh -c "if [ ${GOOGLE_INPUT} = 'True' ]; then if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; yarpdev --device AudioRecorderWrapper --from /root/startaudio.ini; fi"
 
   yconnect_audio:
     <<: *yarp-base
     depends_on:
       - yMicrophone
-    command: sh -c "yarp wait /microphone/audio:o; yarp wait /googleSpeech/sound:i; yarp connect /microphone/audio:o /googleSpeech/sound:i tcp"
+    command: sh -c "if [ ${GOOGLE_INPUT} = 'True' ]; then yarp wait /microphone/audio:o; yarp wait /googleSpeech/sound:i; yarp connect /microphone/audio:o /googleSpeech/sound:i tcp; fi"
 
   yconnect_rpc:
     <<: *yarp-base
     depends_on:
       - yMicrophone
-    command: sh -c "yarp wait /microphone/rpc; yarp wait /googleSpeech/commands:rpc; yarp connect /googleSpeech/commands:rpc /microphone/rpc tcp"
+    command: sh -c "if [ ${GOOGLE_INPUT} = 'True' ]; then yarp wait /microphone/rpc; yarp wait /googleSpeech/commands:rpc; yarp connect /googleSpeech/commands:rpc /microphone/rpc tcp; fi"
 
   yDemoGoogleSynthesis:
     <<: *yarp-base
