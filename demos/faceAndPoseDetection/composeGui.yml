@@ -22,16 +22,16 @@ services:
 
   ylogger:
     <<: *yarp-base
-    command: yarplogger --start
+    command: sh -c "if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; yarplogger --start"
 
 #following services are configured in ./icub-main/app/default/scripts/cameras_calib.xml.template
   yview_pose:
     <<: *yarp-base
-    command: yarpview --name /pose --x 0 --y 0 --p 50 --w 320 --h 240
+    command: sh -c "if [ ${FL_INPUT} = 'True' ]; then yarp wait /faceLandmarks/image:o ; else yarp wait /yarpOpenPose/image:o; fi; yarpview --name /pose --x 0 --y 0 --p 50 --w 320 --h 240"
 
   yview_image:
     <<: *yarp-base
-    command: yarpview --name /view/input_image --x 320 --y 0 --p 50 --w 320 --h 240
+    command: sh -c "if [ ! -z ${CUSTOM_PORT} ]; then yarp wait ${CUSTOM_PORT}; else yarp wait /icub/camcalib/left/out; fi; yarpview --name /view/input_image --x 320 --y 0 --p 50 --w 320 --h 240"
 
 
 
