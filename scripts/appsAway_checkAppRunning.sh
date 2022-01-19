@@ -100,11 +100,11 @@ add_resources()
   # handling yarp resources
   if [ "${_YARP_BIN}" != "" ] 
   then
-    resourcePath=$(echo "$(yarp resource --context cameraCalibration --from icubEyes.ini)" | awk -F'"' '{print $2}' | awk -F'icubEyes.ini' '{print $1}')
+    resourcePath=$(echo "$(yarp resource --context cameraCalibration --from icubEyes.ini 2> /dev/null)" | awk -F'"' '{print $2}' | awk -F'icubEyes.ini' '{print $1}')
     resourcePathClean="$(echo -e "${resourcePath}" | tr -d '[:space:]')"
     echo "export APPSAWAY_CALIB_CONTEXT=$resourcePathClean" >>appsAway_setEnvironment.local.sh
 
-    resourcePath=$(echo "$(yarp resource --context demoRedBall --from config.ini)" | awk -F'"' '{print $2}' | awk -F'config.ini' '{print $1}')
+    resourcePath=$(echo "$(yarp resource --context demoRedBall --from config.ini 2> /dev/null)" | awk -F'"' '{print $2}' | awk -F'config.ini' '{print $1}')
     resourcePathClean="$(echo -e "${resourcePath}" | tr -d '[:space:]')"
     echo "export APPSAWAY_DEMOREDBALL_CONTEXT=$resourcePathClean" >>appsAway_setEnvironment.local.sh
   else
