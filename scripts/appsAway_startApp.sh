@@ -21,7 +21,6 @@ _SCRIPT_TEMPLATE_VERSION="1.1.0" #
 _APPSAWAY_ENV_FILE="appsAway_setEnvironment.local.sh"
 _SCRIPT2RUN_FILE_NAME="worker.sh.APPSAWAY"
 _EXIT_FILE_NAME="worker.exit.APPSAWAY"
-_RUNNER_SCRIPT_FILE_NAME="appsAway_scriptRunner.sh"
 _NC='\033[0m' # No Color
 _RED='\033[0;31m'
 _GREEN='\033[0;32m'
