@@ -5,8 +5,8 @@ x-yarp-demo: &yarp-demo
   environment:
     - YARP_FORWARD_LOG_ENABLE=1
     - CUSTOM_PORT
-    - YOP_INPUT
-    - FL_INPUT
+    # - YOP_INPUT
+    # - FL_INPUT
   volumes:
     - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
   networks:
@@ -18,25 +18,26 @@ x-yarp-demo: &yarp-demo
 services:
 #following service are configured in icub-main/app/iCubStartup/scripts/iCubStartup.xml.template
 
-  yOpenPose_GPU:
-    <<: *yarp-demo
-    deploy:
-      placement:
-        constraints: [node.labels.type == cuda]
-      resources:
-        reservations:
-          generic_resources:
-            - discrete_resource_spec:
-                kind: 'gpu'
-                value: 1 #does this work? or do we have to specify a particular number? - answer, number...
-    command: sh -c "if [ ${YOP_INPUT} = 'True' ]; then if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; yarpOpenPose --hand_enable $USE_HANDS --face_enable $USE_FACE --num_gpu 1; fi"
+  # yOpenPose_GPU:
+  #   <<: *yarp-demo
+  #   deploy:
+  #     placement:
+  #       constraints: [node.labels.type == cuda]
+  #     resources:
+  #       reservations:
+  #         generic_resources:
+  #           - discrete_resource_spec:
+  #               kind: 'gpu'
+  #               value: 1 #does this work? or do we have to specify a particular number? - answer, number...
+  #   command: sh -c "if [ ${YOP_INPUT} = 'True' ]; then if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; yarpOpenPose --hand_enable $USE_HANDS --face_enable $USE_FACE --num_gpu 1; fi"
 
   yDemofaceLandmarks:
     <<: *yarp-demo
     deploy:
       placement:
         constraints: [node.labels.type != head]
-    command: sh -c "if [ ${FL_INPUT} = 'True' ]; then if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; faceLandmarks; fi"
+    command: sh -c "if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; faceLandmarks;"
+    #command: sh -c "if [ ${FL_INPUT} = 'True' ]; then if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; faceLandmarks; fi"
 
   yConnectCamToFL_l:
     <<: *yarp-demo
@@ -58,15 +59,15 @@ services:
 
 #--------------------------------------- Connects ----------------------------------------------
 
-  yconnect_input:
-    <<: *yarp-demo
-    deploy:
-      placement:
-        constraints: [node.labels.type != head]
-      restart_policy:
-        condition: on-failure
-    command: sh -c "if [ ! -z ${CUSTOM_PORT} ]; then yarp wait ${CUSTOM_PORT}; yarp wait /yarpOpenPose/image:i; yarp connect ${CUSTOM_PORT} /yarpOpenPose/image:i udp; else yarp wait /icub/camcalib/left/out; yarp wait /yarpOpenPose/image:i; yarp connect /icub/camcalib/left/out /yarpOpenPose/image:i udp; fi"
-    restart: on-failure
+  # yconnect_input:
+  #   <<: *yarp-demo
+  #   deploy:
+  #     placement:
+  #       constraints: [node.labels.type != head]
+  #     restart_policy:
+  #       condition: on-failure
+  #   command: sh -c "if [ ! -z ${CUSTOM_PORT} ]; then yarp wait ${CUSTOM_PORT}; yarp wait /yarpOpenPose/image:i; yarp connect ${CUSTOM_PORT} /yarpOpenPose/image:i udp; else yarp wait /icub/camcalib/left/out; yarp wait /yarpOpenPose/image:i; yarp connect /icub/camcalib/left/out /yarpOpenPose/image:i udp; fi"
+  #   restart: on-failure
 
   yconnect_output:
     <<: *yarp-demo
@@ -75,7 +76,8 @@ services:
         constraints: [node.labels.type != head]
       restart_policy:
         condition: on-failure
-    command: sh -c "if [ ${FL_INPUT} = 'True' ]; then yarp wait /faceLandmarks/image:o ; yarp wait /pose ; yarp connect /faceLandmarks/image:o /pose udp; else yarp wait /yarpOpenPose/image:o ; yarp wait /pose ; yarp connect /yarpOpenPose/image:o /pose udp; fi"
+    # command: sh -c "if [ ${FL_INPUT} = 'True' ]; then yarp wait /faceLandmarks/image:o ; yarp wait /pose ; yarp connect /faceLandmarks/image:o /pose udp; else yarp wait /yarpOpenPose/image:o ; yarp wait /pose ; yarp connect /yarpOpenPose/image:o /pose udp; fi"
+    command: sh -c "yarp wait /faceLandmarks/image:o ; yarp wait /pose ; yarp connect /faceLandmarks/image:o /pose udp;"
     restart: on-failure
 
   yconnect_groundtruth:
