@@ -99,7 +99,7 @@ jobs:
             title: "Adding user changes into the website."
             body: ${{ steps.get_filedata.outputs.changes_list }}
             assignees: ${{ steps.get_filedata.outputs.user_list }}
-            reviewers: "AlexAntn,vtikha,ilaria-carlini"
+            reviewers: "AlexAntn,vtikha"
         
       - name: Check outputs
         run: |
