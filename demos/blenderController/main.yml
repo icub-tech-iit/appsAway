@@ -1,15 +1,11 @@
 version: "3.7"
 
 x-yarp-base: &yarp-base
-  image: icubteamcode/blender:v2021.11.1-stable_master_sources
+  image: icubteamcode/blender:v2021.11.1_master_sources
   environment:
     - YARP_FORWARD_LOG_ENABLE=1
-    - FILE_INPUT=${KEY_FILE}
-    - LANGUAGE_SPEECH_INPUT
-    - GOOGLE_PROCESS_INPUT
   volumes:
     - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
-    - "${HOME}/${APPSAWAY_APP_PATH_NOT_CONSOLE}/key_folder:/root/authorization"
   networks:
     - hostnet
 
