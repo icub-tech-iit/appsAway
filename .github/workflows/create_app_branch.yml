@@ -141,7 +141,7 @@ jobs:
         with:
             pr_title: "Adding new applications to the website."
             pr_body: ${{ steps.get_filedata.outputs.appname_list }}
-            pr_reviewer: "AlexAntn,vtikha,ilaria-carlini"
+            pr_reviewer: "AlexAntn,vtikha,vvasco,Nicogene"
             pr_assignee: ${{ steps.get_filedata.outputs.user_list }}
             source_branch: ${{ github.event.client_payload.branch_name }}
             github_token: ${{ secrets.GITHUB_TOKEN }}
