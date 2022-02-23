@@ -12,7 +12,6 @@ x-yarp-blender: &yarp-blender
     - "/tmp/.X11-unix:/tmp/.X11-unix"
     - "${XAUTHORITY}:/root/.Xauthority"
     - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
-    - "${HOME}/${APPSAWAY_APP_PATH_NOT_CONSOLE}/key_folder:/root/authorization"
     - "/dev:/dev"
   ports:
     - "10000:10000"
