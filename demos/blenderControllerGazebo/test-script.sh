@@ -44,9 +44,9 @@ export APPSAWAY_USER_NAME=icub
 export APPSAWAY_APP_PATH=${HOME}/iCubApps/${APPSAWAY_APP_NAME}
 export APPSAWAY_CONSOLENODE_ADDR=$2
 export APPSAWAY_CONSOLENODE_USERNAME=icub
-export APPSAWAY_IMAGES=\" icubteamcode/blender  icubteamcode/blender\"
-export APPSAWAY_VERSIONS=\"v2021.11.1-stable_master v2021.11.1-stable_master\"
-export APPSAWAY_TAGS=\"sources sources\"
+export APPSAWAY_IMAGES=\" icubteamcode/blender  icubteamcode/superbuild-gazebo\"
+export APPSAWAY_VERSIONS=\"v2021.11.1 v2021.11.1\"
+export APPSAWAY_TAGS=\"sources sources\"
 export APPSAWAY_DEPLOY_YAML_FILE_LIST=main.yml
 export APPSAWAY_GUI_YAML_FILE_LIST=composeGui.yml
 export APPSAWAY_STACK_NAME=mystack
