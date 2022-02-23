@@ -1,7 +1,7 @@
 version: "3.7"
 
 x-yarp-base: &yarp-base
-  image: icubteamcode/blender:v2021.11.1_master_sources
+  image: icubteamcode/blender:v2021.11.1_sources
   environment:
     - DISPLAY=${DISPLAY}
     - QT_X11_NO_MITSHM=1
@@ -12,7 +12,6 @@ x-yarp-base: &yarp-base
     - "/tmp/.X11-unix:/tmp/.X11-unix"
     - "${XAUTHORITY}:/root/.Xauthority"
     - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
-    - "${HOME}/${APPSAWAY_APP_PATH_NOT_CONSOLE}/key_folder:/root/authorization"
     - "/dev:/dev"
   ports:
     - "10000:10000"
@@ -24,7 +23,7 @@ services:
 #following service are configured in icub-main/app/iCubStartup/scripts/iCubStartup.xml.template
   yBlender:
     <<: *yarp-base
-    command: sh -c "if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; blender --python-use-system-env"
+    command: sh -c "if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; yarp wait /icub/torso/state:o; blender --python-use-system-env"
 
 
 
