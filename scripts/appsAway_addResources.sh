@@ -112,23 +112,8 @@ add_resources()
   fi
 }
 
-check_running_app()
-{
-  _NUM_APPS=$( ps aux | grep -c ./appGUI )
-  if (( $_NUM_APPS > 1 ))
-  then
-    warn "An application is already running in your machine, please make sure you close it before launching a new one."
-    warn "If you stopped an old application but it is still hanging, run the following command: "
-    echo ""
-    echo "cd \$HOME/teamcode/appsAway/scripts && ./appsAway_cleanupCluster.sh all"
-    echo ""
-    exit 1
-  fi
-}
-
 main()
 {
-  check_running_app
   add_resources
 }
 
