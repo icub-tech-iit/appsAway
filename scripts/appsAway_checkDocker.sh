@@ -87,7 +87,8 @@ check_docker_version() {
         _DOCKER_NAMES_LIST="$_DOCKER_NAMES_LIST ${nodes_name_array[$iter]}"
       fi
       _IS_CUDA=$( echo ${nodes_name_array[$iter]} | grep 'icubcuda' || true)
-      if [[ $_IS_CUDA != "" ]] ; then
+      _HAS_GPU=$( ${_SSH_BIN} ${_SSH_PARAMS} $username@$node "lshw -C display" | grep NVIDIA || true)
+      if [[ $_IS_CUDA != "" ]] || [[ $_HAS_GPU != "" ]]; then
         _OUTPUT=$(${_SSH_BIN} ${_SSH_PARAMS} $username@$node "nvidia-docker --version 2>&1" | grep 'Docker version' || true)
         if [[ $_OUTPUT == "" ]] ; then
           # ADD THIS NODE TO THE HOSTS_CUDA.INI
@@ -140,7 +141,7 @@ populate_hosts() {
       echo "[cuda:children]" >> ./$file_name
       for (( i=0; i<$array_len; i++ )) 
       do  
-        _IS_CUDA=$( echo "${name_array[$i]}" | grep "icubcuda" )
+        _IS_CUDA=${name_array[$i]}
         if [[ $_IS_CUDA != "" ]] ; then
             echo "${name_array[$i]}" >> ./$file_name
         fi
