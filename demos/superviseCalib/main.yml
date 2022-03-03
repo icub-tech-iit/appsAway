@@ -1,7 +1,7 @@
 version: "3.7"
 
 x-yarp-base: &yarp-base
-  image: icubteamcode/supervise-calib:v2021.08.1-stable_master_sources
+  image: icubteamcode/supervise-calib:v2022.02.0_sources
   environment:
     - YARP_FORWARD_LOG_ENABLE=1
     - YARP_ROBOT_NAME
@@ -19,7 +19,7 @@ x-yarp-base: &yarp-base
     - hostnet
 
 x-yarp-base-no-context: &yarp-base-no-context
-  image: icubteamcode/supervise-calib:v2021.08.1-stable_master_sources
+  image: icubteamcode/supervise-calib:v2022.02.0_sources
   environment:
     - YARP_FORWARD_LOG_ENABLE=1
     - YARP_ROBOT_NAME

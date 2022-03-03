@@ -1,7 +1,7 @@
 version: "3.7"
 
 x-yarp-base: &yarp-base
-  image: icubteamcode/google-vision:v2021.08.1-stable_master_sources
+  image: icubteamcode/google-vision:v2022.02.0_sources
   environment:
     - DISPLAY=${DISPLAY}
     - XAUTHORITY=/root/.Xauthority

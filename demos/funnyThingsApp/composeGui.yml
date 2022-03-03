@@ -1,7 +1,7 @@
 version: "3.7"
 
 x-yarp-base: &yarp-base
-  image: icubteamcode/funny-things:v2021.08.1-stable_master_sources
+  image: icubteamcode/funny-things:v2022.02.0_sources
   environment:
     - DISPLAY=${DISPLAY}
     - XAUTHORITY=/root/.Xauthority
@@ -17,7 +17,7 @@ x-yarp-base: &yarp-base
   privileged: true
 
 x-yarp-speech: &yarp-speech
-  image: icubteamcode/speech:v2021.08.1-stable_master_sources
+  image: icubteamcode/speech:v2022.02.0_sources
   environment:
     - DISPLAY=${DISPLAY}
     - XAUTHORITY=/root/.Xauthority

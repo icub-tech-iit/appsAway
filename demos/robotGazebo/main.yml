@@ -2,7 +2,7 @@ version: "3.7"
 
 
 x-yarp-base: &yarp-base
-  image: icubteamcode/superbuild-gazebo:master-unstable_master_sources
+  image: icubteamcode/superbuild-gazebo:v2022.02.0_sources
   environment:
     - YARP_FORWARD_LOG_ENABLE=1
     - YARP_ROBOT_NAME
