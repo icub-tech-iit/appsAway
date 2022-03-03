@@ -29,7 +29,7 @@ services:
     <<: *yarp-base
     command: sh -c "if [ ${YOP_INPUT} = 'True' ]; then yarp wait /yarpOpenPose/image:o ; yarpview --name /pose --x 340 --y 0 --p 50 --w 320 --h 240 ; fi"
 
-  face:
+  yview_face:
     <<: *yarp-base
     command: sh -c "if [ ${FL_INPUT} = 'True' ]; then yarp wait /faceLandmarks/image:o ; yarpview --name /face --x 0 --y 0 --p 50 --w 320 --h 240 ; fi"
 
