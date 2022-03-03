@@ -27,7 +27,7 @@ services:
 #following services are configured in ./icub-main/app/default/scripts/cameras_calib.xml.template
   yview_pose:
     <<: *yarp-base
-    command: sh -c "if [ ${YOP_INPUT} = 'True' ]; then yarp wait /yarpOpenPose/image:o ; yarpview --name /pose --x 320 --y 0 --p 50 --w 320 --h 240 ; fi"
+    command: sh -c "if [ ${YOP_INPUT} = 'True' ]; then yarp wait /yarpOpenPose/image:o ; yarpview --name /pose --x 340 --y 0 --p 50 --w 320 --h 240 ; fi"
 
   face:
     <<: *yarp-base
@@ -35,7 +35,7 @@ services:
 
   yview_image:
     <<: *yarp-base
-    command: sh -c "if [ ! -z ${CUSTOM_PORT} ]; then yarp wait ${CUSTOM_PORT}; else yarp wait /icub/camcalib/left/out; fi; yarpview --name /view/input_image --x 320 --y 0 --p 50 --w 320 --h 240"
+    command: sh -c "if [ ! -z ${CUSTOM_PORT} ]; then yarp wait ${CUSTOM_PORT}; else yarp wait /icub/camcalib/left/out; fi; yarpview --name /view/input_image --x 720 --y 0 --p 50 --w 320 --h 240"
 
 
 
