@@ -2,6 +2,14 @@
 
 source ../appsAway_setEnvironment.local.sh
 
+_SSH_BIN=$(which ssh || true)
+_SSH_PARAMS="-T"
+
+if [ "${_SSH_BIN}" == "" ]; then
+    echo "ssh binary not found"
+    exit 1
+fi
+
 if [ -f "hosts.ini" ]
 then
     rm hosts.ini
@@ -23,8 +31,11 @@ if [[ $APPSAWAY_CUDANODE_ADDR != "" ]] ; then
     echo "[cuda:children]" >> ./hosts.ini
     for (( i=0; i<$nodes_len; i++ )) 
     do  
+        username=${nodes_usr_array[$i]}
+        node=${nodes_addr_array[$i]}
         _IS_CUDA=$( echo "${nodes_name_array[$i]}" | grep "icubcuda" )
-        if [[ $_IS_CUDA != "" ]] ; then
+        _HAS_GPU=$( ${_SSH_BIN} ${_SSH_PARAMS} $username@$node "lshw -C display" | grep NVIDIA || true)
+        if [[ $_IS_CUDA != "" ]] || [[ $_HAS_GPU != "" ]]; then
             echo "${nodes_name_array[$i]}" >> ./hosts.ini
         fi
     done 
