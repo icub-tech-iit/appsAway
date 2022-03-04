@@ -27,20 +27,18 @@ do
      echo "${nodes_name_array[$i]}" >> ./hosts.ini
 done 
 echo "" >> ./hosts.ini
-if [[ $APPSAWAY_CUDANODE_ADDR != "" ]] ; then
-    echo "[cuda:children]" >> ./hosts.ini
-    for (( i=0; i<$nodes_len; i++ )) 
-    do  
-        username=${nodes_usr_array[$i]}
-        node=${nodes_addr_array[$i]}
-        _IS_CUDA=$( echo "${nodes_name_array[$i]}" | grep "icubcuda" )
-        _HAS_GPU=$( ${_SSH_BIN} ${_SSH_PARAMS} $username@$node "lshw -C display" | grep NVIDIA || true)
-        if [[ $_IS_CUDA != "" ]] || [[ $_HAS_GPU != "" ]]; then
-            echo "${nodes_name_array[$i]}" >> ./hosts.ini
-        fi
-    done 
-    echo "" >> ./hosts.ini
-fi
+echo "[cuda:children]" >> ./hosts.ini
+for (( i=0; i<$nodes_len; i++ )) 
+do  
+    username=${nodes_usr_array[$i]}
+    node=${nodes_addr_array[$i]}
+    _IS_CUDA=$( echo "${nodes_name_array[$i]}" | grep "icubcuda" )
+    _HAS_GPU=$( ${_SSH_BIN} ${_SSH_PARAMS} $username@$node "lshw -C display" | grep NVIDIA || true)
+    if [[ $_IS_CUDA != "" ]] || [[ $_HAS_GPU != "" ]]; then
+        echo "${nodes_name_array[$i]}" >> ./hosts.ini
+    fi
+done 
+echo "" >> ./hosts.ini
 
 # now we populate each node
 for (( i=0; i<$nodes_len; i++ ))
