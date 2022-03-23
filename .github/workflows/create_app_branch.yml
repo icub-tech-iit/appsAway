@@ -110,10 +110,10 @@ jobs:
       - uses: actions/checkout@v2
         with:
           repository: icub-tech-iit/appsAway
+          ref: ${{ github.event.client_payload.branch_name }}
           token: ${{ secrets.GITHUB_TOKEN }}
           path: appsAway
 
-      #    ref: ${{ github.event.client_payload.branch_name }}
       #- name: get file data
       #  id: get_filedata
       #  run: |
@@ -137,23 +137,39 @@ jobs:
       #        echo ::set-output name=user_list::$user_list
       #        echo ::set-output name=appname_list::$appname_list
               
-      #- name: pull-request
-      #  uses: repo-sync/pull-request@v2
-      #  with:
-      #      pr_title: "Adding new applications to the website."
-      #      pr_body: ${{ steps.get_filedata.outputs.appname_list }}
-      #      pr_reviewer: "AlexAntn,vtikha,vvasco,Nicogene"
-      #      pr_assignee: ${{ steps.get_filedata.outputs.user_list }}
-      #      source_branch: ${{ github.event.client_payload.branch_name }}
-      #      github_token: ${{ secrets.GITHUB_TOKEN }}
-      
+      - name: print stuff before PR
+        run: |
+            echo "body: ${{ steps.get_filedata.outputs.appname_list }}"
+            echo "assignees: ${{ steps.get_filedata.outputs.user_list }}"
+            echo "branch: ${{ github.event.client_payload.branch_name }}"
+              
       - name: pull-request
-        id: open-pr
-        uses: peter-evans/create-pull-request@v3
+        uses: repo-sync/pull-request@v2
         with:
-            path: appsAway
-            branch: ${{ github.event.client_payload.branch_name }}
-            title: "Adding new applications to the website."
-            body: ${{ steps.get_filedata.outputs.appname_list }}
-            assignees: ${{ steps.get_filedata.outputs.user_list }}
-            reviewers: "AlexAntn,vtikha,vvasco,Nicogene"
+            pr_title: "Adding new applications to the website."
+            pr_body: ${{ steps.get_filedata.outputs.appname_list }}
+            pr_reviewer: "AlexAntn,vtikha,vvasco,Nicogene"
+            pr_assignee: ${{ steps.get_filedata.outputs.user_list }}
+            source_branch: ${{ github.event.client_payload.branch_name }}
+            destination_branch: "master"
+            github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: output-url
+        run: echo ${{steps.open-pr.outputs.pr_url}}
+      - name: output-number
+        run: echo ${{steps.open-pr.outputs.pr_number}}
+      - name: output-has-changed-files
+        run: echo ${{steps.open-pr.outputs.has_changed_files}}
+      
+      ############################################################################################
+      # UNFORTUNATELY THIS PR ACTION ONLY WORKS FOR LOCAL CHANGES, NOT ALREADY-EXISTING BRANCHES #
+      ############################################################################################
+      #- name: pull-request
+      #  id: open-pr
+      #  uses: peter-evans/create-pull-request@v3
+      #  with:
+      #      path: appsAway
+      #      branch: ${{ github.event.client_payload.branch_name }}
+      #      title: "Adding new applications to the website."
+      #      body: ${{ steps.get_filedata.outputs.appname_list }}
+      #      assignees: ${{ steps.get_filedata.outputs.user_list }}
+      #      reviewers: "AlexAntn,vtikha,vvasco,Nicogene"
