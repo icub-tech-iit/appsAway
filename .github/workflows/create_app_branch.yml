@@ -111,7 +111,7 @@ jobs:
         with:
           repository: icub-tech-iit/appsAway
           ref: ${{ github.event.client_payload.branch_name }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+      #    token: ${{ secrets.GITHUB_TOKEN }}
 
       #- name: get file data
       #  id: get_filedata
@@ -141,8 +141,10 @@ jobs:
             echo "body: ${{ steps.get_filedata.outputs.appname_list }}"
             echo "assignees: ${{ steps.get_filedata.outputs.user_list }}"
             echo "branch: ${{ github.event.client_payload.branch_name }}"
-            git remote show origin
-            sleep 5s
+      #      git remote show origin
+      #      git remote remove origin
+      #      git remote add origin https://github.com/icub-tech-iit/appsAway.git/
+      #      sleep 5s
               
       - name: pull-request
         uses: repo-sync/pull-request@v2
@@ -153,7 +155,7 @@ jobs:
             pr_assignee: ${{ steps.get_filedata.outputs.user_list }}
             source_branch: ${{ github.event.client_payload.branch_name }}
             destination_branch: "master"
-            github_token: ${{ secrets.GITHUB_TOKEN }}
+            github_token: ${{ env.GITHUB_APPS_TOKEN }}
       - name: output-url
         run: echo ${{steps.open-pr.outputs.pr_url}}
       - name: output-number
