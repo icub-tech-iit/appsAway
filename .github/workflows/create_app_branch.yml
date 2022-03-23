@@ -141,6 +141,7 @@ jobs:
             echo "body: ${{ steps.get_filedata.outputs.appname_list }}"
             echo "assignees: ${{ steps.get_filedata.outputs.user_list }}"
             echo "branch: ${{ github.event.client_payload.branch_name }}"
+            git remote show origin
             sleep 5s
               
       - name: pull-request
