@@ -148,6 +148,8 @@ jobs:
               
       - name: pull-request
         uses: repo-sync/pull-request@v2
+        env:
+            GITHUB_APPS_TOKEN: ${{ steps.get_workflow_token.outputs.token }}
         with:
             pr_title: "Adding new applications to the website."
             pr_body: ${{ steps.get_filedata.outputs.appname_list }}
