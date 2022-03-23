@@ -112,7 +112,6 @@ jobs:
           repository: icub-tech-iit/appsAway
           ref: ${{ github.event.client_payload.branch_name }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          path: appsAway
 
       #- name: get file data
       #  id: get_filedata
