@@ -1,0 +1,34 @@
+version: "3.7"
+
+x-yarp-base: &yarp-base
+  image: icubteamcode/blender:v2022.02.0_sources
+  environment:
+    - DISPLAY=${DISPLAY}
+    - QT_X11_NO_MITSHM=1
+    - XAUTHORITY=/root/.Xauthority
+    - YARP_FORWARD_LOG_ENABLE=1
+    - YARP_ROBOT_NAME
+  volumes:
+    - "/tmp/.X11-unix:/tmp/.X11-unix"
+    - "${XAUTHORITY}:/root/.Xauthority"
+    - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
+    - "/dev:/dev"
+  ports:
+    - "10000:10000"
+  network_mode: "host"
+  privileged: true
+  #ipc: host
+
+services:
+#following service are configured in icub-main/app/iCubStartup/scripts/iCubStartup.xml.template
+  yBlender:
+    <<: *yarp-base
+    command: sh -c "if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; yarp wait /icub/torso/state:o; blender --python-use-system-env"
+
+
+
+
+
+
+
+
