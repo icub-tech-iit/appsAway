@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
     ResourceFinder rf;
     rf.configure(argc, argv);
     std::string robotName=rf.find("robot").asString();
-    double conn_timeout=rf.find("timeout").asDouble();
+    double conn_timeout=rf.find("timeout").asFloat64();
     
     if(robotName=="")
         robotName=default_robotName;
