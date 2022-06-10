@@ -1,4 +1,0 @@
-//EliseiFrederic
-//robot-bazaar-files/robots/iCubGrenoble01/1654696328405-iCubGrenoble01-img.jpg 
-//&<h3>Field changed in robot: <ins>iCubGrenoble01</ins></h3><ul><li>img: https://storage.googleapis.com/robot-bazaar-files/robots/i<del>c</del><b>C</b>ub<del>_d</del><b>Grenobl</b>e<del>fa</del><b>01/1654696328405-iC</b>u<b>bGrenob</b>l<del>t</del><b>e01-img</b>.<b>j</b>p<del>n</del>g</li><li>related_projects: [<b>{title:RoboTrio,url:http://www.gipsa-lab.fr/projet/RoboTrio/DOWNLOADING.html},{title:Nina,url:http://www.gipsa-lab.grenoble-inp.fr/projet/NINA/home.html}</b>]</li></ul>
-db.robots.update ({_id: ObjectId("5fdbf1db9d8a3bc1ead6ee50")},{$set: { img: "https://storage.googleapis.com/robot-bazaar-files/robots/iCubGrenoble01/1654696328405-iCubGrenoble01-img.jpg",related_projects: [{"title":"RoboTrio","url":"http://www.gipsa-lab.fr/projet/RoboTrio/DOWNLOADING.html"},{"title":"Nina","url":"http://www.gipsa-lab.grenoble-inp.fr/projet/NINA/home.html"}]}});
