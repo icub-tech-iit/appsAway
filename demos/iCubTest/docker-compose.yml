@@ -1,0 +1,56 @@
+version: "3.7"
+
+x-icub-test: &icub-test
+  image: icubteamcode/superbuild-icubtest:master-unstable_sources
+  environment:
+    - DISPLAY=${DISPLAY}
+    - QT_X11_NO_MITSHM=1
+    - XAUTHORITY=/root/.Xauthority
+    - YARP_FORWARD_LOG_ENABLE=1
+    - YARP_ROBOT_NAME
+  volumes:
+    - "/tmp/.X11-unix:/tmp/.X11-unix"
+    - "${XAUTHORITY}:/root/.Xauthority"
+    - "${HOME}/.config/yarp:/root/.config/yarp"
+    - "${HOME}/icub-test_results:/projects/robotology-superbuild/src/icub-tests/suites/results:rw"
+  network_mode: "host"
+  privileged: true
+  #ipc: host
+
+x-yarp-gazebo: &yarp-gazebo
+  image: icubteamcode/gazebo:v2022.02.0_sources
+  environment:
+    - DISPLAY=${DISPLAY}
+    - QT_X11_NO_MITSHM=1
+    - XAUTHORITY=/root/.Xauthority
+    - YARP_FORWARD_LOG_ENABLE=1
+    - YARP_ROBOT_NAME
+    - APPSAWAY_ROBOT_MODEL
+  volumes:
+    - "/tmp/.X11-unix:/tmp/.X11-unix"
+    - "${XAUTHORITY}:/root/.Xauthority"
+    - "${HOME}/.config/yarp:/root/.config/yarp"
+  ports:
+    - "10000:10000"
+  network_mode: "host"
+  privileged: true
+  #ipc: host
+
+services:
+  yarp-server:
+    <<: *icub-test
+    command: sh -c "yarp where | grep 'is available at ip' > /dev/null ; if [ ! $$? -eq 0 ]; then yarpserver --read; fi"
+
+  icub-sim:
+    <<: *yarp-gazebo
+    command: sh -c "if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; iCub_SIM"
+
+  ## UNCOMMENT THIS SERVICE TO USE THE SIMULATOR AND RUN THE ENCODERS-ICUBSIM TESTING SUITE ##
+  test-suite:
+    <<: *icub-test
+    command: sh -c "yarp wait /icubSim/torso/state:o; yarp wait /icubSim/head/state:o; yarp wait /icubSim/left_arm/state:o; yarp wait /icubSim/right_arm/state:o; yarp wait /icubSim/left_leg/state:o; yarp wait /icubSim/right_leg/state:o; cd projects/robotology-superbuild/src/icub-tests/suites;  robottestingframework-testrunner -v -s encoders-icubSim.xml"
+
+  ## UNCOMMENT THIS SERVICE TO USE THE REAL ROBOT AND RUN THE ENCODERS-ICUB TESTING SUITE ##
+  #test-suite:
+  #  <<: *icub-test
+  #  command: sh -c "cd projects/robotology-superbuild/src/icub-tests/suites && robottestingframework-testrunner -v -s encoders-icub.xml"
