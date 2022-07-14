@@ -12,8 +12,6 @@ x-icub-test: &icub-test
     - "/tmp/.X11-unix:/tmp/.X11-unix"
     - "${XAUTHORITY}:/root/.Xauthority"
     - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
-    - "${RESULTS_PATH:-/tmp/empty-dir}:/projects/robotology-superbuild/src/icub-tests/suites/results:rw"
-    - "${CUSTOM_FILE_PATH:-/tmp/empty-dir/customSuite.xml}:/projects/robotology-superbuild/src/icub-tests/suites/customSuite.xml"
   networks:
     - hostnet
 
