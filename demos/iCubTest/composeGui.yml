@@ -1,0 +1,35 @@
+version: "3.7"
+
+x-icub-test: &icub-test
+  image: icubteamcode/superbuild-icubtest:master-unstable_sources
+  environment:
+    - DISPLAY=${DISPLAY}
+    - QT_X11_NO_MITSHM=1
+    - XAUTHORITY=/root/.Xauthority
+    - YARP_FORWARD_LOG_ENABLE=1
+    - YARP_ROBOT_NAME
+    - SUITE_TYPE
+    - CUSTOM_SUITE
+    - CUSTOM_FILE_PATH
+    - RESULTS_PATH
+  volumes:
+    - "/tmp/.X11-unix:/tmp/.X11-unix"
+    - "${XAUTHORITY}:/root/.Xauthority"
+    - "${HOME}/${YARP_CONF_PATH}:/root/.config/yarp"
+    - "${RESULTS_PATH:-/tmp/icub-test_results}:/projects/robotology-superbuild/src/icub-tests/suites/results:rw"
+    - "${CUSTOM_FILE_PATH:-/tmp/icub-test_results/customSuite.xml}:/projects/robotology-superbuild/src/icub-tests/suites/customSuite.xml"
+  network_mode: "host"
+  privileged: true
+  #ipc: host
+
+
+services:
+
+  ylogger:
+    <<: *icub-test
+    command: sh -c "if [ -f "/root/.config/yarp/yarp_namespace.conf" ]; then yarp wait $$(echo $$(cat /root/.config/yarp/yarp_namespace.conf)); else yarp wait /root; fi; yarplogger --start"
+
+  test-suite:
+    <<: *icub-test
+    command: sh -c "cd projects/robotology-superbuild/src/icub-tests/suites; yarp wait /icub/torso/state:o; yarp wait /icub/head/state:o; yarp wait /icub/left_arm/state:o; yarp wait /icub/right_arm/state:o; yarp wait /icub/left_leg/state:o; yarp wait /icub/right_leg/state:o; if [ ${CUSTOM_SUITE} = true ]; then robottestingframework-testrunner -v -s customSuite.xml; else robottestingframework-testrunner -v -s ${SUITE_TYPE}; fi; sleep infinity;"
+  # command: sh -c "cd projects/robotology-superbuild/src/icub-tests/suites; yarp wait /icub/torso/state:o; yarp wait /icub/head/state:o; yarp wait /icub/left_arm/state:o; yarp wait /icub/right_arm/state:o; yarp wait /icub/left_leg/state:o; yarp wait /icub/right_leg/state:o; if [ ${CUSTOM_SUITE} = true ]; then robottestingframework-testrunner -v -s ${CUSTOM_FILE_PATH}; echo ${CUSTOM_FILE_PATH}; else robottestingframework-testrunner -v -s ${SUITE_TYPE}; fi;"
