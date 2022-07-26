@@ -31,5 +31,4 @@ services:
 
   test-suite:
     <<: *icub-test
-    command: sh -c "cd projects/robotology-superbuild/src/icub-tests/suites; yarp wait /icub/torso/state:o; yarp wait /icub/head/state:o; yarp wait /icub/left_arm/state:o; yarp wait /icub/right_arm/state:o; yarp wait /icub/left_leg/state:o; yarp wait /icub/right_leg/state:o; if [ ${CUSTOM_SUITE} = true ]; then robottestingframework-testrunner -v -s customSuite.xml; else robottestingframework-testrunner -v -s ${SUITE_TYPE}; fi; sleep infinity;"
-  # command: sh -c "cd projects/robotology-superbuild/src/icub-tests/suites; yarp wait /icub/torso/state:o; yarp wait /icub/head/state:o; yarp wait /icub/left_arm/state:o; yarp wait /icub/right_arm/state:o; yarp wait /icub/left_leg/state:o; yarp wait /icub/right_leg/state:o; if [ ${CUSTOM_SUITE} = true ]; then robottestingframework-testrunner -v -s ${CUSTOM_FILE_PATH}; echo ${CUSTOM_FILE_PATH}; else robottestingframework-testrunner -v -s ${SUITE_TYPE}; fi;"
+    command: sh -c "checkRobotInterface; cd projects/robotology-superbuild/src/icub-tests/suites; if [ ${CUSTOM_SUITE} = true ]; then robottestingframework-testrunner -v -s customSuite.xml; else robottestingframework-testrunner -v -s ${SUITE_TYPE}; fi; sleep infinity;"
