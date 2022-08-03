@@ -20,6 +20,7 @@ services:
     <<: *yarp-head
     devices: 
       - "/dev/bosch-i2c-imu:/dev/bosch-i2c-imu"
+    restart: on-failure
     command: yarprobotinterface
 
 
