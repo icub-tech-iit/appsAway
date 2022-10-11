@@ -20,7 +20,7 @@ jobs:
           multilines_list="$multilines_list <li>$el</li>"
         done
         multilines_list="$multilines_list</ul>"
-        echo "::set-output name=formatted_outcome::$multilines_list"
+        echo "formatted_outcome=$multilines_list" >> $GITHUB_OUTPUT
         
     - uses: lauracavaliere/pr-update-action@master
       with:

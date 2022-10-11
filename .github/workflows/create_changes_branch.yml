@@ -86,9 +86,9 @@ jobs:
               exported_img_list=($exported_img_list)
               echo ${exported_img_list[@]}
               echo $changes_list
-              echo ::set-output name=user_list::$user_list
-              echo ::set-output name=changes_list::$changes_list
-              echo ::set-output name=exported_img_list::${exported_img_list[@]}            
+              echo "user_list=$user_list" >> $GITHUB_OUTPUT
+              echo "changes_list=$changes_list" >> $GITHUB_OUTPUT
+              echo "exported_img_list=${exported_img_list[@]}" >> $GITHUB_OUTPUT
             
       - name: pull-request
         id: open-pr

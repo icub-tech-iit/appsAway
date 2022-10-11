@@ -77,8 +77,8 @@ jobs:
               done
               echo $user_list
               echo $appname_list
-              echo ::set-output name=user_list::$user_list
-              echo ::set-output name=appname_list::$appname_list
+              echo "user_list=$user_list" >> $GITHUB_OUTPUT
+              echo "appname_list=$appname_list" >> $GITHUB_OUTPUT
               ls
               
               
@@ -133,8 +133,8 @@ jobs:
       #        done
       #        echo $user_list
       #        echo $appname_list
-      #        echo ::set-output name=user_list::$user_list
-      #        echo ::set-output name=appname_list::$appname_list
+      #        echo "user_list=$user_list" >> $GITHUB_OUTPUT
+      #        echo "appname_list=$appname_list" >> $GITHUB_OUTPUT
               
       - name: print stuff before PR
         run: |

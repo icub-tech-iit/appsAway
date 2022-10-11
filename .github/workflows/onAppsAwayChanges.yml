@@ -64,7 +64,7 @@ jobs:
           done
           app_name_list=$(echo "${app_name_list[@]}" | tr ' ' '\n' | sort -u | tr '\n' ' ')
           app_name_list=$(echo ${app_name_list::-1})
-          echo "::set-output name=apps::${app_name_list[@]}"
+          echo "apps=${app_name_list[@]}" >> $GITHUB_OUTPUT
 
       - name: Get Token
         id: get_workflow_token
